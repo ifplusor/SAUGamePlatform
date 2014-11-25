@@ -18,17 +18,21 @@ DLLFUCTION VOID CheckModule(char *Info,char *ChessName,int *ChessType);
 //初始化模块
 DLLFUCTION VOID InitModule(HWND hWnd,GameSet *gameset);
 //响应棋盘大小改变
-DLLFUCTION VOID OnSize(RECT rt);
+DLLFUCTION VOID OnSize(RECT rtBoard);
 //绘制棋盘
 DLLFUCTION VOID DrawBoard(HDC hDC);
-//响应鼠标左键单击消息
-DLLFUCTION BOOL OnLButtonDown(int x,int y,char *wDMsg);
-//引擎信息处理
-DLLFUCTION BOOL ProcessMsg(char *msg,char *wMMsg,char *wDMsg);
 //响应对弈开始
 DLLFUCTION VOID OnRun();
+//响应鼠标左键单击消息
+DLLFUCTION INT OnLButtonDown(int x,int y);
+//确认招法
+DLLFUCTION VOID OkMove(char *moveCmd);
+//取消招法
+DLLFUCTION VOID CancelMove();
+//引擎行棋事件
+DLLFUCTION INT ProcessMove(char *moveCmd,char *curCmd,char *demCmd);
 //获取当前行棋方
-DLLFUCTION int GetCurPlayer();
+DLLFUCTION INT GetCurPlayer();
 
 
 #endif

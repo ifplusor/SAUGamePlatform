@@ -120,7 +120,7 @@ VOID CreateChessTypeMenu(HMENU hMenu)
 		if(!SetMenuItemInfo(hMenu,IDM_GAME_SELECT,false,&menuItem))
 			ErrorBox("Set MenuItem information failed !");
 	}
-//	CloseHandle(hChessType);
+//	CloseHandle(hChessType);//关闭棋种子菜单句柄有时会出问题，不知道是什么原因
 }
 
 /*
