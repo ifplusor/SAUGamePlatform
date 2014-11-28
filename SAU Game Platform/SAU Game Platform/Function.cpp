@@ -42,7 +42,25 @@ int GameStart()
 	return 0;
 }
 
+int GameStop()
+{
+	game.StopGame();
+	return 0;
+}
+
 int MoveStep(int x,int y)
 {
 	return game.MoveStep(x,y);
+}
+
+int OkMove()
+{
+	game.OkMove();
+	return 0;
+}
+
+int CancelMove()
+{
+	game.CancelMove();
+	return 0;
 }

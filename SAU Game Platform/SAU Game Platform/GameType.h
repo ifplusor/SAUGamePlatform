@@ -26,20 +26,26 @@ struct _CHESSTYPE{
 
 
 //模块正确性校验
-typedef VOID (*_CheckModule)(char *Info,char *ChessName,int *ChessType);
+typedef VOID (*_CheckModule)(char *Info, char *ChessName, int *ChessType);
 //初始化模块
-typedef VOID (*_InitModule)(HWND hWnd,GameSet *gameSet);
+typedef VOID (*_InitModule)(HWND hWnd, GameSet *gameset);
 //响应棋盘大小改变
-typedef VOID (*_OnSize)(RECT rt);
+typedef VOID (*_OnSize)(RECT rtBoard);
 //绘制棋盘
 typedef VOID (*_DrawBoard)(HDC hDC);
-//响应鼠标左键单击消息
-typedef BOOL (*_OnLButtonDown)(int x,int y,char *wDMsg);
-//引擎信息处理
-typedef BOOL (*_ProcessMsg)(char *msg,char *wMMsg,char *wDMsg);
 //响应对弈开始
 typedef VOID (*_OnRun)();
-typedef int (*_GetCurPlayer)();
+//响应鼠标左键单击消息
+typedef INT (*_OnLButtonDown)(int x, int y);
+//确认招法
+typedef INT (*_OkMove)(char *denCmd);
+//取消招法
+typedef VOID (*_CancelMove)();
+//引擎行棋事件
+typedef INT (*_ProcessMove)(char *moveCmd, char *curCmd, char *denCmd);
+//获取当前行棋方
+typedef INT (*_GetCurPlayer)();
+
 
 
 extern _CheckModule CT_CheckModule;
@@ -47,7 +53,9 @@ extern _InitModule CT_InitModule;
 extern _OnSize CT_OnSize;
 extern _DrawBoard CT_DrawBoard;
 extern _OnLButtonDown CT_OnLButtonDown;
-extern _ProcessMsg CT_ProcessMsg;
+extern _OkMove CT_OkMove;
+extern _CancelMove CT_CancelMove;
+extern _ProcessMove CT_ProcessMove;
 extern _OnRun CT_OnRun;
 extern _GetCurPlayer CT_GetCurPlayer;
 

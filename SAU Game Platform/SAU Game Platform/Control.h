@@ -30,6 +30,8 @@ public:
 	void StopGame();//终止对弈逻辑
 	bool MoveStep(int x,int y);//行棋（提供用户）
 	bool MoveStep(char *step);//行棋（提供引擎）
+	void OkMove();
+	void CancelMove();
 	BOOL IsStop(){if(GameMode==-1)return TRUE;else return FALSE;}
 	CEngine* GetBlackE(){return &BlackE;}//获取黑方引擎对象指针
 	CEngine* GetWhiteE(){return &WhiteE;}//获取白方引擎对象指针

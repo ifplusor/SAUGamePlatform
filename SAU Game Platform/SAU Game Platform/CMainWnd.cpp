@@ -191,6 +191,7 @@ BOOL CMainWnd::CreateCtrl(HWND hWnd)
 	}
 	ShowWindow(hButtonBlcOk,SW_SHOWNORMAL);
 	UpdateWindow(hButtonBlcOk);
+	EnableWindow(hButtonBlcOk, FALSE);
 
 	//创建黑方 取消招法 按钮
 	hButtonBlcCancel=CreateWindow(
@@ -211,6 +212,7 @@ BOOL CMainWnd::CreateCtrl(HWND hWnd)
 	}
 	ShowWindow(hButtonBlcCancel,SW_SHOWNORMAL);
 	UpdateWindow(hButtonBlcCancel);
+	EnableWindow(hButtonBlcCancel, FALSE);
 
 	//创建白方 加载引擎 按钮
 	hButtonWhtLoad=CreateWindow(
@@ -271,6 +273,7 @@ BOOL CMainWnd::CreateCtrl(HWND hWnd)
 	}
 	ShowWindow(hButtonWhtOk,SW_SHOWNORMAL);
 	UpdateWindow(hButtonWhtOk);
+	EnableWindow(hButtonWhtOk, FALSE);
 
 	//创建白方 取消招法 按钮
 	hButtonWhtCancel=CreateWindow(
@@ -291,6 +294,7 @@ BOOL CMainWnd::CreateCtrl(HWND hWnd)
 	}
 	ShowWindow(hButtonWhtCancel,SW_SHOWNORMAL);
 	UpdateWindow(hButtonWhtCancel);
+	EnableWindow(hButtonWhtCancel, FALSE);
 
 	return true;
 }
@@ -420,8 +424,11 @@ VOID CMainWnd::OnCommand(WPARAM wParam,LPARAM lParam)
 	{
 	case IDB_CONTROL_OK_BLC:
 	case IDB_CONTROL_OK_WHT:
+		OkMove();
+		break;
 	case IDB_CONTROL_CANCEL_BLC:
 	case IDB_CONTROL_CANCEL_WHT:
+		CancelMove();
 		break;
 	case IDB_ENGINE_LOAD_BLC:
 		LoadBlackEngine();

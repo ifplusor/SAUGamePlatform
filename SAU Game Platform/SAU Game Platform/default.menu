@@ -11,6 +11,11 @@ MAIN
       ID 41005
       FUNCTION 0 11
     ENDI
+	ITEM
+	  NAME ½áÊø¶ÔÞÄ
+	  ID 41006
+	  FUNCTION 0 12
+	ENDI
     ITEM
       NAME ÍË³ö
       ID 41000

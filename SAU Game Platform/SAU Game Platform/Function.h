@@ -19,7 +19,10 @@ int UnloadBlackEngine();//卸载黑方引擎
 int LoadWhiteEngine();//加载白方引擎
 int UnloadWhiteEngine();//卸载摆放引擎
 int GameStart();//开始对弈
+int GameStop();//结束对弈
 int MoveStep(int x,int y);//用户行棋
+int OkMove();
+int CancelMove();
 
 
 

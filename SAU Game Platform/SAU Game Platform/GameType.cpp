@@ -12,14 +12,16 @@
 
 
 //平台棋种支持模块接口函数指针
-_CheckModule CT_CheckModule=NULL;
-_InitModule CT_InitModule=NULL;
-_OnSize CT_OnSize=NULL;
-_DrawBoard CT_DrawBoard=NULL;
-_OnLButtonDown CT_OnLButtonDown=NULL;
-_ProcessMsg CT_ProcessMsg=NULL;
-_OnRun CT_OnRun=NULL;
-_GetCurPlayer CT_GetCurPlayer=NULL;
+_CheckModule CT_CheckModule = NULL;
+_InitModule CT_InitModule = NULL;
+_OnSize CT_OnSize = NULL;
+_DrawBoard CT_DrawBoard = NULL;
+_OnLButtonDown CT_OnLButtonDown = NULL;
+_OkMove CT_OkMove = NULL;
+_CancelMove CT_CancelMove = NULL;
+_ProcessMove CT_ProcessMove = NULL;
+_OnRun CT_OnRun = NULL;
+_GetCurPlayer CT_GetCurPlayer = NULL;
 
 
 int chesstype=0;//棋种标志
@@ -64,7 +66,7 @@ BOOL GetChessTypeResourse()
 			{
 				memset(check,0,sizeof(check));
 				CT_CheckModule(check,chessType[chessNum].chessStr,&chessType[chessNum].type);
-				if(strcmp("SAU_GamePlatform chessType",check)==0)//校验组件正确性
+				if(strcmp("SAU Game Platform chessType",check)==0)//校验组件正确性
 					chessNum++;
 				else
 					FreeLibrary(chessType[chessNum].chessTP);//释放不正确组件
@@ -149,7 +151,9 @@ VOID InitialChessType(int i,HMENU hMenu)
 	CT_OnSize=(_OnSize)GetProcAddress(chessType[chesstype].chessTP,"OnSize");
 	CT_DrawBoard=(_DrawBoard)GetProcAddress(chessType[chesstype].chessTP,"DrawBoard");
 	CT_OnLButtonDown=(_OnLButtonDown)GetProcAddress(chessType[chesstype].chessTP,"OnLButtonDown");
-	CT_ProcessMsg=(_ProcessMsg)GetProcAddress(chessType[chesstype].chessTP,"ProcessMsg");
+	CT_OkMove = (_OkMove)GetProcAddress(chessType[chesstype].chessTP, "OkMove");
+	CT_CancelMove = (_CancelMove)GetProcAddress(chessType[chesstype].chessTP, "CancelMove");
+	CT_ProcessMove = (_ProcessMove)GetProcAddress(chessType[chesstype].chessTP, "ProcessMove");
 	CT_OnRun=(_OnRun)GetProcAddress(chessType[chesstype].chessTP,"OnRun");
 	CT_GetCurPlayer=(_GetCurPlayer)GetProcAddress(chessType[chesstype].chessTP,"GetCurPlayer");
 
@@ -173,13 +177,15 @@ VOID SetChessType(int i,HMENU hMenu)
 			CheckMenuItem(hMenu,CHESSTYPE+i,MF_UNCHECKED);			
 	}
 	//动态获取DLL库中函数地址
-	CT_InitModule=(_InitModule)GetProcAddress(chessType[chesstype].chessTP,"InitModule");
-	CT_OnSize=(_OnSize)GetProcAddress(chessType[chesstype].chessTP,"OnSize");
-	CT_DrawBoard=(_DrawBoard)GetProcAddress(chessType[chesstype].chessTP,"DrawBoard");
-	CT_OnLButtonDown=(_OnLButtonDown)GetProcAddress(chessType[chesstype].chessTP,"OnLButtonDown");
-	CT_ProcessMsg=(_ProcessMsg)GetProcAddress(chessType[chesstype].chessTP,"ProcessMsg");
-	CT_OnRun=(_OnRun)GetProcAddress(chessType[chesstype].chessTP,"OnRun");
-	CT_GetCurPlayer=(_GetCurPlayer)GetProcAddress(chessType[chesstype].chessTP,"GetCurPlayer");
+	CT_InitModule = (_InitModule)GetProcAddress(chessType[chesstype].chessTP, "InitModule");
+	CT_OnSize = (_OnSize)GetProcAddress(chessType[chesstype].chessTP, "OnSize");
+	CT_DrawBoard = (_DrawBoard)GetProcAddress(chessType[chesstype].chessTP, "DrawBoard");
+	CT_OnLButtonDown = (_OnLButtonDown)GetProcAddress(chessType[chesstype].chessTP, "OnLButtonDown");
+	CT_OkMove = (_OkMove)GetProcAddress(chessType[chesstype].chessTP, "OkMove");
+	CT_CancelMove = (_CancelMove)GetProcAddress(chessType[chesstype].chessTP, "CancelMove");
+	CT_ProcessMove = (_ProcessMove)GetProcAddress(chessType[chesstype].chessTP, "ProcessMove");
+	CT_OnRun = (_OnRun)GetProcAddress(chessType[chesstype].chessTP, "OnRun");
+	CT_GetCurPlayer = (_GetCurPlayer)GetProcAddress(chessType[chesstype].chessTP, "GetCurPlayer");
 
 	CT_InitModule(MainWnd->hWnd,&gameSet);
 	CT_OnSize(MainWnd->GetBoardPos());

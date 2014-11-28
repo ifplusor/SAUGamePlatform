@@ -8,6 +8,7 @@
 
 #include "Control.h"
 #include "GameType.h"
+#include "CMainWnd.h"
 
 Game game;
 
@@ -42,7 +43,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 		side->GetCommand("move",rMsg);//获取行棋事件
 		if(CT_GetCurPlayer()!=(int)lpParam)//当前行棋方与本方引擎执棋颜色不同
 			continue;
-		tag=CT_ProcessMsg(rMsg,wMMsg,wDMsg);//处理行棋事件，产生相应命令
+		tag=CT_ProcessMove(rMsg,wMMsg,wDMsg);//处理行棋事件，产生相应命令
 		if(wMMsg[0]!='\0')
 			side->WriteMsg(wMMsg);
 		if(wDMsg[0]!='\0')
@@ -165,6 +166,7 @@ void Game::StopGame()
 		MsgBox("对弈尚未开始","error",3000);
 		return;
 	}
+	
 	switch(GameMode)
 	{
 	case 0://人执黑，机器/网络执白
@@ -181,7 +183,6 @@ void Game::StopGame()
 
 bool Game::MoveStep(int x,int y)
 {
-	char wMsg[256];
 	int temp,player=CT_GetCurPlayer();
 
 	if(IsStop()==TRUE)
@@ -195,15 +196,16 @@ bool Game::MoveStep(int x,int y)
 	}
 	else if(GameMode==3)//人人对弈
 	{
-		temp=CT_OnLButtonDown(x,y,wMsg);
+		temp=CT_OnLButtonDown(x,y);
 		switch(temp)
 		{
 		case -1://错误着法
 			MsgBox("error step!","error",1000);
 			return false;
-		case 0://着法进行
-			break;
 		case 1://着法成立
+			EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_OK_WHT : IDB_CONTROL_OK_BLC), TRUE);
+		case 0://着法进行
+			EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_CANCEL_WHT : IDB_CONTROL_CANCEL_BLC), TRUE);
 			break;
 		case 2://对弈结束
 			GameMode=-1;
@@ -218,29 +220,30 @@ bool Game::MoveStep(int x,int y)
 	{
 		if(GameMode==player)//当前行棋方为人
 		{
-			temp=CT_OnLButtonDown(x,y,wMsg);
+			temp=CT_OnLButtonDown(x,y);
 			switch(temp)
 			{
 			case -1://错误着法
 				MsgBox("error step!","error",1000);
 				return false;
-			case 0://着法进行
-				break;
 			case 1://着法成立
+				EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_OK_WHT : IDB_CONTROL_OK_BLC), TRUE);
+			case 0://着法进行
+				EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_CANCEL_WHT : IDB_CONTROL_CANCEL_BLC), TRUE);
 				break;
 			case 2://对弈结束
 				GameMode=-1;
 				break;
 			}
-			player=CT_GetCurPlayer();
-			if(player!=GameMode)//行棋换手
-			{
+//			player=CT_GetCurPlayer();
+//			if(player!=GameMode)//行棋换手
+//			{
 //				if(NetWork==0)
 //				{
-					if(player==BLACK)
-						BlackE.WriteMsg(wMsg);
-					else
-						WhiteE.WriteMsg(wMsg);
+//					if(player==BLACK)
+//						BlackE.WriteMsg(wMsg);
+//					else
+//						WhiteE.WriteMsg(wMsg);
 //				}
 //				else
 //				{
@@ -249,7 +252,7 @@ bool Game::MoveStep(int x,int y)
 //					else
 //						NetShell(NULL,ConnectMode?SERVERINFO.s:CLIENTINFO.s,wMsg,strlen(wMsg)+1,2);
 //				}
-			}
+//			}
 		}
 		else
 		{
@@ -270,7 +273,7 @@ bool Game::MoveStep(char *step)
 {
 	char wMMsg[256],wDMsg[256];
 	int temp;
-	temp=CT_ProcessMsg(step,wMMsg,wDMsg);
+	temp = CT_ProcessMove(step, wMMsg, wDMsg);
 	if(GameMode==4)
 	{
 		BlackE.WriteMsg(wDMsg);
@@ -282,4 +285,49 @@ bool Game::MoveStep(char *step)
 	if(temp==2)
 		GameMode=-1;
 	return true;
+}
+
+void Game::OkMove()
+{
+	char denCmd[256];
+	BYTE player = CT_GetCurPlayer();
+	int temp;
+	temp = CT_OkMove(denCmd);
+	switch (GameMode)
+	{
+	case 0:
+		WhiteE.WriteMsg(denCmd);
+		break;
+	case 1:
+		BlackE.WriteMsg(denCmd);
+		break;
+	}
+	if (temp == 2)
+		GameMode = -1;
+	if (player == 0)
+	{
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
+	}
+	else
+	{
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
+	}
+}
+
+void Game::CancelMove()
+{
+	BYTE player = CT_GetCurPlayer();
+	CT_CancelMove();
+	if (player == 0)
+	{
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
+	}
+	else
+	{
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
+	}
 }
