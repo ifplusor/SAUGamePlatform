@@ -53,111 +53,114 @@ VOID CConSix::SetBoard(RECT rtBoard)
 
 VOID CConSix::DrawBoard(HDC hDC)//绘制棋盘
 {
-	int i,j;
+	int i, j;
 	HPEN hOldPen;
 	HFONT hOldFont;
-	hOldPen=(HPEN)SelectObject(hDC,hPen);
-	hOldFont=(HFONT)SelectObject(hDC,hFont);	
+	hOldPen = (HPEN)SelectObject(hDC, hPen);
+	hOldFont = (HFONT)SelectObject(hDC, hFont);
 
-	::SetTextColor(hDC,RGB(0,0,0));
+	::SetTextColor(hDC, RGB(0, 0, 0));
 
-	char letter[2],number[3];
-	memset(letter,0,sizeof(letter));
-	memset(number,0,sizeof(number));
+	char letter[2], number[3];
+	memset(letter, 0, sizeof(letter));
+	memset(number, 0, sizeof(number));
 	//绘制棋盘
-	for(i=0;i<19;i++)
-	{			
-		letter[0]='A'+i;
-		itoa(i,number,10);
-		
-		TextOut(hDC,(int)(rtBoard.left+side*(i+1)/20-fWidth/2),rtBoard.top,letter,1);//绘制文字				
-		TextOut(hDC,(int)(rtBoard.left+side*(i+1)/20-fWidth),rtBoard.bottom-fHeight,number,2);		
-
-		MoveToEx(hDC,rtBoard.left+d,(int)(rtBoard.top+side*(i+1)/20),NULL);//绘制线
-		LineTo(hDC,rtBoard.right-d,(int)(rtBoard.top+side*(i+1)/20));
-	}
-	for(i=0;i<19;i++)
+	for (i = 0; i < 19; i++)
 	{
-		letter[0]='A'+i;
-		itoa(i,number,10);
+		letter[0] = 'A' + i;
+		itoa(i, number, 10);
 
-		TextOut(hDC,rtBoard.left+fWidth,(int)(rtBoard.top+side*(i+1)/20-fHeight/2),letter,1);						
-		TextOut(hDC,rtBoard.right-fWidth*2,(int)(rtBoard.top+side*(i+1)/20-fHeight/2),number,2);	
-		
-		MoveToEx(hDC,rtBoard.left+side*(i+1)/20,rtBoard.top+d,NULL);
-		LineTo(hDC,rtBoard.left+side*(i+1)/20,rtBoard.bottom-d);
+		TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 20 - fWidth / 2), rtBoard.top, letter, 1);//绘制文字				
+		TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 20 - fWidth), rtBoard.bottom - fHeight, number, 2);
+
+		MoveToEx(hDC, rtBoard.left + d, (int)(rtBoard.top + side*(i + 1) / 20), NULL);//绘制线
+		LineTo(hDC, rtBoard.right - d, (int)(rtBoard.top + side*(i + 1) / 20));
 	}
-	
-	HDC hAssistDC,hBlcDC,hWhtDC,hCurBlcDC,hCurWhtDC;
-	hAssistDC=CreateCompatibleDC(hDC);
-	hBlcDC=CreateCompatibleDC(hDC);
-	hWhtDC=CreateCompatibleDC(hDC);
-	hCurBlcDC=CreateCompatibleDC(hDC);
-	hCurWhtDC=CreateCompatibleDC(hDC);	
-
-	HBITMAP hAssistBmp,hBlcBmp,hWhtBmp,hCurBlcBmp,hCurWhtBmp;
-	hAssistBmp=CreateCompatibleBitmap(hDC,d,d);
-	hBlcBmp=CreateCompatibleBitmap(hDC,d,d);
-	hWhtBmp=CreateCompatibleBitmap(hDC,d,d);
-	hCurBlcBmp=CreateCompatibleBitmap(hDC,d,d);
-	hCurWhtBmp=CreateCompatibleBitmap(hDC,d,d);	
-
-	SelectObject(hAssistDC,hAssistBmp);
-	SelectObject(hBlcDC,hBlcBmp);
-	SelectObject(hWhtDC,hWhtBmp);
-	SelectObject(hCurBlcDC,hCurBlcBmp);
-	SelectObject(hCurWhtDC,hCurWhtBmp);	
-
-	DrawAssist(hAssistDC,d);
-	DrawChess(hBlcDC,hWhtDC,hCurBlcDC,hCurWhtDC,d);//绘制棋子
-	
-	
-	for(i=0;i<19;i++)
+	for (i = 0; i < 19; i++)
 	{
-		for(j=0;j<19;j++)
+		letter[0] = 'A' + i;
+		itoa(i, number, 10);
+
+		TextOut(hDC, rtBoard.left + fWidth, (int)(rtBoard.top + side*(i + 1) / 20 - fHeight / 2), letter, 1);
+		TextOut(hDC, rtBoard.right - fWidth * 2, (int)(rtBoard.top + side*(i + 1) / 20 - fHeight / 2), number, 2);
+
+		MoveToEx(hDC, rtBoard.left + side*(i + 1) / 20, rtBoard.top + d, NULL);
+		LineTo(hDC, rtBoard.left + side*(i + 1) / 20, rtBoard.bottom - d);
+	}
+
+	HDC hAssistDC, hBlcDC, hWhtDC, hCurBlcDC, hCurWhtDC;
+	hAssistDC = CreateCompatibleDC(hDC);
+	hBlcDC = CreateCompatibleDC(hDC);
+	hWhtDC = CreateCompatibleDC(hDC);
+	hCurBlcDC = CreateCompatibleDC(hDC);
+	hCurWhtDC = CreateCompatibleDC(hDC);
+
+	HBITMAP hAssistBmp, hBlcBmp, hWhtBmp, hCurBlcBmp, hCurWhtBmp;
+	hAssistBmp = CreateCompatibleBitmap(hDC, d, d);
+	hBlcBmp = CreateCompatibleBitmap(hDC, d, d);
+	hWhtBmp = CreateCompatibleBitmap(hDC, d, d);
+	hCurBlcBmp = CreateCompatibleBitmap(hDC, d, d);
+	hCurWhtBmp = CreateCompatibleBitmap(hDC, d, d);
+
+	SelectObject(hAssistDC, hAssistBmp);
+	SelectObject(hBlcDC, hBlcBmp);
+	SelectObject(hWhtDC, hWhtBmp);
+	SelectObject(hCurBlcDC, hCurBlcBmp);
+	SelectObject(hCurWhtDC, hCurWhtBmp);
+
+	DrawAssist(hAssistDC, d);
+	DrawChess(hBlcDC, hWhtDC, hCurBlcDC, hCurWhtDC, d);//绘制棋子
+
+
+	for (i = 0; i < 19; i++)
+	{
+		for (j = 0; j < 19; j++)
 		{
-			if(board[i][j]==BLACK)
-			{				
-				BitBlt(hDC,rtBoard.left+side*(i+1)/20-d/2,rtBoard.top+side*(j+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
-				BitBlt(hDC,rtBoard.left+side*(i+1)/20-d/2,rtBoard.top+side*(j+1)/20-d/2,d,d,hBlcDC,0,0,SRCAND);				
+			if (board[i][j] == BLACK)
+			{
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hBlcDC, 0, 0, SRCAND);
 			}
-			else if(board[i][j]==WHITE)
-			{				
-				BitBlt(hDC,rtBoard.left+side*(i+1)/20-d/2,rtBoard.top+side*(j+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
-				BitBlt(hDC,rtBoard.left+side*(i+1)/20-d/2,rtBoard.top+side*(j+1)/20-d/2,d,d,hWhtDC,0,0,SRCAND);
+			else if (board[i][j] == WHITE)
+			{
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hWhtDC, 0, 0, SRCAND);
 			}
 		}
 	}
-	
-	Step curStep = stepStack.top();
-	if(curStep.side==BLACK)
+
+	if (!stepStack.empty())
 	{
-		int x1=curStep.first.x;int y1=curStep.first.y;
-		int x2=curStep.second.x;int y2=curStep.second.y;
-		IsChess(curStep.first)
+		Step curStep = stepStack.top();
+		if (curStep.side == BLACK)
 		{
-			BitBlt(hDC,rtBoard.left+side*(x1+1)/20-d/2,rtBoard.top+side*(y1+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
-			BitBlt(hDC,rtBoard.left+side*(x1+1)/20-d/2,rtBoard.top+side*(y1+1)/20-d/2,d,d,hCurBlcDC,0,0,SRCAND);
-		}			
-		IsChess(curStep.second)
+			int x1 = curStep.first.x; int y1 = curStep.first.y;
+			int x2 = curStep.second.x; int y2 = curStep.second.y;
+			IsChess(curStep.first)
+			{
+				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
+			}
+			IsChess(curStep.second)
+			{
+				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
+			}
+		}
+		else if (curStep.side == WHITE)
 		{
-			BitBlt(hDC,rtBoard.left+side*(x2+1)/20-d/2,rtBoard.top+side*(y2+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
-			BitBlt(hDC,rtBoard.left+side*(x2+1)/20-d/2,rtBoard.top+side*(y2+1)/20-d/2,d,d,hCurBlcDC,0,0,SRCAND);
-		}			
-	}
-	else if(curStep.side==WHITE)
-	{
-		int x1=curStep.first.x;int y1=curStep.first.y;
-		int x2=curStep.second.x;int y2=curStep.second.y;
-		IsChess(curStep.first)
-		{
-			BitBlt(hDC,rtBoard.left+side*(x1+1)/20-d/2,rtBoard.top+side*(y1+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
-			BitBlt(hDC,rtBoard.left+side*(x1+1)/20-d/2,rtBoard.top+side*(y1+1)/20-d/2,d,d,hCurWhtDC,0,0,SRCAND);
-		}			
-		IsChess(curStep.second)
-		{
-			BitBlt(hDC,rtBoard.left+side*(x2+1)/20-d/2,rtBoard.top+side*(y2+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
-			BitBlt(hDC,rtBoard.left+side*(x2+1)/20-d/2,rtBoard.top+side*(y2+1)/20-d/2,d,d,hCurWhtDC,0,0,SRCAND);
+			int x1 = curStep.first.x; int y1 = curStep.first.y;
+			int x2 = curStep.second.x; int y2 = curStep.second.y;
+			IsChess(curStep.first)
+			{
+				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hCurWhtDC, 0, 0, SRCAND);
+			}
+			IsChess(curStep.second)
+			{
+				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hCurWhtDC, 0, 0, SRCAND);
+			}
 		}
 	}
 
