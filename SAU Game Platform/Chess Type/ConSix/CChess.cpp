@@ -4,9 +4,9 @@
 CChess::CChess()
 {	
 	player=BLACK;
-	memset(StepNum,0,sizeof(StepNum));
-	memset(wMMsg,0,sizeof(wMMsg));//写入引擎的消息
-	memset(wDMsg,0,sizeof(wDMsg));
+	memset(StepNum, 0, sizeof(StepNum));
+	memset(curCmd, 0, sizeof(curCmd));//写入引擎的消息
+	memset(denCmd, 0, sizeof(denCmd));
 }
 
 CChess::~CChess()

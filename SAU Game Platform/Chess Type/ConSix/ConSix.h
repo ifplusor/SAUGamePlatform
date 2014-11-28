@@ -26,11 +26,11 @@ DLLFUCTION VOID OnRun();
 //响应鼠标左键单击消息
 DLLFUCTION INT OnLButtonDown(int x,int y);
 //确认招法
-DLLFUCTION VOID OkMove(char *moveCmd);
+DLLFUCTION INT OkMove(char *denCmd);
 //取消招法
 DLLFUCTION VOID CancelMove();
 //引擎行棋事件
-DLLFUCTION INT ProcessMove(char *moveCmd,char *curCmd,char *demCmd);
+DLLFUCTION INT ProcessMove(char *moveCmd,char *curCmd,char *denCmd);
 //获取当前行棋方
 DLLFUCTION INT GetCurPlayer();
 

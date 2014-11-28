@@ -17,21 +17,8 @@
 #define GM_SHOWSTEP		0X1012
 #define GM_WINLOSE		0X1013
 
-#define NEXT(S) (1-S)
+#define NEXTPLAYER(S) (1-S)
 
-typedef struct
-{
-	int x;
-	int y;
-	BYTE side;
-}point;
-
-typedef struct
-{
-	POINT first;
-	POINT second;
-	BYTE side;
-}step;
 
 typedef struct
 {
@@ -85,21 +72,31 @@ class CChess
 public:	
 	HWND hWnd;//窗口句柄
 
-	GameSet *gameset;
+	GameSet *gameset;//设置
 
-	COLORREF BkColor;
-	COLORREF BoardColor;
-	RECT rtBoard;//棋盘位置
-	int side;//棋盘宽度
-	int StepNum[2];//黑白双方的步数
-	int BasePt;//坐标原点标志
-	char wMMsg[256];//待写入本方引擎信息
-	char wDMsg[256];//待写入对方引擎信息
+	char curCmd[256];//待写入本方引擎命令
+	char denCmd[256];//待写入对方引擎命令
 
 	BYTE player;//行棋方
 
 	CChess();
 	~CChess();
+
+	//设置棋盘大小
+	virtual VOID SetBoard(RECT rtBoard) = 0;
+	//绘制棋盘
+	virtual VOID DrawBoard(HDC hDC) = 0;
+	//初始化棋局
+	virtual VOID InitGame() = 0;
+	//处理引擎行棋命令  返回值：  -1：行棋违规  0：未找到关键字  1：获取成功  2：胜负手
+	virtual INT ProcessMove(char *msg) = 0;
+	//响应鼠标单击消息
+	virtual BOOL OnLButtonDown(int x, int y)=0;
+	//确认着法
+	virtual INT OkMove() = 0;
+	//取消着法
+	virtual VOID CancelMove() = 0;
+
 	//创建简单字体
 	HFONT CreateSimpleFont(int width,int height);
 	//绘制点
@@ -108,6 +105,14 @@ public:
 	bool DrawAssist(HDC hAssistDC,int d);
 	//判断点是否在区域内
 	bool InsideRect(const RECT* rt,const int &x,const int &y);
+
+protected:
+
+	RECT rtBoard;//棋盘位置
+	int side;//棋盘宽度
+	int BasePt;//坐标原点标志
+	int StepNum[2];//黑白双方的步数
+	int count;//鼠标点击输入状态，-1为不接受鼠标点击输入
 };
 
 #endif

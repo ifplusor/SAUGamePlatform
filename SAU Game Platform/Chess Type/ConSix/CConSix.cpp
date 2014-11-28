@@ -21,15 +21,37 @@ CConSix::CConSix()
 {
 	BkColor=RGB(0,0,0);
 	BoardColor=RGB(255,255,0);
+	hPen = NULL;
+	hFont = NULL;
 	InitGame();
+	count = -1;
 }
 
 CConSix::~CConSix()
 {
-
+	if (hPen != NULL)
+		DeleteObject(hPen);
+	if (hFont != NULL)
+		DeleteObject(hFont);
 }
 
-bool CConSix::DrawBoard(HDC hDC)//绘制棋盘
+VOID CConSix::SetBoard(RECT rtBoard)
+{
+	if (hPen != NULL)
+		DeleteObject(hPen);
+	if (hFont != NULL)
+		DeleteObject(hFont);
+	this->rtBoard = rtBoard;
+	side = rtBoard.right - rtBoard.left;
+	d = side / 20;
+	pixel = ((double)side) / 600;
+	hPen = CreatePen(PS_SOLID, (int)(2 * pixel), RGB(0, 0, 0));
+	fWidth = (int)(d / 3);
+	fHeight = (int)(d * 2 / 3);
+	hFont = CreateSimpleFont(fWidth, fHeight);
+}
+
+VOID CConSix::DrawBoard(HDC hDC)//绘制棋盘
 {
 	int i,j;
 	HPEN hOldPen;
@@ -107,16 +129,17 @@ bool CConSix::DrawBoard(HDC hDC)//绘制棋盘
 		}
 	}
 	
+	Step curStep = stepStack.top();
 	if(curStep.side==BLACK)
 	{
 		int x1=curStep.first.x;int y1=curStep.first.y;
 		int x2=curStep.second.x;int y2=curStep.second.y;
-		if(board[x1][y1]==BLACK)
+		IsChess(curStep.first)
 		{
 			BitBlt(hDC,rtBoard.left+side*(x1+1)/20-d/2,rtBoard.top+side*(y1+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
 			BitBlt(hDC,rtBoard.left+side*(x1+1)/20-d/2,rtBoard.top+side*(y1+1)/20-d/2,d,d,hCurBlcDC,0,0,SRCAND);
 		}			
-		if(x2!=-1 &&board[x2][y2]==BLACK)
+		IsChess(curStep.second)
 		{
 			BitBlt(hDC,rtBoard.left+side*(x2+1)/20-d/2,rtBoard.top+side*(y2+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
 			BitBlt(hDC,rtBoard.left+side*(x2+1)/20-d/2,rtBoard.top+side*(y2+1)/20-d/2,d,d,hCurBlcDC,0,0,SRCAND);
@@ -126,12 +149,12 @@ bool CConSix::DrawBoard(HDC hDC)//绘制棋盘
 	{
 		int x1=curStep.first.x;int y1=curStep.first.y;
 		int x2=curStep.second.x;int y2=curStep.second.y;
-		if(board[x1][y1]==WHITE)
+		IsChess(curStep.first)
 		{
 			BitBlt(hDC,rtBoard.left+side*(x1+1)/20-d/2,rtBoard.top+side*(y1+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
 			BitBlt(hDC,rtBoard.left+side*(x1+1)/20-d/2,rtBoard.top+side*(y1+1)/20-d/2,d,d,hCurWhtDC,0,0,SRCAND);
 		}			
-		if(board[x2][y2]==WHITE)
+		IsChess(curStep.second)
 		{
 			BitBlt(hDC,rtBoard.left+side*(x2+1)/20-d/2,rtBoard.top+side*(y2+1)/20-d/2,d,d,hAssistDC,0,0,SRCPAINT);
 			BitBlt(hDC,rtBoard.left+side*(x2+1)/20-d/2,rtBoard.top+side*(y2+1)/20-d/2,d,d,hCurWhtDC,0,0,SRCAND);
@@ -149,7 +172,6 @@ bool CConSix::DrawBoard(HDC hDC)//绘制棋盘
 	DeleteDC(hWhtDC);
 	DeleteDC(hCurBlcDC);
 	DeleteDC(hCurWhtDC);
-	return true;
 }
 
 
@@ -241,63 +263,63 @@ bool CConSix::DrawChess(HDC hBlcDC,HDC hWhtDC,HDC hCurBlcDC,HDC hCurWhtDC,int d)
 }
 
 //处理引擎消息
-BOOL CConSix::ProcessMsg(char *msg)
+BOOL CConSix::ProcessMove(char *moveCmd)
 {	
-	step sp;
+	Step tStep;
 	char *res;
 	int pos=0;
 	int len=strlen("move ");
-	if((res=strstr(msg,"move"))==NULL)//寻找move关键字
+	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
 	{
 		return 0;//未找到关键字
 	}
 	else
 	{		
-		pos=(res-msg);
+		pos = (res - moveCmd);
 		pos+=len;
 		
-		sp.first.x=msg[pos]-'A';
-		sp.first.y=msg[pos+1]-'A';
-		sp.second.x=msg[pos+2]-'A';
-		sp.second.y=msg[pos+3]-'A';
-		sp.side=player;			
+		tStep.first.x = moveCmd[pos] - 'A';
+		tStep.first.y = moveCmd[pos + 1] - 'A';
+		tStep.second.x = moveCmd[pos + 2] - 'A';
+		tStep.second.y = moveCmd[pos + 3] - 'A';
+		tStep.side = player;
 
-		msg[pos+4]='\0';
+		moveCmd[pos + 4] = '\0';
 
-		if(!FitRules(sp))//判断是否符合规则
+		if(!FitRules())//判断是否符合规则
 		{
-			sprintf(wMMsg,"error\n");
-			sprintf(wDMsg,"\0");
+			sprintf(curCmd,"error\n");
+			sprintf(denCmd,"\0");
 			return -1;//行棋违规
 		}
-		board[sp.first.x][sp.first.y]=sp.side;
+		board[tStep.first.x][tStep.first.y] = tStep.side;
 		if(first_hand==true)
 		{
 			first_hand=false;
 		}
 		else
 		{
-			if(sp.second.x!=-1&&sp.second.y!=-1)
-				board[sp.second.x][sp.second.y]=sp.side;
+			if (tStep.second.x != -1 && tStep.second.y != -1)
+				board[tStep.second.x][tStep.second.y] = tStep.side;
 		}
-		memcpy(&curStep,&sp,sizeof(step));
+		stepStack.push(tStep);
 		InvalidateRect(hWnd,&rtBoard,FALSE);	
 		SendMessage(hWnd,WM_PAINT,NULL,NULL);
 //		PlaySnd(0);
-		ShowStepHis(msg+pos);			
+		ShowStepHis(moveCmd + pos);
 
-		memset(wDMsg,0,sizeof(wDMsg));
-		sprintf(wDMsg,"move %c%c%c%c\n",sp.first.x+'A',sp.first.y+'A',sp.second.x+'A',sp.second.y+'A');//生成写消息
-		sprintf(wMMsg,"\0");
+		memset(denCmd,0,sizeof(denCmd));
+		sprintf(denCmd, "move %c%c%c%c\n", tStep.first.x + 'A', tStep.first.y + 'A', tStep.second.x + 'A', tStep.second.y + 'A');//生成写消息
+		sprintf(curCmd,"\0");
 	}		
-	if(WinOrLose(player))//判断胜负
+	if(WinOrLose())//判断胜负
 	{
-		sprintf(wDMsg+strlen(wDMsg),"end\n");
-		sprintf(wMMsg,"end\n");
+		sprintf(denCmd+strlen(denCmd),"end\n");
+		sprintf(curCmd,"end\n");
 		return 2;//分出胜负
 	}	
 	StepNum[player]++;//累计步数
-	player=NEXT(player);
+	player=NEXTPLAYER(player);
 	return 1;//获取成功
 }
 
@@ -345,8 +367,9 @@ VOID CConSix::InitGame()//游戏初始化
 	player=BLACK;	
 	first_hand=true;
 	count=0;
-
 	InitBoard();	//初始化棋盘
+
+	CleanStack(stepStack);
 	return;
 }
 
@@ -365,9 +388,15 @@ VOID CConSix::InitBoard()
 	return;
 }
 
+/**
+ * OnLButtonDown - 响应鼠标点击棋盘输入着法
+ * @x:	指针横坐标
+ * @y:	指针纵坐标
+ * return:	返回着法进行状态，-1表示输入错误，0表示输入进行中，1表示输入结束
+ */
 BOOL CConSix::OnLButtonDown(int x,int y)
 {
-	if(!InsideRect(&rtBoard,x,y))
+	if(!InsideRect(&rtBoard,x,y)||count==-1)//指针在棋盘范围外或处于屏蔽输入状态
 		return 0;		
 
 	x=(int)((x-rtBoard.left-side/40)*20/side);//把棋盘坐标转换成数组坐标
@@ -379,103 +408,107 @@ BOOL CConSix::OnLButtonDown(int x,int y)
 	{		
 		y=18-(int)((y-rtBoard.top-side/40)*20/side);
 	}
-
-	return SToS(x,y);
+	if (x>=0&&x<19&&y>=0&&y<19)
+		return SToS(x,y);
+	return 0;
 }
 
 BOOL CConSix::SToS(int x,int y)
 {
+	Step tStep;
+
+	//检查着法合法性
 	if(board[x][y]!=EMPTY)
 		return -1;//着法非法
 	board[x][y]=player;	
 
-	count++;
-	if(count==1)//点击第一次
-	{			
-		strcpy(wDMsg,"move ");
-		wDMsg[5]='A'+x;
-		wDMsg[6]='A'+y;		
+	if(count==0)//点击第一次
+	{
+		InitStep(tStep);
+		tStep.first.x = x;
+		tStep.first.y = y;
+		tStep.side = player;
+		stepStack.push(tStep);
 		if(first_hand)//人是第一手
 		{
-			count=0;
-
-			wDMsg[7]='A'+-1;
-			wDMsg[8]='A'+-1;	
-
-			wDMsg[9]='\0';
+			count=-1;
 			InvalidateRect(hWnd,&rtBoard,FALSE);
 			SendMessage(hWnd,WM_PAINT,NULL,NULL);
 			PlaySnd(0);	
-			ShowStepHis(wDMsg+5);
-
-			wDMsg[9]='\n';
-			wDMsg[10]='\0';								
-
-			curStep.first.x=x;curStep.first.y=y;curStep.side=player;
-
-			StepNum[player]++;//累计步数
-
-			player=NEXT(player);
-			first_hand=false;
+			first_hand=false;//取消第一手标志
 			return 1;
 		}
 		else
 		{
-			curStep.first.x=x;curStep.first.y=y;curStep.side=EMPTY;
-			InvalidateRect(hWnd,&rtBoard,FALSE);	
-			SendMessage(hWnd,WM_PAINT,NULL,NULL);
-			PlaySnd(0);	
+			count = 1;
+			InvalidateRect(hWnd, &rtBoard, FALSE);
+			SendMessage(hWnd, WM_PAINT, NULL, NULL);
+			PlaySnd(0);
+			if (WinOrLose())//识别落一子获胜着法
+			{
+				count = -1;
+				return 1;
+			}
+			return 0;//返回落子步数
 		}
 	}
 	else//点击第二次
 	{
-		count=0;
-
-		wDMsg[7]='A'+x;
-		wDMsg[8]='A'+y;
-		
-		wDMsg[9]='\0';
-		InvalidateRect(hWnd,&rtBoard,FALSE);	
-		SendMessage(hWnd,WM_PAINT,NULL,NULL);
-		PlaySnd(0);	
-		ShowStepHis(wDMsg+5);
-
-		wDMsg[9]='\n';
-		wDMsg[10]='\0';				
-
-		curStep.second.x=x;curStep.second.y=y;curStep.side=player;
-
-		StepNum[player]++;//累计步数
-
-	}
-
-	if(WinOrLose(player))//判断胜负  因为需要填充wMsg，故后做胜负判断
-	{
-		if(count==1)
-		{
-			wDMsg[7]='A'-1;
-			wDMsg[8]='A'-1;	
-			wDMsg[9]='\0';
-			ShowStepHis(wDMsg+5);
-			wDMsg[9]='\n';
-			wDMsg[10]='\0';								
-			player=NEXT(player);
-		}
-		sprintf(wDMsg+strlen(wDMsg),"end\n");
-		return 2;
-	}
-	if(count==0)
-	{
-		player=NEXT(player);
+		tStep = stepStack.top();
+		stepStack.pop();
+		tStep.second.x = x;
+		tStep.second.y = y;
+		stepStack.push(tStep);
+		count = -1;
+		InvalidateRect(hWnd, &rtBoard, FALSE);
+		SendMessage(hWnd, WM_PAINT, NULL, NULL);
+		PlaySnd(0);
 		return 1;
 	}
-	return 0;//返回落子步数
 }
 
-bool CConSix::WinOrLose(BYTE side)//判断胜负
+INT CConSix::OkMove()
+{
+	Step tStep;
+	tStep = stepStack.top();
+	sprintf(denCmd, "move %c%c%c%c", tStep.first.x + 'A', tStep.first.y + 'A', tStep.second.x + 'A', tStep.second.y + 'A');
+	ShowStepHis(denCmd + 5);
+	StepNum[player]++;//累计步数
+	player = NEXTPLAYER(player);
+	if (WinOrLose())
+	{
+		sprintf(denCmd + strlen(denCmd), "\nend\n");
+		return 2;
+	}
+	return 0;
+}
+
+VOID CConSix::CancelMove()
+{
+	Step tStep;
+	if (count == 0)
+		return;
+	tStep = stepStack.top();
+	stepStack.pop();
+	IsChess(tStep.second)
+	{
+		board[tStep.second.x][tStep.second.y] = EMPTY;
+	}
+	IsChess(tStep.first)
+	{
+		board[tStep.first.x][tStep.second.y] = EMPTY;
+	}
+	count = 0;
+	return;
+}
+
+bool CConSix::WinOrLose()//判断胜负
 {	
 	bool win=false;
 	int i,j;
+	Step tStep = stepStack.top();
+	BYTE side=tStep.side;
+
 	if(win==false)
 	{
 		for(i=0;i<19;i++) //扫描竖线有没有连六
@@ -528,18 +561,17 @@ bool CConSix::WinOrLose(BYTE side)//判断胜负
 	return win;
 }
 
-bool CConSix::FitRules(step sp)//是否符合规则
+bool CConSix::FitRules()//是否符合规则
 {
+	Step sp = stepStack.top();
 	if(sp.first.x<0||sp.first.x>18||sp.first.y<0||sp.first.y>18)
 	{
-		MsgBox("Break rules");
 		return false;
 	}
 	if(first_hand==true)
 	{
 		if(board[sp.first.x][sp.first.y]!=EMPTY)
 		{
-			MsgBox("Break rules");
 			return false;
 		}	
 	}
@@ -554,12 +586,10 @@ bool CConSix::FitRules(step sp)//是否符合规则
 		}
 		if(sp.second.x<0||sp.second.x>18||sp.second.y<0||sp.second.y>18)
 		{
-			MsgBox("Break rules");
 			return false;
 		}
 		if(board[sp.first.x][sp.first.y]!=EMPTY||board[sp.second.x][sp.second.y]!=EMPTY)
 		{
-			MsgBox("Break rules");
 			return false;
 		}
 	}
