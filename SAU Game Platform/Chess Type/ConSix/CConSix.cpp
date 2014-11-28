@@ -438,7 +438,6 @@ BOOL CConSix::SToS(int x,int y)
 			InvalidateRect(hWnd,&rtBoard,FALSE);
 			SendMessage(hWnd,WM_PAINT,NULL,NULL);
 			PlaySnd(0);	
-			first_hand=false;//取消第一手标志
 			return 1;
 		}
 		else
@@ -483,6 +482,8 @@ INT CConSix::OkMove()
 		sprintf(denCmd + strlen(denCmd), "\nend\n");
 		return 2;
 	}
+	first_hand = false;//取消第一手标志
+	count = 0;
 	return 0;
 }
 
@@ -499,8 +500,10 @@ VOID CConSix::CancelMove()
 	}
 	IsChess(tStep.first)
 	{
-		board[tStep.first.x][tStep.second.y] = EMPTY;
+		board[tStep.first.x][tStep.first.y] = EMPTY;
 	}
+	InvalidateRect(hWnd, &rtBoard, FALSE);
+	SendMessage(hWnd, WM_PAINT, NULL, NULL);
 	count = 0;
 	return;
 }
