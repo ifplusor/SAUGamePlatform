@@ -2,7 +2,7 @@
 #include "GameType.h"
 
 
-INT CTime::UpdataTime(char *strBlcTime,char *strWhtTime)
+INT CTime::UpdateTime(char *strBlcTime,char *strWhtTime)
 {
 	BYTE player;//当前轮到哪个选手就计哪个选手的时间
 	player=CT_GetCurPlayer();

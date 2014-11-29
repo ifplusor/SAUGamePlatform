@@ -16,7 +16,7 @@ public:
 	CTime(){killed=true;};
 	~CTime(){};
 
-	INT UpdataTime(char *strBlcTime,char *strWhtTime);
+	INT UpdateTime(char *strBlcTime,char *strWhtTime);
 	VOID StartTimer(HWND hTimerWnd);
 	bool StopTimer();
 	VOID timeDeal(int player);	//Ê±¼ä×ª»»

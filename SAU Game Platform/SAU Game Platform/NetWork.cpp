@@ -351,7 +351,7 @@ VOID DealMessage(UINT msg,WPARAM wParam,LPARAM lParam)
 	}
 }
 
-VOID UpdataCheck(HWND hWnd)
+VOID UpdateCheck(HWND hWnd)
 {
 	if(NetWork==1)
 	{
@@ -427,7 +427,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			if(ConnectMode)//关闭客户机-服务器模式中可能的已连接服务器状态
 				SendMessage(hWnd,IDB_DISCONNECT_SERVER,NULL,NULL);//断开与服务器连接
 			else
-				UpdataCheck(hWnd);
+				UpdateCheck(hWnd);
 			break;
 		case IDR_CONNECT_SERVER:
 			if(NetWork==2)
@@ -438,7 +438,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				closesocket(HOSTINFO.s);
 				HOSTINFO.s=NULL;
 			}
-			UpdataCheck(hWnd);
+			UpdateCheck(hWnd);
 			break;
 		case IDR_AS_CLIENT:
 			if(NetMode)
@@ -450,7 +450,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					HOSTINFO.s=NULL;
 				}
 			}
-			UpdataCheck(hWnd);
+			UpdateCheck(hWnd);
 			break;
 		case IDR_AS_SERVER:
 			if(NetMode==true)
@@ -459,7 +459,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			if(Server(hWnd,wParam,lParam))
 				NetMode=true;
 			EnableWindow(hWnd,TRUE);
-			UpdataCheck(hWnd);
+			UpdateCheck(hWnd);
 			break;
 		case IDB_CONNECT:
 			if(ConnectClient(hWnd))
@@ -472,7 +472,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			{
 				if(ConnectServer(hWnd))
 					ConnectMode=true;
-				UpdataCheck(hWnd);
+				UpdateCheck(hWnd);
 			}
 			else
 			{
@@ -502,7 +502,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				SERVERINFO.s=NULL;
 			}
 			ConnectMode=false;
-			UpdataCheck(hWnd);
+			UpdateCheck(hWnd);
 			break;
 		case IDB_SERVER_REFRESH:
 			NetShell(hWnd,SERVERINFO.s,"-Q",sizeof("-Q"),4);
@@ -533,7 +533,7 @@ VOID InitNetSet(HWND hWnd)
 	itoa(SERVERINFO.ad.port,PORT,10);
 	SetText(GetDlgItem(hWnd,IDT_SERVER_PORT),PORT);
 
-	UpdataCheck(hWnd);
+	UpdateCheck(hWnd);
 
 	/*创建列表视图*/
 	hNetLVWnd = CreateWindow (
