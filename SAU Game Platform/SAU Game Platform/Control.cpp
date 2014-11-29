@@ -23,7 +23,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 {
 	CEngine *side,*unside;
 	char rMsg[BUFSIZE],wMMsg[BUFSIZE],wDMsg[BUFSIZE];
-	int tag;
+	int temp;
 
 	if((int)lpParam==BLACK)//判断线程承担的引擎角色
 	{
@@ -39,22 +39,18 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 	side->WriteMsg("name?\n");//询问引擎名称
 	side->GetCommand("name",rMsg);//获取引擎名称
 	side->SetName(rMsg);
-	SendMessage(MainWnd->hWnd, GM_NAME, (WPARAM)rMsg, (LPARAM)lpParam);
+	MainWnd->SetName(rMsg,(int)lpParam);
 	while(1)
 	{
 		side->GetCommand("move",rMsg);//获取行棋事件
 		if(CT_GetCurPlayer()!=(int)lpParam)//当前行棋方与本方引擎执棋颜色不同
 			continue;
-		tag=CT_ProcessMove(rMsg,wMMsg,wDMsg);//处理行棋事件，产生相应命令
+		temp = game.GameMode;
+		CT_ProcessMove(rMsg,wMMsg,wDMsg);//处理行棋事件，产生相应命令
 		if(wMMsg[0]!='\0')
 			side->WriteMsg(wMMsg);
-		if(wDMsg[0]!='\0')
-		{
-			if(game.GameMode==2)//机器对弈，发给对方引擎
-				unside->WriteMsg(wDMsg);
-		}
-		if(tag==2)
-			game.GameMode=-1;
+		if(wDMsg[0]!='\0'&&temp == 2)//机器对弈，发给对方引擎
+			unside->WriteMsg(wDMsg);
 	}
 
 	return 0;
@@ -126,6 +122,7 @@ void Game::StartGame()
 		return;
 	}
 	CT_OnRun();//初始化棋局
+	MainWnd->GameStart();
 		if(BlackE.GetLoaded() && WhiteE.GetLoaded())//黑白引擎都加在载
 		{
 			GameMode=2;
@@ -159,7 +156,6 @@ void Game::StartGame()
 			}
 			GameMode=3;
 		}
-
 }
 
 void Game::StopGame()
@@ -169,7 +165,7 @@ void Game::StopGame()
 		MsgBox("对弈尚未开始","error",3000);
 		return;
 	}
-	
+	MainWnd->GameStop();
 	switch(GameMode)
 	{
 	case 0://人执黑，机器/网络执白
@@ -211,7 +207,6 @@ bool Game::MoveStep(int x,int y)
 			EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_CANCEL_WHT : IDB_CONTROL_CANCEL_BLC), TRUE);
 			break;
 		case 2://对弈结束
-			GameMode=-1;
 			break;
 		}
 	}
@@ -235,7 +230,6 @@ bool Game::MoveStep(int x,int y)
 				EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_CANCEL_WHT : IDB_CONTROL_CANCEL_BLC), TRUE);
 				break;
 			case 2://对弈结束
-				GameMode=-1;
 				break;
 			}
 //			player=CT_GetCurPlayer();
@@ -275,18 +269,16 @@ bool Game::MoveStep(int x,int y)
 bool Game::MoveStep(char *step)
 {
 	char wMMsg[256],wDMsg[256];
-	int temp;
-	temp = CT_ProcessMove(step, wMMsg, wDMsg);
-	if(GameMode==4)
+	int temp = GameMode;
+	CT_ProcessMove(step, wMMsg, wDMsg);
+	if (temp == 4)
 	{
 		BlackE.WriteMsg(wDMsg);
 	}
-	else if(GameMode==5)
+	else if (temp == 5)
 	{
 		WhiteE.WriteMsg(wDMsg);
 	}
-	if(temp==2)
-		GameMode=-1;
 	return true;
 }
 
@@ -294,9 +286,9 @@ void Game::OkMove()
 {
 	char denCmd[256];
 	BYTE player = CT_GetCurPlayer();
-	int temp;
-	temp = CT_OkMove(denCmd);
-	switch (GameMode)
+	int temp = GameMode;
+	CT_OkMove(denCmd);
+	switch (temp)
 	{
 	case 0:
 		WhiteE.WriteMsg(denCmd);
@@ -305,8 +297,6 @@ void Game::OkMove()
 		BlackE.WriteMsg(denCmd);
 		break;
 	}
-	if (temp == 2)
-		GameMode = -1;
 	if (player == 0)
 	{
 		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);

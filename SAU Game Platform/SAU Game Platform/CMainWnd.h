@@ -9,6 +9,7 @@
 #define CMAINWND_H_GAMEPLATFORM
 
 #include "CWnd.h"
+#include "CTime.h"
 
 
 #define MAINWNDTIMER 1
@@ -28,6 +29,10 @@ public:
 	//析构函数
 	~CMainWnd();
 
+	VOID SetName(char* nameCmd, int player);
+	VOID GameStart();
+	VOID GameStop();
+
 	BOOL RegisterWnd(HINSTANCE hInst);
 	BOOL CreateWnd(HWND hParentWnd=NULL,HMENU hMenu=NULL);
 	LRESULT WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam);
@@ -35,6 +40,8 @@ public:
 	RECT GetBoardPos(){return rtBoard;}
 
 private:
+	CTime timer;//计时器
+
 	RECT rtBoardPart;//棋盘显示部分
 	RECT rtInfoPart;//信息板显示部分
 
@@ -63,7 +70,6 @@ private:
 	char StepHis[5000];	//招法历史以双方出现胜负局面最多为100步，一步信息最多为50字节计算。
 
 	VOID AppendStepHis(char *step);
-	VOID SetName(char* nameCmd, int player);
 	VOID ShowWiner(int side);
 
 	//获取主窗口客户区RECT(不包括状态栏)

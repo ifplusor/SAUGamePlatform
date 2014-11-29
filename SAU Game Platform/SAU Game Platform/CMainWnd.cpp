@@ -359,6 +359,7 @@ LRESULT CMainWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		AppendStepHis((char*)wParam);
 		break;
 	case GM_WINLOSE:
+		::GameStop();
 		ShowWiner((int)lParam);
 		break;
 
@@ -513,6 +514,10 @@ VOID CMainWnd::OnKeyDown(WPARAM wParam,LPARAM lParam)
 
 VOID CMainWnd::OnTimer(WPARAM wParam,LPARAM lParam)
 {	
+	if (timer.UpdateTime(strBlcTime, strWhtTime) == 0)
+		InvalidateRect(hWnd, &rtBlcTime, FALSE);
+	else
+		InvalidateRect(hWnd, &rtWhtTime, FALSE);
 	return;
 }
 
@@ -917,4 +922,20 @@ VOID CMainWnd::ShowWiner(int side)
 	{
 		MsgBox("°×·½Ê¤³ö£¡", "Msg", 5000);
 	}
+}
+
+VOID CMainWnd::GameStart()
+{
+	strcpy(StepHis, "Step History\r\n"
+		"------------------------------------\r\n");
+	strcpy(strBlcTime, "Time: 00:00");
+	strcpy(strWhtTime, "Time: 00:00");
+	InvalidateRect(hWnd, &rtBlcTime, FALSE);
+	InvalidateRect(hWnd, &rtWhtTime, FALSE);
+	timer.StartTimer(hWnd);
+}
+
+VOID CMainWnd::GameStop()
+{
+	timer.StopTimer();
 }
