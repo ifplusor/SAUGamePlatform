@@ -52,8 +52,8 @@ private:
 	RECT rtBlcTime;//黑方时间静态框
 	RECT rtWhtTime;//白方时间静态框
 
-	char *strBlcName;//黑方引擎名
-	char *strWhtName;//白方引擎名
+	char strBlcName[50];//黑方引擎名
+	char strWhtName[50];//白方引擎名
 
 	char strBlcTime[20];//黑方用时
 	char strWhtTime[20];//白方用时
@@ -61,6 +61,10 @@ private:
 	HWND hEditHis;//历史招法信息文本框
 
 	char StepHis[5000];	//招法历史以双方出现胜负局面最多为100步，一步信息最多为50字节计算。
+
+	VOID AppendStepHis(char *step);
+	VOID SetName(char* nameCmd, int player);
+	VOID ShowWiner(int side);
 
 	//获取主窗口客户区RECT(不包括状态栏)
 	VOID GetClientRectEx(RECT *rt);

@@ -36,6 +36,7 @@ public:
 
 	void SetType(int type){linkType=type;}
 	bool GetLoaded(){return linked;}
+	void SetName(char *nameCmd);
 	char* GetName(){return name;}
 	//¼ÓÔØÒıÇæ
 	bool LoadEngine();

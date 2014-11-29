@@ -49,9 +49,16 @@ CEngine::~CEngine()
 {
 }
 
+void CEngine::SetName(char *nameCmd)
+{
+	strncpy(name, nameCmd + 5, 255);
+}
+
 //通过匿名管道连接引擎引擎
 bool CEngine::LinkEngineWithUnnamed()
 {
+	linked = true;
+
 	SECURITY_ATTRIBUTES sa;
 	sa.nLength=sizeof(sa);
 	sa.lpSecurityDescriptor=NULL;//Default security attributes
@@ -77,13 +84,14 @@ bool CEngine::LinkEngineWithUnnamed()
 		ZeroMemory(&si,sizeof(si));
 		si.cb=sizeof(si);
 		si.dwFlags=STARTF_USESHOWWINDOW |STARTF_USESTDHANDLES;
-		si.wShowWindow=SW_SHOW;
+		si.wShowWindow=SW_HIDE;
 		si.hStdInput=pde.engine_read;
 		si.hStdOutput=pde.engine_write;
 		si.hStdError=pde.engine_write;
 		if(!CreateProcess(path,"",NULL,NULL,true,0,NULL,EngineDir,&si,&pi))//打开引擎进程
 		{
 			ErrorBox("CreateProcess failed");
+			linked = false;
 			return false;
 		}
 		CloseHandle(pde.engine_read);
@@ -91,12 +99,12 @@ bool CEngine::LinkEngineWithUnnamed()
 		WaitForInputIdle(pi.hProcess,INFINITE);
 		pde.hEProcess = pi.hProcess;
 		CloseHandle(pi.hThread);
-		linked=true;
 		SetCurrentDirectory(gameSet.CurDir);//恢复当前主应用程序的进程
 		CreateEngineInfoBoard();
 	}
 	else
 	{
+		linked = false;
 		return false;
 	}
 
@@ -106,6 +114,7 @@ bool CEngine::LinkEngineWithUnnamed()
 //通过命名管道连接引擎
 bool CEngine::LinkEngineWithNamed()
 {
+	linked = true;
 	CreatePipeAndConnectClient();//创建命名管道并等待客户端连接
 
 	char Filter[]="(exe files)|*.exe|(all files)|*.*||";//文件滤镜	
@@ -129,14 +138,15 @@ bool CEngine::LinkEngineWithNamed()
 		if(!CreateProcess(path,"",NULL,NULL,true,0,NULL,EngineDir,&si,&pi))//打开引擎进程
 		{
 			ErrorBox("CreateProcess failed");
+			linked=false;
 			return false;
 		}
-		linked=true;
 		SetCurrentDirectory(gameSet.CurDir);//恢复当前主应用程序的进程
 		CreateEngineInfoBoard();
 	}
 	else
 	{
+		linked = false;
 		return false;
 	}			
 
@@ -234,7 +244,8 @@ bool CEngine::UnloadEngine()
 		MsgBox("Engine has unloaded!","Msg",1500);
 		return true;
 	}
-	if(!GetExitCodeProcess(pde.hEProcess,&k))//获取退出码
+	linked = false;
+	if (!GetExitCodeProcess(pde.hEProcess, &k))//获取退出码
 	{
 		ErrorBox("Get exit code failed!");
 	}
@@ -250,7 +261,6 @@ bool CEngine::UnloadEngine()
 				CloseHandle(pde.platform_write);
 				CloseHandle(pde.platform_read);
 			}
-			linked=false;
 			return true;
 		}
 	}
@@ -263,12 +273,12 @@ bool CEngine::UnloadEngine()
 			CloseHandle(pde.platform_write);
 			CloseHandle(pde.platform_read);
 		}
-		linked=false;
 		MsgBox("UnLoadEngine succeed!","Msg",1500);
 	}
 	else
 	{
 		ErrorBox("UnLoadEngine failed");
+		linked = true;
 		return false;
 	}
 	return true;

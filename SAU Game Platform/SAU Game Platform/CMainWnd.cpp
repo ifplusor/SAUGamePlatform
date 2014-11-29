@@ -26,10 +26,12 @@ CMainWnd::CMainWnd()
 {
 	ClsName="GamePlatform"; //窗体类名
 	WndName="Game Platform";//窗体标题
-	strBlcName=(char*)EName;//黑方引擎名
-	strWhtName=(char*)EName;//白方引擎名
-	strcpy(strBlcTime,"Time:00:00");
+	strcpy(strBlcName, EName);//黑方引擎名
+	strcpy(strWhtName, EName);//白方引擎名
+	strcpy(strBlcTime, "Time:00:00");
 	strcpy(strWhtTime,"Time:00:00");
+	strcpy(StepHis, "Step History\r\n"
+					"------------------------------------\r\n");
 }
 
 //析构函数
@@ -128,7 +130,7 @@ BOOL CMainWnd::CreateCtrl(HWND hWnd)
 		ErrorBox("CreateEditWnd Failed");
 		return false;
 	}
-	SetText(GetDlgItem(hWnd,IDE_STEP_HIS),"Step History");	
+	SetText(GetDlgItem(hWnd,IDE_STEP_HIS),StepHis);	
 	ShowWindow(hEditHis,SW_SHOWNORMAL);
 	UpdateWindow(hEditHis);
 
@@ -347,6 +349,17 @@ LRESULT CMainWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		return 0;//用户点击关闭按钮时，不需要系统来处理
 	case WM_DESTROY:		
 		OnDestroy(wParam,lParam);		//破坏窗体消息
+		break;
+
+	//自定义消息
+	case GM_NAME://设置引擎名
+		SetName((char*)wParam, (int)lParam);
+		break;
+	case GM_SHOWSTEP://显示着法信息（由其中支持模块发送）
+		AppendStepHis((char*)wParam);
+		break;
+	case GM_WINLOSE:
+		ShowWiner((int)lParam);
 		break;
 
 	default:
@@ -854,4 +867,54 @@ BOOL CMainWnd::DrawCtrlBoard(HDC hDC)
 	DeleteObject(hFont);	
 
 	return true;
+}
+
+VOID CMainWnd::AppendStepHis(char *step)
+{
+	strcat(StepHis, step);
+	int len = strlen(StepHis);
+	StepHis[len++] = 13;
+	StepHis[len++] = 10;
+	StepHis[len] = 0;
+	SetText(hEditHis, StepHis);
+}
+
+VOID CMainWnd::SetName(char* nameCmd, int player)
+{
+	if (player == BLACK)
+	{
+		if (nameCmd == NULL)
+			strcpy(strBlcName, EName);
+		else
+		{
+			strncpy(strBlcName, nameCmd, 49);
+			strBlcName[0] = 'N';
+			strBlcName[4] = ':';
+		}
+		InvalidateRect(hWnd, &rtBlcName, FALSE);
+	}
+	else if (player == WHITE)
+	{
+		if (nameCmd == NULL)
+			strcpy(strBlcName, EName);
+		else
+		{
+			strncpy(strWhtName, nameCmd, 49);
+			strWhtName[0] = 'N';
+			strWhtName[4] = ':';
+		}
+		InvalidateRect(hWnd, &rtWhtName, FALSE);
+	}
+}
+
+VOID CMainWnd::ShowWiner(int side)
+{
+	if (side == BLACK)
+	{
+		MsgBox("黑方胜出！", "Msg", 5000);
+	}
+	else
+	{
+		MsgBox("白方胜出！", "Msg", 5000);
+	}
 }

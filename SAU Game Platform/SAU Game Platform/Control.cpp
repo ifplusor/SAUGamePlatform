@@ -38,6 +38,8 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 
 	side->WriteMsg("name?\n");//询问引擎名称
 	side->GetCommand("name",rMsg);//获取引擎名称
+	side->SetName(rMsg);
+	SendMessage(MainWnd->hWnd, GM_NAME, (WPARAM)rMsg, (LPARAM)lpParam);
 	while(1)
 	{
 		side->GetCommand("move",rMsg);//获取行棋事件
@@ -112,6 +114,7 @@ bool Game::UnloadEngine(int side)
 		if(!WhiteE.UnloadEngine())
 			return false;
 	}
+	SendMessage(MainWnd->hWnd, GM_NAME, (WPARAM)NULL, (LPARAM)side);
 	return true;
 }
 
