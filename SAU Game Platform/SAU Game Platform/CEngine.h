@@ -17,6 +17,17 @@
 #define NAMEDPIPE 1
 
 
+typedef struct _PROCESSDESCRIBE
+{
+	HANDLE engine_read, platform_write;//引擎读平台写匿名管道
+	HANDLE platform_read, engine_write;//引擎写平台读匿名管道
+	HANDLE hPipe;//命名管道
+	HANDLE hEProcess;
+	HWND console_hwnd;//引擎信息窗口句柄
+	HANDLE console_write, console_read;//引擎信息窗口管道
+	HANDLE hCProcess;
+}PROCESSDESCRIBE;
+
 class CEngine
 {
 public:
@@ -49,12 +60,7 @@ private:
 	char readBuffer[FULLBUFSIZE];//读引擎信息缓存区
 	char indexBuf;
 
-	HANDLE engine_read,platform_write;//引擎读平台写匿名管道
-	HANDLE platform_read,engine_write;//引擎写平台读匿名管道
-	HANDLE hPipe;//命名管道
-	HWND console_hwnd;//引擎信息窗口句柄
-	HANDLE console_write,console_read;//引擎信息窗口管道
-	PROCESS_INFORMATION pi,pl;//进程描述符 pi:引擎进程  pl:引擎信息出口进程
+	PROCESSDESCRIBE pde;
 
 	//通过匿名管道连接引擎引擎
 	bool LinkEngineWithUnnamed();

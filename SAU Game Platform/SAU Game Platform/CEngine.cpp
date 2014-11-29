@@ -57,7 +57,7 @@ bool CEngine::LinkEngineWithUnnamed()
 	sa.lpSecurityDescriptor=NULL;//Default security attributes
 	sa.bInheritHandle=true;//handle can be inherited
 
-	if(!CreatePipe(&engine_read,&platform_write,&sa,BUFSIZE) ||!CreatePipe(&platform_read,&engine_write,&sa,BUFSIZE))//创建两个平台与引擎之间互相通信的匿名管道
+	if(!CreatePipe(&pde.engine_read,&pde.platform_write,&sa,BUFSIZE) ||!CreatePipe(&pde.platform_read,&pde.engine_write,&sa,BUFSIZE))//创建两个平台与引擎之间互相通信的匿名管道
 	{
 		ErrorBox("CreatePipe failed");
 		return false;
@@ -73,21 +73,24 @@ bool CEngine::LinkEngineWithUnnamed()
 		strcpy(EngineDir,folder);
 				
 		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
 		ZeroMemory(&si,sizeof(si));
 		si.cb=sizeof(si);
 		si.dwFlags=STARTF_USESHOWWINDOW |STARTF_USESTDHANDLES;
-		si.wShowWindow=SW_HIDE;
-		si.hStdInput=engine_read;
-		si.hStdOutput=engine_write;
-		si.hStdError=engine_write;
+		si.wShowWindow=SW_SHOW;
+		si.hStdInput=pde.engine_read;
+		si.hStdOutput=pde.engine_write;
+		si.hStdError=pde.engine_write;
 		if(!CreateProcess(path,"",NULL,NULL,true,0,NULL,EngineDir,&si,&pi))//打开引擎进程
 		{
 			ErrorBox("CreateProcess failed");
 			return false;
 		}
-		CloseHandle(engine_read);
-		CloseHandle(engine_write);
+		CloseHandle(pde.engine_read);
+		CloseHandle(pde.engine_write);
 		WaitForInputIdle(pi.hProcess,INFINITE);
+		pde.hEProcess = pi.hProcess;
+		CloseHandle(pi.hThread);
 		linked=true;
 		SetCurrentDirectory(gameSet.CurDir);//恢复当前主应用程序的进程
 		CreateEngineInfoBoard();
@@ -97,13 +100,6 @@ bool CEngine::LinkEngineWithUnnamed()
 		return false;
 	}
 
-/*	WriteMsg("name?\n");//询问引擎名称
-	char rMsg[256];
-	memset(rMsg,0,sizeof(rMsg));
-	GetCommand("name",rMsg);
-
-	strcpy(name,"Name: ");
-	strcat(name,rMsg+strlen("name "));//设置引擎的名称 */
 	return true;
 }
 
@@ -122,12 +118,13 @@ bool CEngine::LinkEngineWithNamed()
 		strcpy(EngineDir,folder);
 				
 		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
 		ZeroMemory(&si,sizeof(si));
 		si.cb=sizeof(si);
 		si.dwFlags=STARTF_USESHOWWINDOW |STARTF_USESTDHANDLES;
 		si.wShowWindow=SW_SHOW;
-		si.hStdInput=GetStdHandle(STD_INPUT_HANDLE);;
-		si.hStdOutput=GetStdHandle(STD_OUTPUT_HANDLE);;
+		si.hStdInput=GetStdHandle(STD_INPUT_HANDLE);
+		si.hStdOutput=GetStdHandle(STD_OUTPUT_HANDLE);
 		si.hStdError=GetStdHandle(STD_ERROR_HANDLE);
 		if(!CreateProcess(path,"",NULL,NULL,true,0,NULL,EngineDir,&si,&pi))//打开引擎进程
 		{
@@ -178,7 +175,7 @@ bool CEngine::LoadEngine()
 VOID CEngine::ShowEngineWindow(int nCmdShow)
 {
 	if(linked)
-		ShowWindow(console_hwnd,nCmdShow);
+		ShowWindow(pde.console_hwnd,nCmdShow);
 }
 
 //创建引擎窗体
@@ -186,12 +183,13 @@ bool CEngine::CreateEngineInfoBoard()
 {
 	//为了保持对控制台类型引擎信息显示的原味性，程序创建了另外的一个控制台辅助显示程序，并通过匿名管道向辅助控制台写入引擎信息
 	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
 	SECURITY_ATTRIBUTES sa;
 	sa.nLength=sizeof(sa);
 	sa.lpSecurityDescriptor=NULL;//Default security attributes
 	sa.bInheritHandle=true;//handle can be inherited
 
-	if(!CreatePipe(&console_read,&console_write,&sa,BUFSIZE))//创建引擎与显示控制台之间互相通信的匿名管道
+	if(!CreatePipe(&pde.console_read,&pde.console_write,&sa,BUFSIZE))//创建引擎与显示控制台之间互相通信的匿名管道
 	{
 		ErrorBox("CreatePipe failed");
 		return false;
@@ -200,28 +198,30 @@ bool CEngine::CreateEngineInfoBoard()
 	si.cb=sizeof(si);
 	si.dwFlags=STARTF_USESHOWWINDOW |STARTF_USESTDHANDLES;
 	si.wShowWindow=SW_HIDE;
-	si.hStdInput=console_read;
-	si.hStdOutput=stdout;
+	si.hStdInput=pde.console_read;
+	si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	si.hStdError=GetStdHandle(STD_ERROR_HANDLE);
-	if(!CreateProcess("bin\\console1.exe",NULL,NULL,NULL,true,0,NULL,gameSet.CurDir,&si,&pl))//打开引擎进程
+	if(!CreateProcess("bin\\console1.exe",NULL,NULL,NULL,true,0,NULL,gameSet.CurDir,&si,&pi))//打开引擎进程
 	{
 		ErrorBox("CreateProcess console1 failed");
 		return false;
 	}
-	CloseHandle(console_read);
-	WaitForInputIdle(pl.hProcess,INFINITE);
-	while((console_hwnd=GetProcessMainWnd(pl.dwProcessId))==NULL)
+	CloseHandle(pde.console_read);
+	pde.hCProcess = pi.hProcess;
+	CloseHandle(pi.hThread);
+	WaitForInputIdle(pi.hProcess,INFINITE);
+	while((pde.console_hwnd=GetProcessMainWnd(pi.dwProcessId))==NULL)
 	{//（由于进程创建函数是异步的）子进程刚建立时并不能立刻枚举窗口，需要等待
 		Sleep(50);
 	}
 	//设置窗口标题为引擎路径
-	SetWindowText(console_hwnd,path);
+	SetWindowText(pde.console_hwnd,path);
 	//获取窗口菜单句柄
-	HMENU hMenu=GetSystemMenu(console_hwnd,NULL);
+	HMENU hMenu=GetSystemMenu(pde.console_hwnd,NULL);
 	//使关闭按钮无效
 	EnableMenuItem(hMenu,SC_CLOSE,MF_GRAYED);
 	if(gameSet.swEngine==true)
-		ShowWindow(console_hwnd,SW_SHOW);
+		ShowWindow(pde.console_hwnd,SW_SHOW);
 	return true;
 }
 
@@ -234,7 +234,7 @@ bool CEngine::UnloadEngine()
 		MsgBox("Engine has unloaded!","Msg",1500);
 		return true;
 	}
-	if(!GetExitCodeProcess(pi.hProcess,&k))
+	if(!GetExitCodeProcess(pde.hEProcess,&k))//获取退出码
 	{
 		ErrorBox("Get exit code failed!");
 	}
@@ -245,29 +245,23 @@ bool CEngine::UnloadEngine()
 			MsgBox("Program has been ended for unknown reasons!","error",3000);
 			if(linkType==UNNAMEDPIPE)
 			{//关闭引擎的同时关闭显示窗口，释放依赖匿名管道
-				TerminateProcess(pl.hProcess,0);
-				CloseHandle(console_write);
-//				CloseHandle(console_read);
-//				CloseHandle(engine_write);	
-//				CloseHandle(engine_read);
-				CloseHandle(platform_write);
-				CloseHandle(platform_read);
+				TerminateProcess(pde.hCProcess,0);
+				CloseHandle(pde.console_write);
+				CloseHandle(pde.platform_write);
+				CloseHandle(pde.platform_read);
 			}
 			linked=false;
 			return true;
 		}
 	}
-	if(TerminateProcess(pi.hProcess,0))//卸载成功
+	if(TerminateProcess(pde.hEProcess,0))//卸载成功
 	{
 		if(linkType==UNNAMEDPIPE)
 		{//关闭引擎的同时关闭显示窗口，释放依赖匿名管道
-			TerminateProcess(pl.hProcess,0);
-			CloseHandle(console_write);
-//			CloseHandle(console_read);
-//			CloseHandle(engine_write);	
-//			CloseHandle(engine_read);
-//			CloseHandle(platform_write);
-//			CloseHandle(platform_read);
+			TerminateProcess(pde.hCProcess,0);
+			CloseHandle(pde.console_write);
+			CloseHandle(pde.platform_write);
+			CloseHandle(pde.platform_read);
 		}
 		linked=false;
 		MsgBox("UnLoadEngine succeed!","Msg",1500);
@@ -286,9 +280,9 @@ DWORD CEngine::ReadMsg(char *msg,int size)
 	DWORD dwRead;		
 	HANDLE hFile=NULL;	
 	if(linkType==UNNAMEDPIPE)
-		hFile=platform_read;
+		hFile=pde.platform_read;
 	else if(linkType==NAMEDPIPE)
-		hFile=hPipe;
+		hFile=pde.hPipe;
 	else
 	{
 		MsgBox("连接程序类型出错!","Error",0);
@@ -306,7 +300,7 @@ DWORD CEngine::ReadMsg(char *msg,int size)
 		return 0;
 	}
 	if(linkType==UNNAMEDPIPE)
-		WriteFile(console_write,msg,dwRead,&dwRead,NULL);
+		WriteFile(pde.console_write,msg,dwRead,&dwRead,NULL);
 	return dwRead;
 }
 
@@ -316,9 +310,9 @@ DWORD CEngine::WriteMsg(char *msg)
 	DWORD dwWrite,temp;	
 	HANDLE hFile=NULL;	
 	if(linkType==UNNAMEDPIPE)
-		hFile=platform_write;
+		hFile=pde.platform_write;
 	else if(linkType==NAMEDPIPE)
-		hFile=hPipe;					
+		hFile=pde.hPipe;					
 	else
 	{
 		MsgBox("连接程序类型出错!","Error",0);
@@ -336,7 +330,7 @@ DWORD CEngine::WriteMsg(char *msg)
 		return 0;
 	}
 	if(linkType==UNNAMEDPIPE)
-		WriteFile(console_write,msg,dwWrite,&dwWrite,NULL);
+		WriteFile(pde.console_write,msg,dwWrite,&dwWrite,NULL);
 	return dwWrite;
 }
 
@@ -418,10 +412,10 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 
 VOID CEngine::CreatePipeAndConnectClient()
 {
-	if(hPipe!=NULL)return;//如果已创建命名管道，则不在重复创建
+	if(pde.hPipe!=NULL)return;//如果已创建命名管道，则不在重复创建
 
 	char *PipeName="\\\\.\\pipe\\server";
-	hPipe=CreateNamedPipe(
+	pde.hPipe=CreateNamedPipe(
 		PipeName,
 		PIPE_ACCESS_DUPLEX |FILE_FLAG_OVERLAPPED,//open mode
 		PIPE_TYPE_MESSAGE |PIPE_READMODE_MESSAGE |PIPE_WAIT,//pipe mode
@@ -431,7 +425,7 @@ VOID CEngine::CreatePipeAndConnectClient()
 		100000,//the time the client process can use to try to connect to server process
 		NULL//default security attribute
 		);
-	if(hPipe==INVALID_HANDLE_VALUE)
+	if(pde.hPipe==INVALID_HANDLE_VALUE)
 	{
 		printf("CreateNamedPipe failed with %d\n",GetLastError());
 		return;
@@ -442,7 +436,7 @@ VOID CEngine::CreatePipeAndConnectClient()
 		FALSE,//Initial state is nonsignaled.
 		NULL//The event is without a name.
 		);
-	if(!ConnectNamedPipe(hPipe,&ol))//If a client process opens the pipe created by server process,the event specified by "ol.hEvent" will be signaled.
+	if(!ConnectNamedPipe(pde.hPipe,&ol))//If a client process opens the pipe created by server process,the event specified by "ol.hEvent" will be signaled.
 	{
 		//printf("ConnectNamedPipe failed %d\n",GetLastError());
 		//return;
