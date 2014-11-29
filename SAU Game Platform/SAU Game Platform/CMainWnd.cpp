@@ -438,6 +438,7 @@ VOID CMainWnd::OnCommand(WPARAM wParam,LPARAM lParam)
 	{
 	case IDB_CONTROL_OK_BLC:
 	case IDB_CONTROL_OK_WHT:
+		UpdateTime();
 		OkMove();
 		break;
 	case IDB_CONTROL_CANCEL_BLC:
@@ -938,4 +939,12 @@ VOID CMainWnd::GameStart()
 VOID CMainWnd::GameStop()
 {
 	timer.StopTimer();
+}
+
+VOID CMainWnd::UpdateTime()
+{
+	if (timer.UpdateTime(strBlcTime, strWhtTime) == 0)
+		InvalidateRect(hWnd, &rtBlcTime, FALSE);
+	else
+		InvalidateRect(hWnd, &rtWhtTime, FALSE);
 }

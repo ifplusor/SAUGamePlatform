@@ -32,6 +32,7 @@ public:
 	VOID SetName(char* nameCmd, int player);
 	VOID GameStart();
 	VOID GameStop();
+	VOID UpdateTime();
 
 	BOOL RegisterWnd(HINSTANCE hInst);
 	BOOL CreateWnd(HWND hParentWnd=NULL,HMENU hMenu=NULL);

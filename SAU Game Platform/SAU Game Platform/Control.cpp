@@ -46,6 +46,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 		if(CT_GetCurPlayer()!=(int)lpParam)//当前行棋方与本方引擎执棋颜色不同
 			continue;
 		temp = game.GameMode;
+		MainWnd->UpdateTime();
 		CT_ProcessMove(rMsg,wMMsg,wDMsg);//处理行棋事件，产生相应命令
 		if(wMMsg[0]!='\0')
 			side->WriteMsg(wMMsg);
