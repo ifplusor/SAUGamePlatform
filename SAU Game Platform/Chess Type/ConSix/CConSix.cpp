@@ -481,6 +481,7 @@ INT CConSix::OkMove()
 		sprintf(denCmd + strlen(denCmd), "\nend\n");
 		return 2;
 	}
+	sprintf(denCmd + strlen(denCmd), "\n");
 	first_hand = false;//取消第一手标志
 	count = 0;
 	return 0;
