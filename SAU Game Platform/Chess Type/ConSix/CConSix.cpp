@@ -560,7 +560,7 @@ bool CConSix::WinOrLose()//≈–∂œ §∏∫
 		}
 	}		   
 
-	if(win==true)
+	if(win==true&&count!=1)
 	{
 		SendMessage(hWnd,GM_WINLOSE,(WPARAM)(StepNum[BLACK]<<16)+StepNum[WHITE],(LPARAM)side);
 	}	
