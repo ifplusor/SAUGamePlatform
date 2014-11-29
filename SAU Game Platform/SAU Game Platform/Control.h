@@ -26,6 +26,7 @@ public:
 
 	bool LoadEngine(int side);//加载引擎：注册一个博弈活动参与者
 	bool UnloadEngine(int side);//卸载引擎
+	bool CheckEngineLoad();
 	void StartGame();//启动对弈逻辑
 	void StopGame();//终止对弈逻辑
 	bool MoveStep(int x,int y);//行棋（提供用户）

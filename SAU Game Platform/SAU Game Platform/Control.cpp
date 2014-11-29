@@ -115,6 +115,13 @@ bool Game::UnloadEngine(int side)
 	return true;
 }
 
+bool Game::CheckEngineLoad()
+{
+	if (BlackE.GetLoaded() || WhiteE.GetLoaded())
+		return true;
+	return false;
+}
+
 void Game::StartGame()
 {
 	if(IsStop()==FALSE)

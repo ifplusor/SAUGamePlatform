@@ -23,6 +23,7 @@ int GameStop();//结束对弈
 int MoveStep(int x,int y);//用户行棋
 int OkMove();
 int CancelMove();
+int CheckEngineLoad();
 
 
 

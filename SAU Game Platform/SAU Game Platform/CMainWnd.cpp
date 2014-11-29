@@ -346,7 +346,7 @@ LRESULT CMainWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;		
 	case WM_CLOSE:
 		OnClose(wParam,lParam);	//关闭窗体消息
-		return 0;//用户点击关闭按钮时，不需要系统来处理
+		break;//用户点击关闭按钮时，不需要系统来处理
 	case WM_DESTROY:		
 		OnDestroy(wParam,lParam);		//破坏窗体消息
 		break;
@@ -524,6 +524,11 @@ VOID CMainWnd::OnTimer(WPARAM wParam,LPARAM lParam)
 
 VOID CMainWnd::OnClose(WPARAM wParam,LPARAM lParam)
 {
+	if (CheckEngineLoad())
+	{
+		MsgBox("The engine is load,unload it and then quit.", "error", 0);
+		return;
+	}
 	DestroyWindow(hWnd);//销毁窗体
 	return;
 }

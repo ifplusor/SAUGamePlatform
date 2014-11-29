@@ -64,3 +64,10 @@ int CancelMove()
 	game.CancelMove();
 	return 0;
 }
+
+int CheckEngineLoad()
+{
+	if (game.CheckEngineLoad())
+		return 1;
+	return 0;
+}
