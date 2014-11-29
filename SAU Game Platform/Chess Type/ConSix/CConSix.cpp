@@ -286,13 +286,13 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 		tStep.second.x = moveCmd[pos + 2] - 'A';
 		tStep.second.y = moveCmd[pos + 3] - 'A';
 		tStep.side = player;
-
-		moveCmd[pos + 4] = '\0';
+		stepStack.push(tStep);
 
 		if(!FitRules())//判断是否符合规则
 		{
 			sprintf(curCmd,"error\n");
 			sprintf(denCmd,"\0");
+			stepStack.pop();
 			return -1;//行棋违规
 		}
 		board[tStep.first.x][tStep.first.y] = tStep.side;
@@ -305,13 +305,12 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 			if (tStep.second.x != -1 && tStep.second.y != -1)
 				board[tStep.second.x][tStep.second.y] = tStep.side;
 		}
-		stepStack.push(tStep);
 		InvalidateRect(hWnd,&rtBoard,FALSE);	
 		SendMessage(hWnd,WM_PAINT,NULL,NULL);
 //		PlaySnd(0);
+		moveCmd[pos + 4] = '\0';
 		ShowStepHis(moveCmd + pos);
 
-		memset(denCmd,0,sizeof(denCmd));
 		sprintf(denCmd, "move %c%c%c%c\n", tStep.first.x + 'A', tStep.first.y + 'A', tStep.second.x + 'A', tStep.second.y + 'A');//生成写消息
 		sprintf(curCmd,"\0");
 	}		
