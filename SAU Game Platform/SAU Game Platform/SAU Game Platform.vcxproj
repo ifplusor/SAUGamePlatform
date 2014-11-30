@@ -87,6 +87,7 @@
     <ClCompile Include="Function.cpp" />
     <ClCompile Include="Game Platform.cpp" />
     <ClCompile Include="GameType.cpp" />
+    <ClCompile Include="Manual.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="NetWork.cpp" />
     <ClCompile Include="Set.cpp" />
@@ -102,6 +103,7 @@
     <ClInclude Include="Function.h" />
     <ClInclude Include="Game Platform.h" />
     <ClInclude Include="GameType.h" />
+    <ClInclude Include="Manual.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="NetWork.h" />
     <ClInclude Include="resource.h" />

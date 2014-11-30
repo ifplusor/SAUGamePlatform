@@ -50,6 +50,8 @@ void mapFunction(int menuID,FILE *fp)
 		case IDF_GAME_STOP:
 			menuFunction.insert(pair<int, FUNCTION>(menuID, GameStop));
 			break;
+		case IDF_MANUAL_SHOT:
+			menuFunction.insert(pair<int, FUNCTION>(menuID, ShotBoard));
 		default:
 			break;
 		}

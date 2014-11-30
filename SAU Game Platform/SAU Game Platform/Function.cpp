@@ -9,6 +9,7 @@
 #include "Function.h"
 #include "CMainWnd.h"
 #include "Control.h"
+#include "Manual.h"
 
 
 int Exit()
@@ -69,5 +70,11 @@ int CheckEngineLoad()
 {
 	if (game.CheckEngineLoad())
 		return 1;
+	return 0;
+}
+
+int ShotBoard()
+{
+	PrintScrOnTemp();
 	return 0;
 }

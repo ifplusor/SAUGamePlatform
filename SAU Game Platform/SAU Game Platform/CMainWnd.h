@@ -29,6 +29,8 @@ public:
 	//析构函数
 	~CMainWnd();
 
+	friend void PSDrawBoard(HDC hDC);
+		
 	VOID SetName(char* nameCmd, int player);
 	VOID GameStart();
 	VOID GameStop();
@@ -38,7 +40,7 @@ public:
 	BOOL CreateWnd(HWND hParentWnd=NULL,HMENU hMenu=NULL);
 	LRESULT WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam);
 
-	RECT GetBoardPos(){return rtBoard;}
+	RECT GetBoardPos(){return this->rtBoard;}
 
 private:
 	CTime timer;//计时器

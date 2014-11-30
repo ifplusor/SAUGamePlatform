@@ -51,4 +51,9 @@ MAIN
       ENDI
     ENDS
   ENDS
+  ITEM
+    NAME НиЭМ
+    ID 41007
+    FUNCTION 0 6
+  ENDI
 ENDM

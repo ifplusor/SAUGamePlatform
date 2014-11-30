@@ -16,6 +16,7 @@
 #define IDF_SETTING					3
 #define IDF_TOOL					4
 #define IDF_DELETE					5
+#define IDF_MANUAL_SHOT				6
 #define IDF_GAME_START				11
 #define IDF_GAME_STOP				12
 #define IDF_BLACK_LOAD				21

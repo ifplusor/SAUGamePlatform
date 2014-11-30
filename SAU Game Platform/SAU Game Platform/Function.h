@@ -24,6 +24,7 @@ int MoveStep(int x,int y);//”√ªß––∆Â
 int OkMove();
 int CancelMove();
 int CheckEngineLoad();
+int ShotBoard();
 
 
 
