@@ -922,11 +922,11 @@ VOID CMainWnd::ShowWiner(int side)
 {
 	if (side == BLACK)
 	{
-		MsgBox("黑方胜出！", "Msg", 5000);
+		MessageBox(hWnd, "黑方胜出！", "Msg", MB_OK);
 	}
 	else
 	{
-		MsgBox("白方胜出！", "Msg", 5000);
+		MessageBox(hWnd, "白方胜出！", "Msg", MB_OK);
 	}
 }
 
