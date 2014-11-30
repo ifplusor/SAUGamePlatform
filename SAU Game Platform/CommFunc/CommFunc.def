@@ -1,0 +1,12 @@
+LIBRARY  CommFunc	;Dll的名称不能换行，必须与关键字LIBRARY同行
+EXPORTS	
+	DelFile @1
+	DisplayImage @2
+	PlayMusic @3
+	StopMusic @4
+	ErrorBox @5
+	MsgBox @6
+	PrintScreen @7
+	PrintScreenEx @8
+	GetProcessMainWnd @9
+	GetSystemTimeEx @10
