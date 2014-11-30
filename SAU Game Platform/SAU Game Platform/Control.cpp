@@ -47,7 +47,8 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 			continue;
 		temp = game.GameMode;
 		MainWnd->UpdateTime();
-		CT_ProcessMove(rMsg,wMMsg,wDMsg);//处理行棋事件，产生相应命令
+		if(CT_ProcessMove(rMsg,wMMsg,wDMsg)==-1)//处理行棋事件，产生相应命令
+			MsgBox("Break rule!", "error", 5000);
 		if(wMMsg[0]!='\0')
 			side->WriteMsg(wMMsg);
 		if(wDMsg[0]!='\0'&&temp == 2)//机器对弈，发给对方引擎
