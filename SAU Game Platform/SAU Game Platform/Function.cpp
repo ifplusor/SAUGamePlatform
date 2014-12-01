@@ -75,12 +75,18 @@ int Fuction::CheckEngineLoad()
 
 int Fuction::ShotBoard()
 {
-	PrintScrOnTemp();
+	::PrintScrOnTemp();
+	return 0;
+}
+
+int Fuction::SaveBoardShot()
+{
+	::SavePrintScreen();
 	return 0;
 }
 
 int Fuction::SaveChessManual(char *step)
 {
-	SaveChessManual(step);
+	::SaveChessManual(step);
 	return 0;
 }

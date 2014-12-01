@@ -28,8 +28,9 @@ public:
 	static int OkMove();
 	static int CancelMove();
 	static int CheckEngineLoad();
-	static int ShotBoard();
-	static int SaveChessManual(char *step);
+	static int ShotBoard();//截图
+	static int SaveBoardShot();//保存截图，用来实现行棋中自动截图
+	static int SaveChessManual(char *step);//保存棋谱，用来实现行棋中自动保存棋谱
 };
 
 

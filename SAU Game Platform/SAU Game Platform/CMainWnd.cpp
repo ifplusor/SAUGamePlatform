@@ -357,6 +357,7 @@ LRESULT CMainWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;
 	case GM_SHOWSTEP://显示着法信息（由其中支持模块发送）
 		AppendStepHis((char*)wParam);
+		Fuction::SaveBoardShot();
 		Fuction::SaveChessManual((char*)wParam);
 		break;
 	case GM_WINLOSE:
@@ -530,6 +531,7 @@ VOID CMainWnd::OnClose(WPARAM wParam,LPARAM lParam)
 		MsgBox("The engine is load,unload it and then quit.", "error", 0);
 		return;
 	}
+	RecordUserOper();
 	DestroyWindow(hWnd);//销毁窗体
 	return;
 }
