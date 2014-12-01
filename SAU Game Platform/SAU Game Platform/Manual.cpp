@@ -105,11 +105,11 @@ VOID SaveChessManual(char *step)
 		strcat(gameSet.cmDir, chessType[chesstype].chessStr);
 		strcat(gameSet.cmDir, "\\sgf");
 	}
-	strcpy(filename, gameSet.cmDir);
-	strcat(filename, "\\");
 
 	if (gameSet.SingleStep)//单步保存
 	{
+		strcpy(filename, gameSet.cmDir);
+		strcat(filename, "\\");
 		::GetSystemTimeEx(&st, 8);//获取系统时间  
 		sprintf(time, "%d-%d-%d-%d-%d-%d-%d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 		strcat(filename, time);
@@ -140,6 +140,8 @@ VOID SaveChessManual(char *step)
 
 	if (gameSet.AllStep)//保存全部棋谱
 	{
+		strcpy(filename, gameSet.cmDir);
+		strcat(filename, "\\");
 		if (gameSet.cmFileName[0] == 0)
 		{
 			strcpy(gameSet.cmFileName, "Untitled");
