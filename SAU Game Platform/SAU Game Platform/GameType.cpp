@@ -178,10 +178,19 @@ VOID CreateChessTypeMenu(HMENU hMenu)
  *				CT_DrawBoard函数的调用在MainWnd重绘处理WM_PAINT消息时完成，用于绘制棋盘内容
  *				CT_ExitModule函数的调用在MainWnd销毁处理WM_DESTROY消息时完成，用于释放棋种模块中的系统资源
  */
-VOID InitialChessType(int i,HMENU hMenu)
+VOID InitialChessType(HMENU hMenu)
 {
-	chesstype=i;//置新语言标志
-	for(int i=0;i<chessNum;i++)
+	int i;
+	chesstype=0;//置新语言标志
+	for (i = 0; i < chessNum; i++)
+	{
+		if (strcmp(chessType[i].chessStr, gameSet.DefualtChess) == 0)
+		{
+			chesstype = i;
+			break;
+		}
+	}
+	for(i=0;i<chessNum;i++)
 	{
 		if(i==chesstype)
 			CheckMenuItem(hMenu,CHESSTYPE+i,MF_CHECKED);
@@ -208,9 +217,10 @@ VOID InitialChessType(int i,HMENU hMenu)
  */
 VOID SetChessType(int i,HMENU hMenu)
 {	
-	if(i==chesstype)//所选棋种非当前棋种
+	if(i==chesstype||i>=chessNum)//所选棋种非当前棋种
 		return;
 	chesstype=i;//置新语言标志
+	strcpy(gameSet.DefualtChess, chessType[chesstype].chessStr);
 	for(int i=0;i<chessNum;i++)
 	{
 		if(i==chesstype)

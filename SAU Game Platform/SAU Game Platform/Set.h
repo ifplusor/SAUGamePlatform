@@ -15,6 +15,7 @@
 //程序设置
 typedef struct _GameSet{
 	//路径设置
+	char DefualtChess[MAX_PATH];//默认棋种选择
 	char CurDir[MAX_PATH];//当前应用程序的目录
 	char BoardFileName[MAX_PATH];//棋盘材质路径
 	char BkPicFileName[MAX_PATH];//背景图片路径
@@ -27,7 +28,6 @@ typedef struct _GameSet{
 	char EngineInitDir[MAX_PATH-100];//引擎初始目录
 
 	//平台设置项标志
-	bool fullScr;//全屏 标志
 	bool SingleStep;//单步保存棋谱 标志
 	bool AllStep;//一起保存棋谱 标志
 	bool PrintScr;//截图 标志

@@ -66,7 +66,7 @@ extern int chessNum;
 
 BOOL GetChessTypeResourse();//获取棋种支持模块资源
 VOID CreateChessTypeMenu(HMENU hMenu);//创建棋种子菜单
-VOID InitialChessType(int i,HMENU hMenu);//初始化棋种接口
+VOID InitialChessType(HMENU hMenu);//初始化棋种接口
 VOID SetChessType(int i,HMENU hMenu);//设置棋种
 
 

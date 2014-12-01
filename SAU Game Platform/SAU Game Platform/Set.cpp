@@ -17,6 +17,8 @@ GameSet gameSet;//程序设置
  */
 VOID InitialWithIni()
 {
+	//默认棋种选择
+	GetPrivateProfileString("CHESS", "Default", "\0", gameSet.DefualtChess, sizeof(gameSet.DefualtChess), ".\\Config.ini");
 	//引擎信息显示，默认显示
 	gameSet.swEngine=GetPrivateProfileInt("SHOW","EngineInfo",1,".\\Config.ini");
 	//棋盘材质，默认无棋盘材质
@@ -60,6 +62,8 @@ VOID InitialWithIni()
 VOID RecordUserOper()
 {
 	char num[10];
+	//默认棋种选择
+	WritePrivateProfileString("CHESS", "Default", gameSet.DefualtChess, ".\\Config.ini");
 	/*写入引擎信息显示*/
 	WritePrivateProfileString("SHOW","EngineInfo",itoa(gameSet.swEngine,num,10),".\\Config.ini");
 	/*写入棋盘材质*/
