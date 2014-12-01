@@ -3,6 +3,11 @@
 
 #include <Windows.h>
 #include <math.h>
+#include <stack>
+
+using namespace std;
+
+#define CleanStack(stack) { while(!stack.empty())stack.pop(); }
 
 
 #define ALLOW 5

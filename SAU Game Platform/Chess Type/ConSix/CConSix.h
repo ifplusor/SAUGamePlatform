@@ -2,11 +2,7 @@
 #define CCONSIX_H_GAMEPLATFORM
 
 #include "..\include\CChess.h"
-#include <stack>
 
-using namespace std;
-
-#define CleanStack(stack) { while(!stack.empty())stack.pop(); }
 
 #define EMPTY 2//Пе
 
