@@ -22,6 +22,7 @@ CNoGo::CNoGo()
 	hPen = NULL;
 	hFont = NULL;
 	InitGame();
+	count = -1;
 }
 
 CNoGo::~CNoGo()
@@ -331,6 +332,7 @@ VOID CNoGo::InitGame()//游戏初始化
 	memset(StepNum,0,sizeof(StepNum));
 	player=BLACK;			
 	InitBoard();	//初始化棋盘
+	count = 0;
 	CleanStack(stepStack);
 	return;
 }
@@ -352,7 +354,7 @@ VOID CNoGo::InitBoard()
 
 BOOL CNoGo::OnLButtonDown(int x,int y)
 {
-	if (!InsideRect(&rtBoard, x, y) || count == -1)
+	if (!InsideRect(&rtBoard, x, y) || count == -1)//count=-1时return0可能造成意外
 		return 0;		
 
 	x=(int)((x-rtBoard.left-side/20)*10/side);//把棋盘坐标转换成数组坐标
