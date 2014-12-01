@@ -465,6 +465,8 @@ VOID CMainWnd::OnCommand(WPARAM wParam,LPARAM lParam)
 			iter=menuFunction.find(ID);
 			iter->second();
 		}
+		else if (ID >= CHESSTYPE&&ID < CHESSTYPE + chessNum)
+			SetChessType(ID - CHESSTYPE, hMenu);
 		break;
 	}
 	return;

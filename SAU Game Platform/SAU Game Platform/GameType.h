@@ -62,6 +62,7 @@ extern _GetCurPlayer CT_GetCurPlayer;
 
 extern struct _CHESSTYPE chessType[25];//棋种支持模块描述
 extern int chesstype;//引用棋种支持模块索引
+extern int chessNum;
 
 BOOL GetChessTypeResourse();//获取棋种支持模块资源
 VOID CreateChessTypeMenu(HMENU hMenu);//创建棋种子菜单
