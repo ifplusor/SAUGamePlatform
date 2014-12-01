@@ -4,6 +4,9 @@
 #include <stdio.h>
 
 
+const int lineVector[8][2] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 } };//方向向量
+
+
 VOID __cdecl ErrorBox(LPTSTR ErrorInfo)//错误提示框
 {
 	CHAR error1[50],error2[20];
@@ -498,57 +501,44 @@ VOID CConSix::CancelMove()
 }
 
 bool CConSix::WinOrLose()//判断胜负
-{	
-	bool win=false;
-	int i,j;
+{
+	bool win = false;
+	int i, j, tx, ty, connect;
 	Step tStep = stepStack.top();
-	BYTE side=tStep.side;
+	Point point[2] = { tStep.first, tStep.second };
+	BYTE side = tStep.side;
 
-	if(win==false)
+	for (j = 0; j < 2; j++)
 	{
-		for(i=0;i<19;i++) //扫描竖线有没有连六
+		if (point[j].x == -1 || point[j].y == -1)
+			break;
+		for (i = 0; i<4; i++)
 		{
-			for(j=0;j<14;j++)
+			connect = 0;
+			//按照向量进行移动
+			tx = point[j].x - lineVector[i][0];
+			ty = point[j].y - lineVector[i][1];
+			while (tx >= 0 && tx<19 && ty >= 0 && ty<19 && board[tx][ty] == side)
 			{
-				if(board[i][j]==side &&board[i][j+1]==side &&board[i][j+2]==side &&board[i][j+3]==side &&board[i][j+4]==side &&board[i][j+5]==side )
-				  win=true;		  
+				tx -= lineVector[i][0];
+				ty -= lineVector[i][1];
 			}
-		}	  
-	}	
-	if(win==false)	
-	{
-		for(i=0;i<19;i++) //扫描横线有没有连六
-		{
-			for(j=0;j<14;j++)
+			//向量反向
+			tx += lineVector[i][0];
+			ty += lineVector[i][1];
+			while (tx >= 0 && tx<19 && ty >= 0 && ty<19 && board[tx][ty] == side)
 			{
-				if(board[j][i]==side &&board[j+1][i]==side &&board[j+2][i]==side &&board[j+3][i]==side &&board[j+4][i]==side &&board[j+5][i]==side )
-				  win=true;        
+				connect++;//计数
+				tx += lineVector[i][0];
+				ty += lineVector[i][1];
 			}
-		}	  
-	}
-	if(win==false)	
-	{
-		for(i=0;i<14;i++) //扫描45度斜线
-		{
-			for(j=5;j<19;j++)
+			if (connect >= 6)	//连六
 			{
-				if(board[i][j]==side &&board[i+1][j-1]==side &&board[i+2][j-2]==side &&board[i+3][j-3]==side &&board[i+4][j-4]==side &&board[i+5][j-5]==side )
-				  win=true; 
-			}
-		}	   
-	}	
-	if(win==false)	
-	{
-		for(i=0;i<14;i++) //扫描135度斜线
-		{
-			for(j=13;j>-1;j--)
-			{
-				if(board[i][j]==side &&board[i+1][j+1]==side &&board[i+2][j+2]==side &&board[i+3][j+3]==side &&board[i+4][j+4]==side &&board[i+5][j+5]==side )
-				  win=true;  
+				win = true;
+				break;
 			}
 		}
-	}		   
-
+	}
 	if(win==true&&count!=1)
 	{
 		PostMessage(hWnd,GM_WINLOSE,(WPARAM)(StepNum[BLACK]<<16)+StepNum[WHITE],(LPARAM)side);
