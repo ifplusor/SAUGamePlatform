@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConSix", "Chess Type\ConSix
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommFunc", "CommFunc\CommFunc.vcxproj", "{CEE90F10-2DE3-4C27-9645-B59FB5E59394}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NoGo", "Chess Type\NoGo\NoGo.vcxproj", "{A2A54626-F212-42D8-8988-7030C5360BE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,6 +29,10 @@ Global
 		{CEE90F10-2DE3-4C27-9645-B59FB5E59394}.Debug|Win32.Build.0 = Debug|Win32
 		{CEE90F10-2DE3-4C27-9645-B59FB5E59394}.Release|Win32.ActiveCfg = Release|Win32
 		{CEE90F10-2DE3-4C27-9645-B59FB5E59394}.Release|Win32.Build.0 = Release|Win32
+		{A2A54626-F212-42D8-8988-7030C5360BE1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A2A54626-F212-42D8-8988-7030C5360BE1}.Debug|Win32.Build.0 = Debug|Win32
+		{A2A54626-F212-42D8-8988-7030C5360BE1}.Release|Win32.ActiveCfg = Release|Win32
+		{A2A54626-F212-42D8-8988-7030C5360BE1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
