@@ -357,9 +357,10 @@ LRESULT CMainWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		break;
 	case GM_SHOWSTEP://显示着法信息（由其中支持模块发送）
 		AppendStepHis((char*)wParam);
+		Fuction::SaveChessManual((char*)wParam);
 		break;
 	case GM_WINLOSE:
-		::GameStop();
+		Fuction::GameStop();
 		ShowWiner((int)lParam);
 		break;
 
@@ -439,23 +440,23 @@ VOID CMainWnd::OnCommand(WPARAM wParam,LPARAM lParam)
 	case IDB_CONTROL_OK_BLC:
 	case IDB_CONTROL_OK_WHT:
 		UpdateTime();
-		OkMove();
+		Fuction::OkMove();
 		break;
 	case IDB_CONTROL_CANCEL_BLC:
 	case IDB_CONTROL_CANCEL_WHT:
-		CancelMove();
+		Fuction::CancelMove();
 		break;
 	case IDB_ENGINE_LOAD_BLC:
-		LoadBlackEngine();
+		Fuction::LoadBlackEngine();
 		break;
 	case IDB_ENGINE_LOAD_WHT:
-		LoadWhiteEngine();
+		Fuction::LoadWhiteEngine();
 		break;
 	case IDB_ENGINE_UNLOAD_BLC:
-		UnloadBlackEngine();
+		Fuction::UnloadBlackEngine();
 		break;
 	case IDB_ENGINE_UNLOAD_WHT:
-		UnloadWhiteEngine();
+		Fuction::UnloadWhiteEngine();
 		break;
 	default:
 		if(menuFunction.count(ID))
@@ -484,7 +485,7 @@ VOID CMainWnd::OnLButtonDown(WPARAM wParam,LPARAM lParam)
 	y=HIWORD(lParam);//获取所在棋盘窗体客户区的坐标，根据所选棋种执行对应棋种单击事件处理函数
 	if(InsideRect(&rtBoard,x,y))//棋盘内为有效输入
 	{
-		MoveStep(x,y);
+		Fuction::MoveStep(x, y);
 	}
 	return;
 }
@@ -524,7 +525,7 @@ VOID CMainWnd::OnTimer(WPARAM wParam,LPARAM lParam)
 
 VOID CMainWnd::OnClose(WPARAM wParam,LPARAM lParam)
 {
-	if (CheckEngineLoad())
+	if (Fuction::CheckEngineLoad())
 	{
 		MsgBox("The engine is load,unload it and then quit.", "error", 0);
 		return;

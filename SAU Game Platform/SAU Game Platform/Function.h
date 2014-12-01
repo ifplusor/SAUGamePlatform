@@ -13,19 +13,24 @@
 #include "Game Platform.h"
 
 
-int Exit();//退出程序
-int LoadBlackEngine();//加载黑方引擎
-int UnloadBlackEngine();//卸载黑方引擎
-int LoadWhiteEngine();//加载白方引擎
-int UnloadWhiteEngine();//卸载摆放引擎
-int GameStart();//开始对弈
-int GameStop();//结束对弈
-int MoveStep(int x,int y);//用户行棋
-int OkMove();
-int CancelMove();
-int CheckEngineLoad();
-int ShotBoard();
-
+//平台提供功能接口
+class Fuction
+{
+public:
+	static int Exit();//退出程序
+	static int LoadBlackEngine();//加载黑方引擎
+	static int UnloadBlackEngine();//卸载黑方引擎
+	static int LoadWhiteEngine();//加载白方引擎
+	static int UnloadWhiteEngine();//卸载摆放引擎
+	static int GameStart();//开始对弈
+	static int GameStop();//结束对弈
+	static int MoveStep(int x, int y);//用户行棋
+	static int OkMove();
+	static int CancelMove();
+	static int CheckEngineLoad();
+	static int ShotBoard();
+	static int SaveChessManual(char *step);
+};
 
 
 #endif
