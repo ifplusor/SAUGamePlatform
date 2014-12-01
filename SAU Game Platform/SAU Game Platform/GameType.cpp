@@ -48,7 +48,6 @@ VOID FindChessTypeReForDir(char *Dir)
 	{
 		return;
 	}
-	chessNum = 0;
 	do{
 		strcpy(filename, Dir);
 		strcat(filename, "\\");
