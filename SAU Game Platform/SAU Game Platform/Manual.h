@@ -16,6 +16,8 @@
 
 
 VOID PrintScrOnTemp();
+VOID SavePrintScreen();
+VOID SaveChessManual(char *step);
 
 
 #endif

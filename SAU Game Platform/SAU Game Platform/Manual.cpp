@@ -12,20 +12,30 @@
 //截图模块
 //=================================================================================================================
 
-
-void PSDrawBoard(HDC hDC)//对CBoardWnd的成员函数DrawBoard进行封装，以实现函数指针的传递
+/**
+ * PSDrawBoard - 绘制棋盘
+ * @hDC:	目标设备窗口DC
+ * description:	PSDrawBoard对CMainWnd类中棋盘部分绘图函数的封装，用以绕过私有成员调用实现函数指针的传递。PSDrawBoard函数是CMainWnd类的友元函数。
+ */
+void PSDrawBoard(HDC hDC)
 {
 	MainWnd->FillBkAndBoard(hDC);
 	CT_DrawBoard(hDC);
 }
 
-//对棋盘进行截图
+/**
+ * PrintScreenOnChess - 对棋盘进行截图
+ * @filename:	目标文件名
+ * return:		TRUE:保存成功；FALSE:保存失败
+ */
 BOOL PrintScreenOnChess(char *filename)
 {
 	return PrintScreenEx(filename, MainWnd->hWnd, MainWnd->GetBoardPos(), PSDrawBoard);
 }
 
-//快捷键截图
+/**
+ * PrintScrOnTemp - 快捷截图
+ */
 VOID PrintScrOnTemp()
 {
 	char filename[MAX_PATH] = { 0 };
@@ -35,7 +45,7 @@ VOID PrintScrOnTemp()
 	GetSystemTimeEx(&st, 8);//获取系统时间
 	sprintf(time, "\\%d-%d-%d-%d-%d-%d-%d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
-	strcpy(filename, gameSet.CurDir);
+	strcpy(filename, ".");//gameSet.CurDir);
 	strcat(filename, "\\PrintScr");
 	strcat(filename, time);
 	strcat(filename, ".bmp");
@@ -43,7 +53,13 @@ VOID PrintScrOnTemp()
 	return;
 }
 
-//保存行棋截图
+/**
+ * SavePrintScreen - 保存行棋截图
+ * description:	实现SavePrintScreen和PrintScrOnTemp的核心技术是完全一致的，只是他们在实现功能的定位上不同，PrintScrOnTemp用来支持用户手动操作的快捷截图，
+ *				SavePrintScreen用来支持引擎根据用户设定完成的自动截图。
+ *				自动截图的原理：当棋种支持模块处理一个有效的着法输入时，会以SendMessage调用向MainWnd窗口发送GM_SHOWSTEP消息，告知引擎着法输入有效以及输入的着法（wParam参数）。
+ *								平台在处理GM_SHOWSTEP消息时会调用SavePrintScreen函数完成保存行棋截图操作。
+ */
 VOID SavePrintScreen()
 {
 	SYSTEMTIME st;
@@ -55,9 +71,9 @@ VOID SavePrintScreen()
 		GetSystemTimeEx(&st, 8);//获取系统时间
 		sprintf(time, "\\%d-%d-%d-%d-%d-%d-%d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 		char PrintScrFileName[MAX_PATH] = { 0 };
-		if (gameSet.PrintScrDir == 0)
+		if (gameSet.PrintScrDir[0] == 0)
 		{
-			strcpy(gameSet.PrintScrDir, gameSet.CurDir);
+			strcpy(gameSet.PrintScrDir, ".");//gameSet.CurDir);
 			strcat(gameSet.PrintScrDir, "\\chess manual\\");
 			strcat(gameSet.PrintScrDir, chessType[chesstype].chessStr);
 			strcat(gameSet.PrintScrDir, "\\bmp");
@@ -69,33 +85,36 @@ VOID SavePrintScreen()
 	}
 }
 
-//保存棋谱
+/**
+ * SaveChessManual - 保存棋谱
+ * @step:			当前有效输入着法
+ * description:		功能定位和实现原理同SavePrintScreen函数相同。
+ */
 VOID SaveChessManual(char *step)
 {
 	char filename[MAX_PATH];
 	char time[100];
-
-	memset(filename, 0, sizeof(filename));
-	memset(time, 0, sizeof(time));
-
+	HANDLE hFile;
+	DWORD dwWrite;
 	SYSTEMTIME st;
-	::GetSystemTimeEx(&st, 8);//获取系统时间  
-	sprintf(time, "\\%d-%d-%d-%d-%d-%d-%d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
 	if (gameSet.cmDir[0] == 0)
 	{
-		strcpy(gameSet.cmDir, gameSet.CurDir);
+		strcpy(gameSet.cmDir, ".");//gameSet.CurDir);
 		strcat(gameSet.cmDir, "\\chess manual\\");
 		strcat(gameSet.cmDir, chessType[chesstype].chessStr);
 		strcat(gameSet.cmDir, "\\sgf");
 	}
 	strcpy(filename, gameSet.cmDir);
-	strcat(filename, time);
-	strcat(filename, ".sgf");
+	strcat(filename, "\\");
 
-	HANDLE hFile;
-	if (gameSet.SingleStep)
+	if (gameSet.SingleStep)//单步保存
 	{
+		::GetSystemTimeEx(&st, 8);//获取系统时间  
+		sprintf(time, "%d-%d-%d-%d-%d-%d-%d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+		strcat(filename, time);
+		strcat(filename, ".sgf");
+
 		hFile = CreateFile(
 			filename,
 			GENERIC_READ | GENERIC_WRITE,
@@ -110,7 +129,6 @@ VOID SaveChessManual(char *step)
 			ErrorBox("CreateFile failed");
 			return;
 		}
-		DWORD dwWrite;
 		if (!WriteFile(hFile, step, strlen(step), &dwWrite, NULL))
 		{
 			ErrorBox("WriteFile failed");
@@ -120,15 +138,12 @@ VOID SaveChessManual(char *step)
 		CloseHandle(hFile);
 	}
 
-	if (gameSet.AllStep)
+	if (gameSet.AllStep)//保存全部棋谱
 	{
 		if (gameSet.cmFileName[0] == 0)
 		{
 			strcpy(gameSet.cmFileName, "Untitled");
 		}
-		memset(filename, 0, sizeof(filename));
-		strcpy(filename, gameSet.cmDir);
-		strcat(filename, "\\");
 		strcat(filename, gameSet.cmFileName);
 		strcat(filename, ".sgf");
 
@@ -141,10 +156,12 @@ VOID SaveChessManual(char *step)
 			FILE_ATTRIBUTE_NORMAL,
 			NULL
 			);
-
-		SetFilePointer(hFile, 0, NULL, FILE_END);
-
-		DWORD dwWrite;
+		if (hFile == INVALID_HANDLE_VALUE)
+		{
+			ErrorBox("CreateFile failed");
+			return;
+		}
+		SetFilePointer(hFile, 0, NULL, FILE_END);//设置文件操作指针为文件结尾
 		if (!WriteFile(hFile, step, strlen(step), &dwWrite, NULL) || !WriteFile(hFile, "\r\n", 2, &dwWrite, NULL))
 		{
 			ErrorBox("WriteFile failed");
