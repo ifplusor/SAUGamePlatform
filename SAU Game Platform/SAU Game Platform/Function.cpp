@@ -12,80 +12,80 @@
 #include "Manual.h"
 
 
-int Fuction::Exit()
+int Function::Exit()
 {
 	return PostMessage(MainWnd->hWnd,WM_CLOSE,NULL,NULL);
 }
 
-int Fuction::LoadBlackEngine()
+int Function::LoadBlackEngine()
 {
 	return game.LoadEngine(BLACK);
 }
 
-int Fuction::UnloadBlackEngine()
+int Function::UnloadBlackEngine()
 {
 	return game.UnloadEngine(BLACK);
 }
 
-int Fuction::LoadWhiteEngine()
+int Function::LoadWhiteEngine()
 {
 	return game.LoadEngine(WHITE);
 }
 
-int Fuction::UnloadWhiteEngine()
+int Function::UnloadWhiteEngine()
 {
 	return game.UnloadEngine(WHITE);
 }
 
-int Fuction::GameStart()
+int Function::GameStart()
 {
 	game.StartGame();
 	return 0;
 }
 
-int Fuction::GameStop()
+int Function::GameStop()
 {
 	game.StopGame();
 	return 0;
 }
 
-int Fuction::MoveStep(int x, int y)
+int Function::MoveStep(int x, int y)
 {
 	return game.MoveStep(x,y);
 }
 
-int Fuction::OkMove()
+int Function::OkMove()
 {
 	game.OkMove();
 	return 0;
 }
 
-int Fuction::CancelMove()
+int Function::CancelMove()
 {
 	game.CancelMove();
 	return 0;
 }
 
-int Fuction::CheckEngineLoad()
+int Function::CheckEngineLoad()
 {
 	if (game.CheckEngineLoad())
 		return 1;
 	return 0;
 }
 
-int Fuction::ShotBoard()
+int Function::ShotBoard()
 {
 	::PrintScrOnTemp();
 	return 0;
 }
 
-int Fuction::SaveBoardShot()
+int Function::SaveBoardShot()
 {
 	::SavePrintScreen();
 	return 0;
 }
 
-int Fuction::SaveChessManual(char *step)
+int Function::SaveChessManual(char *step)
 {
 	::SaveChessManual(step);
 	return 0;

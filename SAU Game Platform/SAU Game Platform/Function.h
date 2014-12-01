@@ -14,7 +14,7 @@
 
 
 //平台提供功能接口
-class Fuction
+class Function
 {
 public:
 	static int Exit();//退出程序

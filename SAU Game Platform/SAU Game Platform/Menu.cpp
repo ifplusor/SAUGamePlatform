@@ -30,28 +30,28 @@ void mapFunction(int menuID,FILE *fp)
 		switch(index)
 		{
 		case IDF_EXIT:
-			menuFunction.insert(pair<int, FUNCTION>(menuID, Fuction::Exit));
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::Exit));
 			break;
 		case IDF_BLACK_LOAD:
-			menuFunction.insert(pair<int, FUNCTION>(menuID, Fuction::LoadBlackEngine));
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::LoadBlackEngine));
 			break;
 		case IDF_BLACK_UNLOAD:
-			menuFunction.insert(pair<int, FUNCTION>(menuID, Fuction::UnloadBlackEngine));
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::UnloadBlackEngine));
 			break;
 		case IDF_WHITE_LOAD:
-			menuFunction.insert(pair<int, FUNCTION>(menuID, Fuction::LoadWhiteEngine));
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::LoadWhiteEngine));
 			break;
 		case IDF_WHITE_UNLOAD:
-			menuFunction.insert(pair<int, FUNCTION>(menuID, Fuction::UnloadWhiteEngine));
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::UnloadWhiteEngine));
 			break;
 		case IDF_GAME_START:
-			menuFunction.insert(pair<int, FUNCTION>(menuID, Fuction::GameStart));
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::GameStart));
 			break;
 		case IDF_GAME_STOP:
-			menuFunction.insert(pair<int, FUNCTION>(menuID, Fuction::GameStop));
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::GameStop));
 			break;
 		case IDF_MANUAL_SHOT:
-			menuFunction.insert(pair<int, FUNCTION>(menuID, Fuction::ShotBoard));
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::ShotBoard));
 		default:
 			break;
 		}
