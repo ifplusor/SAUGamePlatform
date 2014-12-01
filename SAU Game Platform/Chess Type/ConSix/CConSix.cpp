@@ -367,8 +367,8 @@ VOID CConSix::InitGame()//游戏初始化
 
 	player=BLACK;	
 	first_hand=true;
-	count=0;
 	InitBoard();	//初始化棋盘
+	count=0;
 
 	CleanStack(stepStack);
 	return;
@@ -539,7 +539,7 @@ bool CConSix::WinOrLose()//判断胜负
 			}
 		}
 	}
-	if(win==true&&count!=1)
+	if(win==true&&count!=1)//count为-1时表示从棋手处获取着法，count为0时表示从引擎处获取着法，count为1时表示模块检查一子获胜
 	{
 		PostMessage(hWnd,GM_WINLOSE,(WPARAM)(StepNum[BLACK]<<16)+StepNum[WHITE],(LPARAM)side);
 	}	
