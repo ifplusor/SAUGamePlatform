@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\SAU Game Platform\ChessType</OutDir>
+    <OutDir>..\..\SAU Game Platform\ChessType\ConSix</OutDir>
     <IntDir>.\Debug\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
