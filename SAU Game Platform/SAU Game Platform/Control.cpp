@@ -131,6 +131,10 @@ void Game::StartGame()
 		return;
 	}
 	CT_OnRun();//初始化棋局
+	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
+	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
+	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
+	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
 	MainWnd->GameStart();
 		if(BlackE.GetLoaded() && WhiteE.GetLoaded())//黑白引擎都加在载
 		{
@@ -175,6 +179,10 @@ void Game::StopGame()
 		return;
 	}
 	MainWnd->GameStop();
+	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
+	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
+	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
+	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
 	switch(GameMode)
 	{
 	case 0://人执黑，机器/网络执白
