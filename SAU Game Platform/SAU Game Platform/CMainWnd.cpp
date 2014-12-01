@@ -375,7 +375,7 @@ LRESULT CMainWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 VOID CMainWnd::OnCreate(HWND hWnd,WPARAM wParam,LPARAM lParam)
 {
 	CreateCtrl(hWnd);
-	CT_InitModule(hWnd,&gameSet);
+	CT_InitModule(hWnd,chessType[chesstype].LibPath);
 	return;
 }
 

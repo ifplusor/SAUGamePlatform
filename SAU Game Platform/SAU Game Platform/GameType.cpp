@@ -30,6 +30,57 @@ struct _CHESSTYPE chessType[25];//棋种描述
 
 
 /**
+ * FindChessTypeReForDir - 查找并收集指定目录下的棋种支持模块
+ * @Dir:	指定目录
+ */
+VOID FindChessTypeReForDir(char *Dir)
+{
+	HANDLE hFile;
+	WIN32_FIND_DATA fData;
+	char directory[MAX_PATH] = { 0 };
+	char filename[MAX_PATH] = { 0 };
+	char check[50];
+	strcpy(directory, Dir);
+	strcat(directory, "\\*.dll");
+	//检索可用语言包
+	hFile = FindFirstFile(directory, &fData);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return;
+	}
+	chessNum = 0;
+	do{
+		strcpy(filename, Dir);
+		strcat(filename, "\\");
+		strcat(filename, fData.cFileName);
+		chessType[chessNum].chessTP = (HINSTANCE)LoadLibrary(filename);
+		if (chessType[chessNum].chessTP == NULL)
+		{
+			ErrorBox("Load ChessType resource failed !");
+			return;
+		}
+		else
+		{
+			CT_CheckModule = (_CheckModule)GetProcAddress(chessType[chessNum].chessTP, "CheckModule");
+			if (CT_CheckModule != NULL)
+			{
+				memset(check, 0, sizeof(check));
+				CT_CheckModule(check, chessType[chessNum].chessStr, &chessType[chessNum].type);
+				if (strcmp("SAU Game Platform chessType", check) == 0)//校验组件正确性
+				{
+					strcpy(chessType[chessNum].LibPath, Dir);
+					chessNum++;
+				}
+				else
+					FreeLibrary(chessType[chessNum].chessTP);//释放不正确组件
+			}
+			else
+				FreeLibrary(chessType[chessNum].chessTP);//释放不正确组件
+		}
+	} while (FindNextFile(hFile, &fData));
+}
+
+/**
  * GetChessTypeResourse - 获取棋种包资源
  */
 BOOL GetChessTypeResourse()
@@ -40,7 +91,7 @@ BOOL GetChessTypeResourse()
 	char filename[MAX_PATH]={0};
 	char check[50];
 	strcpy(directory,gameSet.CurDir);
-	strcat(directory,"\\ChessType\\*.dll");
+	strcat(directory,"\\ChessType\\*");
 	//检索可用语言包
 	hFile=FindFirstFile(directory,&fData);
 	if(hFile==INVALID_HANDLE_VALUE)
@@ -50,34 +101,26 @@ BOOL GetChessTypeResourse()
 	}
 	chessNum=0;
 	do{
-		strcpy(filename,gameSet.CurDir);
-		strcat(filename,"\\ChessType\\");
-		strcat(filename,fData.cFileName);
-		chessType[chessNum].chessTP=(HINSTANCE)LoadLibrary(filename);
-		if(chessType[chessNum].chessTP==NULL)
+		if(fData.dwFileAttributes==FILE_ATTRIBUTE_DIRECTORY)//文件夹
 		{
-			ErrorBox("Load ChessType resource failed !");
-			return FALSE;
-		}
-		else
-		{
-			CT_CheckModule=(_CheckModule)GetProcAddress(chessType[chessNum].chessTP,"CheckModule");
-			if(CT_CheckModule!=NULL)
-			{
-				memset(check,0,sizeof(check));
-				CT_CheckModule(check,chessType[chessNum].chessStr,&chessType[chessNum].type);
-				if(strcmp("SAU Game Platform chessType",check)==0)//校验组件正确性
-					chessNum++;
-				else
-					FreeLibrary(chessType[chessNum].chessTP);//释放不正确组件
-			}
-			else
-				FreeLibrary(chessType[chessNum].chessTP);//释放不正确组件
+			if(strcmp(fData.cFileName,".")==0 ||strcmp(fData.cFileName,"..")==0)//代表本级目录的'.'和上级目录的'..'
+				continue;
+			strcpy(directory, gameSet.CurDir);
+			strcat(directory, "\\ChessType\\");
+			strcat(directory, fData.cFileName);
+			FindChessTypeReForDir(directory);
 		}
 	}while(FindNextFile(hFile,&fData));
 
-	if(chessNum==0)
+	strcpy(directory, gameSet.CurDir);
+	strcat(directory, "\\ChessType");
+	FindChessTypeReForDir(directory);
+
+	if (chessNum == 0)
+	{
+		ErrorBox("Find first ChessType resourse failed!");
 		return FALSE;
+	}
 	return TRUE;
 }
 
@@ -187,7 +230,7 @@ VOID SetChessType(int i,HMENU hMenu)
 	CT_OnRun = (_OnRun)GetProcAddress(chessType[chesstype].chessTP, "OnRun");
 	CT_GetCurPlayer = (_GetCurPlayer)GetProcAddress(chessType[chesstype].chessTP, "GetCurPlayer");
 
-	CT_InitModule(MainWnd->hWnd,&gameSet);
+	CT_InitModule(MainWnd->hWnd,chessType[chesstype].LibPath);
 	CT_OnSize(MainWnd->GetBoardPos());
 	InvalidateRect(MainWnd->hWnd,NULL,false);
 	//设置自动截图目录

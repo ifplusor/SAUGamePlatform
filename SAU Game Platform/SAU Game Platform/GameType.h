@@ -20,15 +20,16 @@
 //棋种支持模块描述符
 struct _CHESSTYPE{
 	HINSTANCE chessTP;//棋种包资源实例句柄
-	char chessStr[20];//棋种名
 	int type;//棋种类型  0：添子类完备信息博弈
+	char chessStr[20];//棋种名
+	char LibPath[MAX_PATH];
 };
 
 
 //模块正确性校验
 typedef VOID (*_CheckModule)(char *Info, char *ChessName, int *ChessType);
 //初始化模块
-typedef VOID (*_InitModule)(HWND hWnd, GameSet *gameset);
+typedef VOID (*_InitModule)(HWND hWnd, char *LibPath);
 //响应棋盘大小改变
 typedef VOID (*_OnSize)(RECT rtBoard);
 //绘制棋盘
