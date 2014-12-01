@@ -36,6 +36,9 @@ typedef struct
 	char* GameDate;//比赛结束时间
 }GAMEINFO;
 
+struct Point{
+	int x, y;
+};
 
 class CChess
 {

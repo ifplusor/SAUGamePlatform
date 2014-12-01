@@ -7,10 +7,6 @@
 #define EMPTY 2//Пе
 
 
-struct Point{
-	int x, y;
-};
-
 struct Step{
 	Point first, second;
 	BOOL side;
