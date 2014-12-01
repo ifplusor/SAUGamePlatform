@@ -37,10 +37,10 @@ DLLFUCTION VOID CheckModule(char *Info,char *ChessName,int *ChessType)
 	*ChessType=0;
 }
 
-DLLFUCTION VOID InitModule(HWND hWnd,GameSet *gameset)
+DLLFUCTION VOID InitModule(HWND hWnd,char *LibPath)
 {
 	ConSix.hWnd=hWnd;
-	ConSix.gameset=gameset;
+	strncpy(ConSix.LibPath,LibPath,MAX_PATH-1);
 	ConSix.InitGame();
 }
 

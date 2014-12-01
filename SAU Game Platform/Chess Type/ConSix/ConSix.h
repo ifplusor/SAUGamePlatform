@@ -16,7 +16,7 @@
 //模块正确性校验
 DLLFUCTION VOID CheckModule(char *Info,char *ChessName,int *ChessType);
 //初始化模块
-DLLFUCTION VOID InitModule(HWND hWnd,GameSet *gameset);
+DLLFUCTION VOID InitModule(HWND hWnd,char *LibPath);
 //响应棋盘大小改变
 DLLFUCTION VOID OnSize(RECT rtBoard);
 //绘制棋盘
