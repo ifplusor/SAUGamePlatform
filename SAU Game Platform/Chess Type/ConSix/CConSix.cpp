@@ -92,11 +92,11 @@ VOID CConSix::DrawBoard(HDC hDC)//绘制棋盘
 	hCurWhtDC = CreateCompatibleDC(hDC);
 
 	HBITMAP hAssistBmp, hBlcBmp, hWhtBmp, hCurBlcBmp, hCurWhtBmp;
-	hAssistBmp = CreateCompatibleBitmap(hDC, d, d);
-	hBlcBmp = CreateCompatibleBitmap(hDC, d, d);
-	hWhtBmp = CreateCompatibleBitmap(hDC, d, d);
-	hCurBlcBmp = CreateCompatibleBitmap(hDC, d, d);
-	hCurWhtBmp = CreateCompatibleBitmap(hDC, d, d);
+	hAssistBmp = CreateCompatibleBitmap(hDC, d, d);//辅助问题
+	hBlcBmp = CreateCompatibleBitmap(hDC, d, d);//黑方棋子
+	hWhtBmp = CreateCompatibleBitmap(hDC, d, d);//白方棋子
+	hCurBlcBmp = CreateCompatibleBitmap(hDC, d, d);//黑方当前棋子
+	hCurWhtBmp = CreateCompatibleBitmap(hDC, d, d);//白方当前棋子
 
 	SelectObject(hAssistDC, hAssistBmp);
 	SelectObject(hBlcDC, hBlcBmp);
@@ -104,7 +104,7 @@ VOID CConSix::DrawBoard(HDC hDC)//绘制棋盘
 	SelectObject(hCurBlcDC, hCurBlcBmp);
 	SelectObject(hCurWhtDC, hCurWhtBmp);
 
-	DrawAssist(hAssistDC, d);
+	DrawAssist(hAssistDC, d/2);
 	DrawChess(hBlcDC, hWhtDC, hCurBlcDC, hCurWhtDC, d);//绘制棋子
 
 
@@ -324,11 +324,11 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 bool CConSix::PlaySnd(int sel)
 {
 	char filename[MAX_PATH]={0};
-	strcpy(filename,gameset->CurDir);
 	switch(sel)
 	{
 	case 0:
-		strcat(filename,"\\wav\\ConSix\\落子.wav");
+		strcpy(filename, LibPath);
+		strcat(filename,"\\wav\\落子.wav");
 		break;
 	default:
 		break;
@@ -398,14 +398,7 @@ BOOL CConSix::OnLButtonDown(int x,int y)
 		return 0;		
 
 	x=(int)((x-rtBoard.left-side/40)*20/side);//把棋盘坐标转换成数组坐标
-	if(gameset->BasePt==UPLEFT)
-	{			
-		y=(int)((y-rtBoard.top-side/40)*20/side);
-	}	
-	else if(gameset->BasePt==DOWNLEFT)
-	{		
-		y=18-(int)((y-rtBoard.top-side/40)*20/side);
-	}
+	y=(int)((y-rtBoard.top-side/40)*20/side);
 	if (x>=0&&x<19&&y>=0&&y<19)
 		return SToS(x,y);
 	return 0;
