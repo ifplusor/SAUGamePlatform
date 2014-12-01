@@ -84,12 +84,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CChess.cpp" />
+    <ClCompile Include="..\include\CChess.cpp" />
     <ClCompile Include="CConSix.cpp" />
     <ClCompile Include="ConSix.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CChess.h" />
+    <ClInclude Include="..\include\CChess.h" />
     <ClInclude Include="CConSix.h" />
     <ClInclude Include="ConSix.h" />
     <ClInclude Include="resource.h" />

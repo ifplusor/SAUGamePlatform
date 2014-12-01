@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CChess.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="CConSix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ConSix.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\CChess.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,13 +29,13 @@
     <ClInclude Include="CConSix.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="CChess.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ConSix.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\CChess.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
