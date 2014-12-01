@@ -233,13 +233,11 @@ VOID SetChessType(int i,HMENU hMenu)
 	CT_OnSize(MainWnd->GetBoardPos());
 	InvalidateRect(MainWnd->hWnd,NULL,false);
 	//设置自动截图目录
-	strcpy(gameSet.PrintScrDir,gameSet.CurDir);
-	strcat(gameSet.PrintScrDir,"\\chess manual\\");
+	strcpy(gameSet.PrintScrDir,".\\chess manual\\");
 	strcat(gameSet.PrintScrDir,chessType[chesstype].chessStr);
 	strcat(gameSet.PrintScrDir,"\\bmp");
 	//设置棋谱保存目录
-	strcpy(gameSet.cmDir,gameSet.CurDir);
-	strcat(gameSet.cmDir,"\\chess manual\\");
+	strcpy(gameSet.cmDir, ".\\chess manual\\");
 	strcat(gameSet.cmDir,chessType[chesstype].chessStr);
 	strcat(gameSet.cmDir,"\\sgf");
 
