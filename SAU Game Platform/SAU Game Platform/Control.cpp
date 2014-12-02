@@ -48,7 +48,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 		temp = game.GameMode;
 		MainWnd->UpdateTime();
 		if(CT_ProcessMove(rMsg,wMMsg,wDMsg)==-1)//处理行棋事件，产生相应命令
-			MsgBox("Break rule!", "error", 5000);
+			MessageBox(MainWnd->hWnd, "Break rule!", "error", MB_OK);
 		if(wMMsg[0]!='\0')
 			side->WriteMsg(wMMsg);
 		if(wDMsg[0]!='\0'&&temp == 2)//机器对弈，发给对方引擎
@@ -216,7 +216,7 @@ bool Game::MoveStep(int x,int y)
 		switch(temp)
 		{
 		case -1://错误着法
-			MsgBox("error step!","error",1000);
+			MessageBox(MainWnd->hWnd, "error step!","error", MB_OK);
 			return false;
 		case 1://着法成立
 			EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_OK_WHT : IDB_CONTROL_OK_BLC), TRUE);
@@ -239,7 +239,7 @@ bool Game::MoveStep(int x,int y)
 			switch(temp)
 			{
 			case -1://错误着法
-				MsgBox("error step!","error",1000);
+				MessageBox(MainWnd->hWnd, "error step!", "error", MB_OK);
 				return false;
 			case 1://着法成立
 				EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_OK_WHT : IDB_CONTROL_OK_BLC), TRUE);
