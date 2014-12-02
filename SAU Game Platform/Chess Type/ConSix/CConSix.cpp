@@ -131,31 +131,29 @@ VOID CConSix::DrawBoard(HDC hDC)//ªÊ÷∆∆Â≈Ã
 	if (!stepStack.empty())
 	{
 		Step curStep = stepStack.top();
-		if (curStep.side == BLACK)
+		IsChess(curStep.first)
 		{
 			int x1 = curStep.first.x; int y1 = curStep.first.y;
-			int x2 = curStep.second.x; int y2 = curStep.second.y;
-			IsChess(curStep.first)
+			if (curStep.side == BLACK)
 			{
 				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
 				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
 			}
-			IsChess(curStep.second)
-			{
-				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
-			}
-		}
-		else if (curStep.side == WHITE)
-		{
-			int x1 = curStep.first.x; int y1 = curStep.first.y;
-			int x2 = curStep.second.x; int y2 = curStep.second.y;
-			IsChess(curStep.first)
+			else if (curStep.side == WHITE)
 			{
 				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
 				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hCurWhtDC, 0, 0, SRCAND);
 			}
-			IsChess(curStep.second)
+		}
+		IsChess(curStep.second)
+		{
+			int x2 = curStep.second.x; int y2 = curStep.second.y;
+			if (curStep.side == BLACK)
+			{
+				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
+			}
+			else if (curStep.side == WHITE)
 			{
 				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
 				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hCurWhtDC, 0, 0, SRCAND);

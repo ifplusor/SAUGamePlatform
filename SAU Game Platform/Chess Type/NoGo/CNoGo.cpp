@@ -130,15 +130,14 @@ VOID CNoGo::DrawBoard(HDC hDC)//ªÊ÷∆∆Â≈Ã
 	if (!stepStack.empty())
 	{
 		Step curStep = stepStack.top();
+		int x1 = curStep.point.x; int y1 = curStep.point.y;
 		if (curStep.side == BLACK)
 		{
-			int x1 = curStep.point.x; int y1 = curStep.point.y;
 			BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 10 - d / 2, rtBoard.top + side*(y1 + 1) / 10 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
 			BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 10 - d / 2, rtBoard.top + side*(y1 + 1) / 10 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
 		}
 		else if (curStep.side == WHITE)
 		{
-			int x1 = curStep.point.x; int y1 = curStep.point.y;
 			BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 10 - d / 2, rtBoard.top + side*(y1 + 1) / 10 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
 			BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 10 - d / 2, rtBoard.top + side*(y1 + 1) / 10 - d / 2, d, d, hCurWhtDC, 0, 0, SRCAND);
 		}
