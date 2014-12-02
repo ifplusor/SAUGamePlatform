@@ -36,21 +36,6 @@ public:
 	//取消着法
 	virtual VOID CancelMove();
 
-	//绘制棋子
-	bool DrawChess(HDC hBlcDC, HDC hCurBlcDC, HDC hWhtDC, HDC hCurWhtDC, int d);
-	//初始化棋盘状态
-	VOID InitBoard();
-	//双方对弈
-	BOOL SToS(int x, int y);
-	//判断胜负
-	bool WinOrLose();
-	//判断棋步合法性
-	bool FitRules();
-	//显示招法历史
-	VOID ShowStepHis(char *msg);
-	//播放落子音效
-	bool PlaySnd(int sel);
-
 private:
 
 	BYTE board[19][19];//棋盘信息结构
@@ -67,6 +52,22 @@ private:
 	int fWidth, fHeight;//字体宽、高
 
 	stack<Step> stepStack;//着法栈
+
+	//绘制棋子
+	bool DrawChess(HDC hBlcDC, HDC hCurBlcDC, HDC hWhtDC, HDC hCurWhtDC, int d);
+	//初始化棋盘状态
+	VOID InitBoard();
+	//双方对弈
+	BOOL SToS(int x, int y);
+	//判断胜负
+	bool WinOrLose();
+	//判断棋步合法性
+	bool FitRules();
+	//显示招法历史
+	VOID ShowStepHis(char *msg);
+	//播放落子音效
+	bool PlaySnd(int sel);
+
 };
 
 #endif
