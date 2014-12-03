@@ -223,7 +223,7 @@ bool Game::MoveStep(int x,int y)
 		case 0://着法进行
 			EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_CANCEL_WHT : IDB_CONTROL_CANCEL_BLC), TRUE);
 			break;
-		case 2://对弈结束
+		case 2://不是可落位置
 			break;
 		}
 	}
@@ -246,7 +246,7 @@ bool Game::MoveStep(int x,int y)
 			case 0://着法进行
 				EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_CANCEL_WHT : IDB_CONTROL_CANCEL_BLC), TRUE);
 				break;
-			case 2://对弈结束
+			case 2://不是可落位置
 				break;
 			}
 //			player=CT_GetCurPlayer();
