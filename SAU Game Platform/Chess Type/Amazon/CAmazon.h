@@ -46,6 +46,7 @@ private:
 	COLORREF BoardColor;//棋盘颜色
 	HPEN hPen;//画笔句柄
 	HFONT hFont;//字体句柄
+	HBRUSH hBrush;//棋盘画刷
 	HDC hBlcDC, hWhtDC, hBarDC, hMarkDC;
 
 	int d;//亚马逊棋棋盘刻线间距

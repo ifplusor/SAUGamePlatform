@@ -23,6 +23,8 @@ CAmazon::CAmazon()
 	InitGame();
 	count = -1;
 
+	hBrush = CreateSolidBrush(RGB(115,74,18));
+
 	HDC hDC = GetDC(hWnd);
 	hBlcDC = CreateCompatibleDC(hDC);
 	hWhtDC = CreateCompatibleDC(hDC);
@@ -36,6 +38,7 @@ CAmazon::~CAmazon()
 		DeleteObject(hPen);
 	if (hFont != NULL)
 		DeleteObject(hFont);
+	DeleteObject(hBrush);
 	DeleteDC(hBlcDC);
 	DeleteDC(hWhtDC);
 	DeleteDC(hBarDC);
@@ -66,6 +69,7 @@ VOID CAmazon::SetBoard(RECT rtBoard)
 VOID CAmazon::DrawBoard(HDC hDC)
 {
 	int i, j;
+	RECT rect;
 	HPEN hOldPen;
 	HFONT hOldFont;
 	hOldPen = (HPEN)SelectObject(hDC, hPen);
@@ -86,9 +90,6 @@ VOID CAmazon::DrawBoard(HDC hDC)
 			TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 12 + d / 2 - fWidth / 2), rtBoard.top, letter, 1);
 			TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 12 + d / 2 - fWidth / 2), rtBoard.bottom - fHeight, number, 1);
 		}
-
-		MoveToEx(hDC, rtBoard.left + d, rtBoard.top + d*(i + 1), NULL);
-		LineTo(hDC, rtBoard.left + 11 * d, rtBoard.top + d*(i + 1));
 	}
 	for (i = 0; i < 11; i++)
 	{
@@ -100,10 +101,27 @@ VOID CAmazon::DrawBoard(HDC hDC)
 			TextOut(hDC, rtBoard.left, (int)(rtBoard.top + side*(i + 1) / 12 + d / 2 - fHeight / 2), letter, 1);
 			TextOut(hDC, rtBoard.right - fWidth, (int)(rtBoard.top + side*(i + 1) / 12 + d / 2 - fHeight / 2), number, 1);
 		}
-
-		MoveToEx(hDC, rtBoard.left + d*(i + 1), rtBoard.top + d, NULL);
-		LineTo(hDC, rtBoard.left + d*(i + 1), rtBoard.top + 11 * d);
 	}
+
+	for (i = 0; i < 10; i++)
+	{
+		for (j = 0; j < 10; j++)
+		{
+			if ((i%2==0&&j%2==0)||(i%2==1&&j%2==1))
+			{
+				rect.left = rtBoard.left + d*(j + 1);
+				rect.top = rtBoard.top + d*(i + 1);
+				rect.right = rect.left+d;
+				rect.bottom = rect.top+d;
+				FillRect(hDC, &rect, hBrush);
+			}
+		}
+	}
+	MoveToEx(hDC, rtBoard.left + d, rtBoard.top + d, NULL);
+	LineTo(hDC, rtBoard.left + 11 * d, rtBoard.top + d);
+	LineTo(hDC, rtBoard.left + 11 * d, rtBoard.top + 11 * d);
+	LineTo(hDC, rtBoard.left + d, rtBoard.top + 11 * d);
+	LineTo(hDC, rtBoard.left + d, rtBoard.top + d);
 
 	for (i = 0; i < 10; i++)
 	{
