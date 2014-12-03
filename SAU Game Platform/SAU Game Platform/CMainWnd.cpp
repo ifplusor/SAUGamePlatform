@@ -315,7 +315,10 @@ LRESULT CMainWnd::WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	case WM_ERASEBKGND:
 		return OnEraseBkgnd(wParam,lParam);
 	case WM_SIZE:
-		OnSize(wParam,lParam);//大小改变消息
+		OnSize(wParam, lParam);//大小改变消息
+		break;
+	case WM_MOVE:
+		GetWindowRect(hWnd, &rtWindow);//获取整个主窗体的窗口矩形
 		break;
 	case WM_NOTIFY:
 		OnNotify(wParam,lParam);//子窗体通知消息
@@ -416,7 +419,20 @@ BOOL CMainWnd::OnEraseBkgnd(WPARAM wParam,LPARAM lParam)
 //响应窗口大小改变
 VOID CMainWnd::OnSize(WPARAM wParam,LPARAM lParam)
 {
-//	StatusBarOnSize();//主窗体大小改变则调整一下状态条
+	int cx, cy;
+	cx = LOWORD(lParam);
+	cy = HIWORD(lParam);
+	if (cx < 650 || cy < 400)
+	{
+		if (cy >= 400)
+			MoveWindow(hWnd, rtWindow.left, rtWindow.top, 650 + rtWindow.right - rtWindow.left - rtClient.right, rtWindow.bottom - rtWindow.top, true);
+		else if (cx >= 600)
+			MoveWindow(hWnd, rtWindow.left, rtWindow.top, rtWindow.right - rtWindow.left, 400 + rtWindow.bottom - rtWindow.top - rtClient.bottom, true);
+		else
+			MoveWindow(hWnd, rtWindow.left, rtWindow.top, 650 + rtWindow.right - rtWindow.left - rtClient.right, 400 + rtWindow.bottom - rtWindow.top - rtClient.bottom, true);
+		return;
+	}
+	//	StatusBarOnSize();//主窗体大小改变则调整一下状态条
 	if(!AdjustWndPos())
 	{		
 		return;
