@@ -43,6 +43,7 @@ struct Point{
 class CChess
 {
 public:	
+	HINSTANCE hInst;
 	HWND hWnd;//窗口句柄
 
 	char LibPath[MAX_PATH];//棋种支持模块路径
