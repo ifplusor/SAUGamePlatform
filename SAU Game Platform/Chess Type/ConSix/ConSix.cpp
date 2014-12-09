@@ -3,7 +3,7 @@
 #include "ConSix.h"
 
 HINSTANCE hInst;
-CConSix ConSix;
+CConSix *ConSix;
 
 
 //ÍË³öÄ£¿é
@@ -39,57 +39,57 @@ DLLFUCTION VOID CheckModule(char *Info,char *ChessName,int *ChessType)
 
 DLLFUCTION VOID InitModule(HWND hWnd,char *LibPath)
 {
-	ConSix.hWnd=hWnd;
-	strncpy(ConSix.LibPath,LibPath,MAX_PATH-1);
-	ConSix.InitGame();
+	ConSix=new CConSix(hInst,hWnd,LibPath);
+	ConSix->InitGame();
 }
 
 VOID ExitModule()
 {
+	delete ConSix;
 }
 
 DLLFUCTION VOID OnSize(RECT rtBoard)
 {
-	ConSix.SetBoard(rtBoard);
+	ConSix->SetBoard(rtBoard);
 }
 
 DLLFUCTION VOID DrawBoard(HDC hDC)
 {
-	ConSix.DrawBoard(hDC);
+	ConSix->DrawBoard(hDC);
 }
 
 DLLFUCTION INT OnLButtonDown(int x, int y)
 {
-	return ConSix.OnLButtonDown(x,y);
+	return ConSix->OnLButtonDown(x,y);
 }
 
 DLLFUCTION INT OkMove(char *denCmd)
 {
 	INT k;
-	k=ConSix.OkMove();
-	strcpy(denCmd, ConSix.denCmd);
+	k=ConSix->OkMove();
+	strcpy(denCmd, ConSix->denCmd);
 	return k;
 }
 
 DLLFUCTION VOID CancelMove()
 {
-	ConSix.CancelMove();
+	ConSix->CancelMove();
 }
 
 DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {
-	INT k = ConSix.ProcessMove(moveCmd);
-	strcpy(curCmd, ConSix.curCmd);
-	strcpy(denCmd, ConSix.denCmd);
+	INT k = ConSix->ProcessMove(moveCmd);
+	strcpy(curCmd, ConSix->curCmd);
+	strcpy(denCmd, ConSix->denCmd);
 	return k;
 }
 
 DLLFUCTION VOID OnRun()
 {
-	ConSix.InitGame();
+	ConSix->InitGame();
 }
 
 DLLFUCTION INT GetCurPlayer()
 {
-	return ConSix.player;
+	return ConSix->player;
 }

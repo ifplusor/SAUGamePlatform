@@ -9,21 +9,30 @@ const int lineVector[8][2] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 } };//∑ΩœÚœ
 
 VOID __cdecl ErrorBox(LPTSTR ErrorInfo)//¥ÌŒÛÃ· æøÚ
 {
-	CHAR error1[50],error2[20];
-	strcpy(error1,ErrorInfo);
-	sprintf(error2,"\n\nerror: %d",GetLastError());	
-	strcat(error1,error2);	
-	MessageBox(NULL,error1,"error",MB_OK);
+	CHAR error1[50], error2[20];
+	strcpy(error1, ErrorInfo);
+	sprintf(error2, "\n\nerror: %d", GetLastError());
+	strcat(error1, error2);
+	MessageBox(NULL, error1, "error", MB_OK);
 }
 
-CConSix::CConSix()
+CConSix::CConSix(HINSTANCE hInst, HWND hWnd, char *LibPath)
 {
-	BkColor=RGB(0,0,0);
-	BoardColor=RGB(255,255,0);
+	this->hInst = hInst;
+	this->hWnd = hWnd;
+	strncpy(this->LibPath, LibPath, MAX_PATH - 1);
+
+	BkColor = RGB(0, 0, 0);
+	BoardColor = RGB(255, 255, 0);
 	hPen = NULL;
 	hFont = NULL;
 	InitGame();
 	count = -1;
+
+	HDC hDC = GetDC(hWnd);
+	hBlcDC = CreateCompatibleDC(hDC);
+	hWhtDC = CreateCompatibleDC(hDC);
+	hMarkDC = CreateCompatibleDC(hDC);
 }
 
 CConSix::~CConSix()
@@ -32,6 +41,9 @@ CConSix::~CConSix()
 		DeleteObject(hPen);
 	if (hFont != NULL)
 		DeleteObject(hFont);
+	DeleteDC(hBlcDC);
+	DeleteDC(hWhtDC);
+	DeleteDC(hMarkDC);
 }
 
 VOID CConSix::SetBoard(RECT rtBoard)
@@ -48,6 +60,7 @@ VOID CConSix::SetBoard(RECT rtBoard)
 	fWidth = (int)(d / 3);
 	fHeight = (int)(d * 2 / 3);
 	hFont = CreateSimpleFont(fWidth, fHeight);
+	DrawChess();
 }
 
 VOID CConSix::DrawBoard(HDC hDC)//ªÊ÷∆∆Â≈Ã
@@ -64,52 +77,28 @@ VOID CConSix::DrawBoard(HDC hDC)//ªÊ÷∆∆Â≈Ã
 	memset(letter, 0, sizeof(letter));
 	memset(number, 0, sizeof(number));
 	//ªÊ÷∆∆Â≈Ã
-	for (i = 0; i < 19; i++)
+	for (i = 1; i <= 19; i++)
 	{
-		letter[0] = 'A' + i;
-		itoa(i, number, 10);
+		letter[0] = 'A' + i - 1;
+		itoa(i - 1, number, 10);
 
-		TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 20 - fWidth / 2), rtBoard.top, letter, 1);//ªÊ÷∆Œƒ◊÷				
-		TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 20 - fWidth), rtBoard.bottom - fHeight, number, 2);
+		TextOut(hDC, rtBoard.left + side*i / 20 - fWidth / 2, rtBoard.top + fHeight / 2, letter, 1);//ªÊ÷∆Œƒ◊÷				
+		TextOut(hDC, rtBoard.left + side*i / 20 - fWidth, rtBoard.top + side * 19 / 20 + fHeight / 2, number, 2);
 
-		MoveToEx(hDC, rtBoard.left + d, (int)(rtBoard.top + side*(i + 1) / 20), NULL);//ªÊ÷∆œﬂ
-		LineTo(hDC, rtBoard.right - d, (int)(rtBoard.top + side*(i + 1) / 20));
+		MoveToEx(hDC, rtBoard.left + side / 20, rtBoard.top + side*i / 20, NULL);//ªÊ÷∆œﬂ
+		LineTo(hDC, rtBoard.left + side * 19 / 20, rtBoard.top + side*i / 20);
 	}
-	for (i = 0; i < 19; i++)
+	for (i = 1; i <= 19; i++)
 	{
-		letter[0] = 'A' + i;
-		itoa(i, number, 10);
+		letter[0] = 'A' + i - 1;
+		itoa(i - 1, number, 10);
 
-		TextOut(hDC, rtBoard.left + fWidth, (int)(rtBoard.top + side*(i + 1) / 20 - fHeight / 2), letter, 1);
-		TextOut(hDC, rtBoard.right - fWidth * 2, (int)(rtBoard.top + side*(i + 1) / 20 - fHeight / 2), number, 2);
+		TextOut(hDC, rtBoard.left + fWidth, rtBoard.top + side*i / 20 - fHeight / 2, letter, 1);
+		TextOut(hDC, rtBoard.left + side * 19 / 20 + fWidth, rtBoard.top + side*i / 20 - fHeight / 2, number, 2);
 
-		MoveToEx(hDC, rtBoard.left + side*(i + 1) / 20, rtBoard.top + d, NULL);
-		LineTo(hDC, rtBoard.left + side*(i + 1) / 20, rtBoard.bottom - d);
+		MoveToEx(hDC, rtBoard.left + side*i / 20, rtBoard.top + side / 20, NULL);
+		LineTo(hDC, rtBoard.left + side*i / 20, rtBoard.top + side * 19 / 20);
 	}
-
-	HDC hAssistDC, hBlcDC, hWhtDC, hCurBlcDC, hCurWhtDC;
-	hAssistDC = CreateCompatibleDC(hDC);
-	hBlcDC = CreateCompatibleDC(hDC);
-	hWhtDC = CreateCompatibleDC(hDC);
-	hCurBlcDC = CreateCompatibleDC(hDC);
-	hCurWhtDC = CreateCompatibleDC(hDC);
-
-	HBITMAP hAssistBmp, hBlcBmp, hWhtBmp, hCurBlcBmp, hCurWhtBmp;
-	hAssistBmp = CreateCompatibleBitmap(hDC, d, d);//∏®÷˙Œ Ã‚
-	hBlcBmp = CreateCompatibleBitmap(hDC, d, d);//∫⁄∑Ω∆Â◊”
-	hWhtBmp = CreateCompatibleBitmap(hDC, d, d);//∞◊∑Ω∆Â◊”
-	hCurBlcBmp = CreateCompatibleBitmap(hDC, d, d);//∫⁄∑Ωµ±«∞∆Â◊”
-	hCurWhtBmp = CreateCompatibleBitmap(hDC, d, d);//∞◊∑Ωµ±«∞∆Â◊”
-
-	SelectObject(hAssistDC, hAssistBmp);
-	SelectObject(hBlcDC, hBlcBmp);
-	SelectObject(hWhtDC, hWhtBmp);
-	SelectObject(hCurBlcDC, hCurBlcBmp);
-	SelectObject(hCurWhtDC, hCurWhtBmp);
-
-	DrawAssist(hAssistDC, d/2);
-	DrawChess(hBlcDC, hWhtDC, hCurBlcDC, hCurWhtDC, d);//ªÊ÷∆∆Â◊”
-
 
 	for (i = 0; i < 19; i++)
 	{
@@ -117,13 +106,13 @@ VOID CConSix::DrawBoard(HDC hDC)//ªÊ÷∆∆Â≈Ã
 		{
 			if (board[i][j] == BLACK)
 			{
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hBlcDC, 0, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hBlcDC, d, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hBlcDC, 0, 0, SRCPAINT);
 			}
 			else if (board[i][j] == WHITE)
 			{
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hWhtDC, 0, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hWhtDC, d, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hWhtDC, 0, 0, SRCPAINT);
 			}
 		}
 	}
@@ -131,153 +120,70 @@ VOID CConSix::DrawBoard(HDC hDC)//ªÊ÷∆∆Â≈Ã
 	if (!stepStack.empty())
 	{
 		Step curStep = stepStack.top();
+		int x, y;
 		IsChess(curStep.first)
 		{
-			int x1 = curStep.first.x; int y1 = curStep.first.y;
-			if (curStep.side == BLACK)
-			{
-				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
-			}
-			else if (curStep.side == WHITE)
-			{
-				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 20 - d / 2, rtBoard.top + side*(y1 + 1) / 20 - d / 2, d, d, hCurWhtDC, 0, 0, SRCAND);
-			}
+			x = curStep.first.x;
+			y = curStep.first.y;
+			BitBlt(hDC, rtBoard.left + side*(x + 1) / 20 - d / 2, rtBoard.top + side*(y + 1) / 20 - d / 2, d, d, hMarkDC, d, 0, SRCAND);
+			BitBlt(hDC, rtBoard.left + side*(x + 1) / 20 - d / 2, rtBoard.top + side*(y + 1) / 20 - d / 2, d, d, hMarkDC, 0, 0, SRCPAINT);
 		}
 		IsChess(curStep.second)
 		{
-			int x2 = curStep.second.x; int y2 = curStep.second.y;
-			if (curStep.side == BLACK)
-			{
-				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
-			}
-			else if (curStep.side == WHITE)
-			{
-				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(x2 + 1) / 20 - d / 2, rtBoard.top + side*(y2 + 1) / 20 - d / 2, d, d, hCurWhtDC, 0, 0, SRCAND);
-			}
+			x = curStep.second.x;
+			y = curStep.second.y;
+			BitBlt(hDC, rtBoard.left + side*(x + 1) / 20 - d / 2, rtBoard.top + side*(y + 1) / 20 - d / 2, d, d, hMarkDC, d, 0, SRCAND);
+			BitBlt(hDC, rtBoard.left + side*(x + 1) / 20 - d / 2, rtBoard.top + side*(y + 1) / 20 - d / 2, d, d, hMarkDC, 0, 0, SRCPAINT);
 		}
 	}
 
-	DeleteObject(hAssistBmp);
-	DeleteObject(hBlcBmp);
-	DeleteObject(hWhtBmp);
-	DeleteObject(hCurBlcBmp);
-	DeleteObject(hCurWhtBmp);
-
-	DeleteDC(hAssistDC);
-	DeleteDC(hBlcDC);
-	DeleteDC(hWhtDC);
-	DeleteDC(hCurBlcDC);
-	DeleteDC(hCurWhtDC);
 }
 
 
-bool CConSix::DrawChess(HDC hBlcDC,HDC hWhtDC,HDC hCurBlcDC,HDC hCurWhtDC,int d)
+bool CConSix::DrawChess()
 {
-	double pixel=0.8,shadow=0.7;
-	BOOL Alias=true;
+	char filename[MAX_PATH] = { 0 };
+	HBITMAP hBlcBmp, hWhtBmp, hMarkBmp;
 
-	int red=255-GetRValue(BoardColor);
-	int green=255-GetGValue(BoardColor);
-	int blue=255-GetBValue(BoardColor);
+	strcpy(filename, LibPath);
+	strcat(filename, "\\bmp\\black.bmp");
+	hBlcBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, d * 2, d, LR_LOADFROMFILE);
 
-	COLORREF pb,pw;
-	double di,dj,d2=(double)d/2.0-5e-1,r=d2-2e-1,f=sqrt(3.0);
-	double x,y,z,xr,xg,hh;
-	int g;
+	strcpy(filename, LibPath);
+	strcat(filename, "\\bmp\\white.bmp");
+	hWhtBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, d * 2, d, LR_LOADFROMFILE);
 
-	for (int i=0; i<d; i++)
-	{
-		for (int j=0; j<d; j++)
-		{	
-			di=i-d2; dj=j-d2;
-			hh=r-sqrt(di*di+dj*dj);
-			if (hh>=0)
-			{
-				z=r*r-di*di-dj*dj;
-			    if (z>0) z=sqrt(z)*f;
-			    else z=0;
-				x=di; y=dj;
-				xr=sqrt(6*(x*x+y*y+z*z));
-				xr=(2*z-x+y)/xr;
-				if (xr>0.9) xg=(xr-0.9)*10;
-				else xg=0;
-				if (hh>pixel || !Alias)
-				{
-					g=(int)(10+10*xr+xg*140);
-					pb=(g<<16)|(g<<8)|g;
-					g=(int)(200+10*xr+xg*45);
-					pw=(g<<16)|(g<<8)|g;
-				}
-				else
-				{	hh=(pixel-hh)/pixel;
-					g=(int)(10+10*xr+xg*140);
-					double shade;
-					if (di-dj<r/3) shade=1;
-					else shade=shadow;
+	strcpy(filename, LibPath);
+	strcat(filename, "\\bmp\\mark.bmp");
+	hMarkBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, d * 2, d, LR_LOADFROMFILE);
 
-					pb=(//(255<<24)|
-					    (((int)((1-hh)*g+hh*shade*red))<<16)
-						|(((int)((1-hh)*g+hh*shade*green))<<8)
-						|((int)((1-hh)*g+hh*shade*blue)));
+	SelectObject(hBlcDC, hBlcBmp);
+	SelectObject(hWhtDC, hWhtBmp);
+	SelectObject(hMarkDC, hMarkBmp);
 
-					g=(int)(200+10*xr+xg*45);
-
-					pw=(//(255<<24)|
-					    (((int)((1-hh)*g+hh*shade*red))<<16)
-						|(((int)((1-hh)*g+hh*shade*green))<<8)
-						|((int)((1-hh)*g+hh*shade*blue)));
-				}
-				//pb=RGB(0,0,0);
-				//pw=RGB(255,255,255);
-			}
-			else 
-			{
-				pb=pw=RGB(255,255,255);				
-			}
-					
-			SetPixel(hBlcDC,j,i,pb);
-			SetPixel(hWhtDC,j,i,pw);			
-			
-			SetPixel(hCurBlcDC,j,i,pb);
-			SetPixel(hCurWhtDC,j,i,pw);			
-		}
-	}
-	HPEN hPen=CreatePen(PS_SOLID,1,RGB(255,0,0));
-
-	HPEN hOldPen=(HPEN)SelectObject(hCurBlcDC,hPen);
-	MoveToEx(hCurBlcDC,d/2,d/4,NULL);LineTo(hCurBlcDC,d/2,d*3/4);
-	MoveToEx(hCurBlcDC,d/4,d/2,NULL);LineTo(hCurBlcDC,d*3/4,d/2);	
-	SelectObject(hCurBlcDC,hOldPen);	
-	
-	hOldPen=(HPEN)SelectObject(hCurWhtDC,hPen);
-	MoveToEx(hCurWhtDC,d/2,d/4,NULL);LineTo(hCurWhtDC,d/2,d*3/4);
-	MoveToEx(hCurWhtDC,d/4,d/2,NULL);LineTo(hCurWhtDC,d*3/4,d/2);	
-	SelectObject(hCurWhtDC,hOldPen);
-	DeleteObject(hPen);
+	DeleteObject(hBlcBmp);
+	DeleteObject(hWhtBmp);
+	DeleteObject(hMarkBmp);
 
 	return true;
 }
 
 //¥¶¿Ì“˝«Êœ˚œ¢
 BOOL CConSix::ProcessMove(char *moveCmd)
-{	
+{
 	Step tStep;
 	char *res;
-	int pos=0;
-	int len=strlen("move ");
+	int pos = 0;
+	int len = strlen("move ");
 	if ((res = strstr(moveCmd, "move")) == NULL)//—∞’“moveπÿº¸◊÷
 	{
 		return 0;//Œ¥’“µΩπÿº¸◊÷
 	}
 	else
-	{		
+	{
 		pos = (res - moveCmd);
-		pos+=len;
-		
+		pos += len;
+
 		tStep.first.x = moveCmd[pos] - 'A';
 		tStep.first.y = moveCmd[pos + 1] - 'A';
 		tStep.second.x = moveCmd[pos + 2] - 'A';
@@ -285,56 +191,56 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 		tStep.side = player;
 		stepStack.push(tStep);
 
-		if(!FitRules())//≈–∂œ «∑Ò∑˚∫œπÊ‘Ú
+		if (!FitRules())//≈–∂œ «∑Ò∑˚∫œπÊ‘Ú
 		{
-			sprintf(curCmd,"error\n");
-			sprintf(denCmd,"\0");
+			sprintf(curCmd, "error\n");
+			sprintf(denCmd, "\0");
 			stepStack.pop();
 			return -1;//––∆ÂŒ•πÊ
 		}
 		board[tStep.first.x][tStep.first.y] = tStep.side;
-		if(first_hand==true)
+		if (first_hand == true)
 		{
-			first_hand=false;
+			first_hand = false;
 		}
 		else
 		{
 			if (tStep.second.x != -1 && tStep.second.y != -1)
 				board[tStep.second.x][tStep.second.y] = tStep.side;
 		}
-		InvalidateRect(hWnd,&rtBoard,FALSE);	
-		SendMessage(hWnd,WM_PAINT,NULL,NULL);
-//		PlaySnd(0);
+		InvalidateRect(hWnd, &rtBoard, FALSE);
+		SendMessage(hWnd, WM_PAINT, NULL, NULL);
+		//		PlaySnd(0);
 		moveCmd[pos + 4] = '\0';
 		ShowStepHis(moveCmd + pos);
 
 		sprintf(denCmd, "move %c%c%c%c\n", tStep.first.x + 'A', tStep.first.y + 'A', tStep.second.x + 'A', tStep.second.y + 'A');//…˙≥…–¥œ˚œ¢
-		sprintf(curCmd,"\0");
-	}		
-	if(WinOrLose())//≈–∂œ §∏∫
+		sprintf(curCmd, "\0");
+	}
+	if (WinOrLose())//≈–∂œ §∏∫
 	{
-		sprintf(denCmd+strlen(denCmd),"end\n");
-		sprintf(curCmd,"end\n");
+		sprintf(denCmd + strlen(denCmd), "end\n");
+		sprintf(curCmd, "end\n");
 		return 2;//∑÷≥ˆ §∏∫
-	}	
+	}
 	StepNum[player]++;//¿€º∆≤Ω ˝
-	player=NEXTPLAYER(player);
+	player = NEXTPLAYER(player);
 	return 1;//ªÒ»°≥…π¶
 }
 
 bool CConSix::PlaySnd(int sel)
 {
-	char filename[MAX_PATH]={0};
-	switch(sel)
+	char filename[MAX_PATH] = { 0 };
+	switch (sel)
 	{
 	case 0:
 		strcpy(filename, LibPath);
-		strcat(filename,"\\wav\\¬‰◊”.wav");
+		strcat(filename, "\\wav\\¬‰◊”.wav");
 		break;
 	default:
 		break;
-	}	
-	if(!PlaySound(filename,NULL,SND_ASYNC|SND_NOWAIT |SND_FILENAME))
+	}
+	if (!PlaySound(filename, NULL, SND_ASYNC | SND_NOWAIT | SND_FILENAME))
 	{
 		ErrorBox("PlaySound failed");
 		return false;
@@ -344,29 +250,29 @@ bool CConSix::PlaySnd(int sel)
 
 VOID CConSix::ShowStepHis(char *msg)
 {
-	char step[1000];	
-	memset(step,0,sizeof(step));
-	if(player==BLACK)
+	char step[1000];
+	memset(step, 0, sizeof(step));
+	if (player == BLACK)
 	{
-		strcpy(step,"Black: ");
+		strcpy(step, "Black: ");
 	}
-	else if(player==WHITE)
+	else if (player == WHITE)
 	{
-		strcpy(step,"White: ");
-	}	
-	strcat(step,msg);
-	SendMessage(hWnd,GM_SHOWSTEP,(WPARAM)step,(LPARAM)player);
+		strcpy(step, "White: ");
+	}
+	strcat(step, msg);
+	SendMessage(hWnd, GM_SHOWSTEP, (WPARAM)step, (LPARAM)player);
 	return;
 }
 
 VOID CConSix::InitGame()//”Œœ∑≥ı ºªØ
 {
-	memset(StepNum,0,sizeof(StepNum));
+	memset(StepNum, 0, sizeof(StepNum));
 
-	player=BLACK;	
-	first_hand=true;
+	player = BLACK;
+	first_hand = true;
 	InitBoard();	//≥ı ºªØ∆Â≈Ã
-	count=0;
+	count = 0;
 
 	CleanStack(stepStack);
 	return;
@@ -374,16 +280,16 @@ VOID CConSix::InitGame()//”Œœ∑≥ı ºªØ
 
 VOID CConSix::InitBoard()
 {
-	int i,j;
-	for(i=0;i<19;i++)
+	int i, j;
+	for (i = 0; i < 19; i++)
 	{
-		for(j=0;j<19;j++)
+		for (j = 0; j < 19; j++)
 		{
-			board[i][j]=EMPTY;
+			board[i][j] = EMPTY;
 		}
 	}
 
-	InvalidateRect(hWnd,&rtBoard,FALSE);//À¢–¬∆Â≈Ã
+	InvalidateRect(hWnd, &rtBoard, FALSE);//À¢–¬∆Â≈Ã
 	return;
 }
 
@@ -393,40 +299,41 @@ VOID CConSix::InitBoard()
  * @y:	÷∏’Î◊›◊¯±Í
  * return:	∑µªÿ◊≈∑®Ω¯––◊¥Ã¨£¨-1±Ì æ ‰»Î¥ÌŒÛ£¨0±Ì æ ‰»ÎΩ¯––÷–£¨1±Ì æ ‰»ÎΩ· ¯
  */
-BOOL CConSix::OnLButtonDown(int x,int y)
+BOOL CConSix::OnLButtonDown(int x, int y)
 {
-	if(!InsideRect(&rtBoard,x,y)||count==-1)//÷∏’Î‘⁄∆Â≈Ã∑∂ŒßÕ‚ªÚ¥¶”⁄∆¡±Œ ‰»Î◊¥Ã¨
-		return 0;		
-
-	x=(int)((x-rtBoard.left-side/40)*20/side);//∞—∆Â≈Ã◊¯±Í◊™ªª≥… ˝◊È◊¯±Í
-	y=(int)((y-rtBoard.top-side/40)*20/side);
-	if (x>=0&&x<19&&y>=0&&y<19)
-		return SToS(x,y);
-	return 0;
+	Point point;
+	if (!InsideRect(&rtBoard, x, y))
+		return 2;
+	if (count == -1)//÷∏’Î‘⁄∆Â≈Ã∑∂ŒßÕ‚ªÚ¥¶”⁄∆¡±Œ ‰»Î◊¥Ã¨
+		return 0;
+	point.x = ((x - rtBoard.left) * 20 - side / 2) / side;//∞—∆Â≈Ã◊¯±Í◊™ªª≥… ˝◊È◊¯±Í
+	point.y = ((y - rtBoard.top) * 20 - side / 2) / side;
+	if (point.x < 0 || point.x >= 19 || point.y < 0 || point.y >= 19)
+		return 2;
+	return SToS(point);
 }
 
-BOOL CConSix::SToS(int x,int y)
+BOOL CConSix::SToS(Point point)
 {
 	Step tStep;
 
 	//ºÏ≤È◊≈∑®∫œ∑®–‘
-	if(board[x][y]!=EMPTY)
+	if (board[point.x][point.y] != EMPTY)
 		return -1;//◊≈∑®∑«∑®
-	board[x][y]=player;	
+	board[point.x][point.y] = player;
 
-	if(count==0)//µ„ª˜µ⁄“ª¥Œ
+	if (count == 0)//µ„ª˜µ⁄“ª¥Œ
 	{
 		InitStep(tStep);
-		tStep.first.x = x;
-		tStep.first.y = y;
+		tStep.first = point;
 		tStep.side = player;
 		stepStack.push(tStep);
-		if(first_hand)//»À «µ⁄“ª ÷
+		if (first_hand)//»À «µ⁄“ª ÷
 		{
-			count=-1;
-			InvalidateRect(hWnd,&rtBoard,FALSE);
-			SendMessage(hWnd,WM_PAINT,NULL,NULL);
-			PlaySnd(0);	
+			count = -1;
+			InvalidateRect(hWnd, &rtBoard, FALSE);
+			SendMessage(hWnd, WM_PAINT, NULL, NULL);
+			PlaySnd(0);
 			return 1;
 		}
 		else
@@ -447,8 +354,7 @@ BOOL CConSix::SToS(int x,int y)
 	{
 		tStep = stepStack.top();
 		stepStack.pop();
-		tStep.second.x = x;
-		tStep.second.y = y;
+		tStep.second = point;
 		stepStack.push(tStep);
 		count = -1;
 		InvalidateRect(hWnd, &rtBoard, FALSE);
@@ -510,13 +416,13 @@ bool CConSix::WinOrLose()//≈–∂œ §∏∫
 	{
 		if (point[j].x == -1 || point[j].y == -1)
 			break;
-		for (i = 0; i<4; i++)
+		for (i = 0; i < 4; i++)
 		{
 			connect = 0;
 			//∞¥’’œÚ¡øΩ¯––“∆∂Ø
 			tx = point[j].x - lineVector[i][0];
 			ty = point[j].y - lineVector[i][1];
-			while (tx >= 0 && tx<19 && ty >= 0 && ty<19 && board[tx][ty] == side)
+			while (tx >= 0 && tx < 19 && ty >= 0 && ty < 19 && board[tx][ty] == side)
 			{
 				tx -= lineVector[i][0];
 				ty -= lineVector[i][1];
@@ -524,7 +430,7 @@ bool CConSix::WinOrLose()//≈–∂œ §∏∫
 			//œÚ¡ø∑¥œÚ
 			tx += lineVector[i][0];
 			ty += lineVector[i][1];
-			while (tx >= 0 && tx<19 && ty >= 0 && ty<19 && board[tx][ty] == side)
+			while (tx >= 0 && tx < 19 && ty >= 0 && ty < 19 && board[tx][ty] == side)
 			{
 				connect++;//º∆ ˝
 				tx += lineVector[i][0];
@@ -537,41 +443,41 @@ bool CConSix::WinOrLose()//≈–∂œ §∏∫
 			}
 		}
 	}
-	if(win==true&&count!=1)//countŒ™-1 ±±Ì æ¥”∆Â ÷¥¶ªÒ»°◊≈∑®£¨countŒ™0 ±±Ì æ¥”“˝«Ê¥¶ªÒ»°◊≈∑®£¨countŒ™1 ±±Ì æƒ£øÈºÏ≤È“ª◊”ªÒ §
+	if (win == true && count != 1)//countŒ™-1 ±±Ì æ¥”∆Â ÷¥¶ªÒ»°◊≈∑®£¨countŒ™0 ±±Ì æ¥”“˝«Ê¥¶ªÒ»°◊≈∑®£¨countŒ™1 ±±Ì æƒ£øÈºÏ≤È“ª◊”ªÒ §
 	{
-		PostMessage(hWnd,GM_WINLOSE,(WPARAM)(StepNum[BLACK]<<16)+StepNum[WHITE],(LPARAM)side);
-	}	
+		PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)side);
+	}
 	return win;
 }
 
 bool CConSix::FitRules()// «∑Ò∑˚∫œπÊ‘Ú
 {
 	Step sp = stepStack.top();
-	if(sp.first.x<0||sp.first.x>18||sp.first.y<0||sp.first.y>18)
+	if (sp.first.x < 0 || sp.first.x>18 || sp.first.y < 0 || sp.first.y>18)
 	{
 		return false;
 	}
-	if(first_hand==true)
+	if (first_hand == true)
 	{
-		if(board[sp.first.x][sp.first.y]!=EMPTY)
+		if (board[sp.first.x][sp.first.y] != EMPTY)
 		{
 			return false;
-		}	
+		}
 	}
 	else
 	{
-		if(sp.second.x==-1&&sp.second.y==-1)
+		if (sp.second.x == -1 && sp.second.y == -1)
 		{
-			if(board[sp.first.x][sp.first.y]!=EMPTY)
+			if (board[sp.first.x][sp.first.y] != EMPTY)
 				return false;
 			else
 				return true;
 		}
-		if(sp.second.x<0||sp.second.x>18||sp.second.y<0||sp.second.y>18)
+		if (sp.second.x < 0 || sp.second.x>18 || sp.second.y < 0 || sp.second.y>18)
 		{
 			return false;
 		}
-		if(board[sp.first.x][sp.first.y]!=EMPTY||board[sp.second.x][sp.second.y]!=EMPTY)
+		if (board[sp.first.x][sp.first.y] != EMPTY || board[sp.second.x][sp.second.y] != EMPTY)
 		{
 			return false;
 		}
