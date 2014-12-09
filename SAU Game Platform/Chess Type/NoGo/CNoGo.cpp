@@ -274,7 +274,7 @@ BOOL CNoGo::OnLButtonDown(int x,int y)
 	point.x = ((x - rtBoard.left) * 10 - side / 2) / side;//把棋盘坐标转换成数组坐标
 	point.y = ((y - rtBoard.top) * 10 - side / 2) / side;
 	if (point.x < 0 || point.x >= 9 || point.y < 0 || point.y >= 9)
-		return 0;
+		return 2;
 	return SToS(point);
 }
 
