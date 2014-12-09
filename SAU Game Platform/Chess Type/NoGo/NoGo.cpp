@@ -3,7 +3,7 @@
 #include "NoGo.h"
 
 HINSTANCE hInst;
-CNoGo NoGo;
+CNoGo *NoGo;
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
                        DWORD  ul_reason_for_call, 
@@ -35,57 +35,57 @@ DLLFUCTION VOID CheckModule(char *Info, char *ChessName, int *ChessType)
 
 DLLFUCTION VOID InitModule(HWND hWnd, char *LibPath)
 {
-	NoGo.hWnd = hWnd;
-	strncpy(NoGo.LibPath, LibPath, MAX_PATH - 1);
-	NoGo.InitGame();
+	NoGo = new CNoGo(hInst, hWnd, LibPath);
+	NoGo->InitGame();
 }
 
 VOID ExitModule()
 {
+	delete NoGo;
 }
 
 DLLFUCTION VOID OnSize(RECT rtBoard)
 {
-	NoGo.SetBoard(rtBoard);
+	NoGo->SetBoard(rtBoard);
 }
 
 DLLFUCTION VOID DrawBoard(HDC hDC)
 {
-	NoGo.DrawBoard(hDC);
+	NoGo->DrawBoard(hDC);
 }
 
 DLLFUCTION INT OnLButtonDown(int x, int y)
 {
-	return NoGo.OnLButtonDown(x, y);
+	return NoGo->OnLButtonDown(x, y);
 }
 
 DLLFUCTION INT OkMove(char *denCmd)
 {
 	INT k;
-	k = NoGo.OkMove();
-	strcpy(denCmd, NoGo.denCmd);
+	k = NoGo->OkMove();
+	strcpy(denCmd, NoGo->denCmd);
 	return k;
 }
 
 DLLFUCTION VOID CancelMove()
 {
-	NoGo.CancelMove();
+	NoGo->CancelMove();
 }
 
 DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {
-	INT k = NoGo.ProcessMove(moveCmd);
-	strcpy(curCmd, NoGo.curCmd);
-	strcpy(denCmd, NoGo.denCmd);
+	INT k = NoGo->ProcessMove(moveCmd);
+	strcpy(curCmd, NoGo->curCmd);
+	strcpy(denCmd, NoGo->denCmd);
 	return k;
 }
 
 DLLFUCTION VOID OnRun()
 {
-	NoGo.InitGame();
+	NoGo->InitGame();
 }
 
 DLLFUCTION INT GetCurPlayer()
 {
-	return NoGo.player;
+	return NoGo->player;
 }

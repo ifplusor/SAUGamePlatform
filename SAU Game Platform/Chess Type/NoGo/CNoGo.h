@@ -19,7 +19,7 @@ class CNoGo : public CChess
 {
 public:	
 
-	CNoGo();
+	CNoGo(HINSTANCE hInst, HWND hWnd, char *LibPath);
 	~CNoGo();
 
 	//设置棋盘大小
@@ -46,6 +46,7 @@ private:
 	COLORREF BoardColor;//棋盘颜色
 	HPEN hPen;//画笔句柄
 	HFONT hFont;//字体句柄
+	HDC hBlcDC, hWhtDC, hMarkDC;
 
 	int d;//不围棋棋盘刻线间距
 	double pixel;//不围棋棋盘刻线宽度
@@ -54,11 +55,11 @@ private:
 	stack<Step> stepStack;//着法栈
 
 	//绘制棋子
-	bool DrawChess(HDC hBlcDC, HDC hCurBlcDC, HDC hWhtDC, HDC hCurWhtDC, int d);
+	bool DrawChess();
 	//初始化棋盘状态
 	VOID InitBoard();
 	//双方对弈
-	BOOL SToS(int x, int y);
+	BOOL SToS(Point point);
 	//判断胜负
 	bool WinOrLose();
 	//判断棋步合法性

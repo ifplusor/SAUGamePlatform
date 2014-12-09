@@ -15,14 +15,23 @@ VOID __cdecl ErrorBox(LPTSTR ErrorInfo)//错误提示框
 	MessageBox(NULL,error1,"error",MB_OK);
 }
 
-CNoGo::CNoGo()
+CNoGo::CNoGo(HINSTANCE hInst, HWND hWnd, char *LibPath)
 {
+	this->hInst = hInst;
+	this->hWnd = hWnd;
+	strncpy(this->LibPath, LibPath, MAX_PATH - 1);
+
 	BkColor = RGB(0, 0, 0);
 	BoardColor = RGB(255, 255, 0);
 	hPen = NULL;
 	hFont = NULL;
 	InitGame();
 	count = -1;
+
+	HDC hDC = GetDC(hWnd);
+	hBlcDC = CreateCompatibleDC(hDC);
+	hWhtDC = CreateCompatibleDC(hDC);
+	hMarkDC = CreateCompatibleDC(hDC);
 }
 
 CNoGo::~CNoGo()
@@ -31,6 +40,9 @@ CNoGo::~CNoGo()
 		DeleteObject(hPen);
 	if (hFont != NULL)
 		DeleteObject(hFont);
+	DeleteDC(hBlcDC);
+	DeleteDC(hWhtDC);
+	DeleteDC(hMarkDC);
 }
 
 
@@ -48,6 +60,7 @@ VOID CNoGo::SetBoard(RECT rtBoard)
 	fWidth = (int)(d / 3);
 	fHeight = (int)(d * 2 / 3);
 	hFont = CreateSimpleFont(fWidth, fHeight);
+	DrawChess();
 }
 
 VOID CNoGo::DrawBoard(HDC hDC)//绘制棋盘
@@ -63,52 +76,28 @@ VOID CNoGo::DrawBoard(HDC hDC)//绘制棋盘
 	char letter[2],number[3];
 	memset(letter,0,sizeof(letter));
 	memset(number,0,sizeof(number));
-	for(i=0;i<9;i++)
+	for(i=1;i<=9;i++)
 	{			
-		letter[0]='A'+i;
-		itoa(i+1,number,10);
+		letter[0]='A'+i-1;
+		itoa(i,number,10);
 		
-		TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 10 - fWidth / 2), rtBoard.top, letter, 1);//绘制文字				
-		TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 10 - fWidth), rtBoard.bottom - fHeight, number, 2);
+		TextOut(hDC, rtBoard.left + side*i / 10 - fWidth / 2, rtBoard.top+side/20-fHeight/2, letter, 1);//绘制文字				
+		TextOut(hDC, rtBoard.left + side*i / 10 - fWidth / 2, rtBoard.top + side*19 / 20 - fHeight / 2, number, 2);
 
-		MoveToEx(hDC, rtBoard.left + d, (int)(rtBoard.top + side*(i + 1) / 10), NULL);//绘制线
-		LineTo(hDC, rtBoard.right - d, (int)(rtBoard.top + side*(i + 1) / 10));
+		MoveToEx(hDC, rtBoard.left + side / 10, rtBoard.top + side*i / 10, NULL);//绘制线
+		LineTo(hDC, rtBoard.left + side * 9 / 10, rtBoard.top + side*i / 10);
 	}
-	for(i=0;i<9;i++)
+	for(i=1;i<=9;i++)
 	{
-		letter[0]='A'+i;
-		itoa(i+1,number,10);
+		letter[0]='A'+i-1;
+		itoa(i,number,10);
 
-		TextOut(hDC, rtBoard.left + fWidth, (int)(rtBoard.top + side*(i + 1) / 10 - fHeight / 2), letter, 1);
-		TextOut(hDC, rtBoard.right - fWidth * 2, (int)(rtBoard.top + side*(i + 1) / 10 - fHeight / 2), number, 2);
+		TextOut(hDC, rtBoard.left+side/20 - fWidth/2, rtBoard.top + side*i / 10 - fHeight / 2, letter, 1);
+		TextOut(hDC, rtBoard.left + side*19 / 20 - fWidth / 2, rtBoard.top + side*i / 10 - fHeight / 2, number, 2);
 		
-		MoveToEx(hDC, rtBoard.left + side*(i + 1) / 10, rtBoard.top + d, NULL);
-		LineTo(hDC, rtBoard.left + side*(i + 1) / 10, rtBoard.bottom - d);
-	}
-	
-	HDC hAssistDC,hBlcDC,hWhtDC,hCurBlcDC,hCurWhtDC;
-	hAssistDC=CreateCompatibleDC(hDC);
-	hBlcDC=CreateCompatibleDC(hDC);
-	hWhtDC=CreateCompatibleDC(hDC);
-	hCurBlcDC=CreateCompatibleDC(hDC);
-	hCurWhtDC=CreateCompatibleDC(hDC);	
-
-	HBITMAP hAssistBmp,hBlcBmp,hWhtBmp,hCurBlcBmp,hCurWhtBmp;
-	hAssistBmp=CreateCompatibleBitmap(hDC,d,d);
-	hBlcBmp=CreateCompatibleBitmap(hDC,d,d);
-	hWhtBmp=CreateCompatibleBitmap(hDC,d,d);
-	hCurBlcBmp=CreateCompatibleBitmap(hDC,d,d);
-	hCurWhtBmp=CreateCompatibleBitmap(hDC,d,d);	
-
-	SelectObject(hAssistDC,hAssistBmp);
-	SelectObject(hBlcDC,hBlcBmp);
-	SelectObject(hWhtDC,hWhtBmp);
-	SelectObject(hCurBlcDC,hCurBlcBmp);
-	SelectObject(hCurWhtDC,hCurWhtBmp);	
-
-	DrawAssist(hAssistDC,d/2);
-	DrawChess(hBlcDC,hWhtDC,hCurBlcDC,hCurWhtDC,d);//绘制棋子
-	
+		MoveToEx(hDC, rtBoard.left + side*i / 10, rtBoard.top + side / 10, NULL);
+		LineTo(hDC, rtBoard.left + side*i / 10, rtBoard.top + side*9 / 10);
+	}	
 	
 	for(i=0;i<9;i++)
 	{
@@ -116,13 +105,13 @@ VOID CNoGo::DrawBoard(HDC hDC)//绘制棋盘
 		{
 			if(board[i][j]==BLACK)
 			{				
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 10 - d / 2, rtBoard.top + side*(j + 1) / 10 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 10 - d / 2, rtBoard.top + side*(j + 1) / 10 - d / 2, d, d, hBlcDC, 0, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i * 2 + 1) / 20, rtBoard.top + side*(j * 2 + 1) / 20, d, d, hBlcDC, d, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i * 2 + 1) / 20, rtBoard.top + side*(j * 2 + 1) / 20, d, d, hBlcDC, 0, 0, SRCPAINT);
 			}
 			else if(board[i][j]==WHITE)
 			{				
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 10 - d / 2, rtBoard.top + side*(j + 1) / 10 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 10 - d / 2, rtBoard.top + side*(j + 1) / 10 - d / 2, d, d, hWhtDC, 0, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i * 2 + 1) / 20, rtBoard.top + side*(j * 2 + 1) / 20, d, d, hWhtDC, d, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i * 2 + 1) / 20, rtBoard.top + side*(j * 2 + 1) / 20, d, d, hWhtDC, 0, 0, SRCPAINT);
 			}
 		}
 	}
@@ -131,113 +120,36 @@ VOID CNoGo::DrawBoard(HDC hDC)//绘制棋盘
 	{
 		Step curStep = stepStack.top();
 		int x1 = curStep.point.x; int y1 = curStep.point.y;
-		if (curStep.side == BLACK)
-		{
-			BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 10 - d / 2, rtBoard.top + side*(y1 + 1) / 10 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-			BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 10 - d / 2, rtBoard.top + side*(y1 + 1) / 10 - d / 2, d, d, hCurBlcDC, 0, 0, SRCAND);
-		}
-		else if (curStep.side == WHITE)
-		{
-			BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 10 - d / 2, rtBoard.top + side*(y1 + 1) / 10 - d / 2, d, d, hAssistDC, 0, 0, SRCPAINT);
-			BitBlt(hDC, rtBoard.left + side*(x1 + 1) / 10 - d / 2, rtBoard.top + side*(y1 + 1) / 10 - d / 2, d, d, hCurWhtDC, 0, 0, SRCAND);
-		}
+		BitBlt(hDC, rtBoard.left + side*(x1 * 2 + 1) / 20, rtBoard.top + side*(y1 * 2 + 1) / 20, d, d, hMarkDC, d, 0, SRCAND);
+		BitBlt(hDC, rtBoard.left + side*(x1 * 2 + 1) / 20, rtBoard.top + side*(y1 * 2 + 1) / 20, d, d, hMarkDC, 0, 0, SRCPAINT);
 	}
-
-	DeleteObject(hAssistBmp);
-	DeleteObject(hBlcBmp);
-	DeleteObject(hWhtBmp);
-	DeleteObject(hCurBlcBmp);
-	DeleteObject(hCurBlcBmp);
-
-	DeleteDC(hAssistDC);
-	DeleteDC(hBlcDC);
-	DeleteDC(hWhtDC);
-	DeleteDC(hCurBlcDC);
-	DeleteDC(hCurWhtDC);
 }
 
-bool CNoGo::DrawChess(HDC hBlcDC,HDC hWhtDC,HDC hCurBlcDC,HDC hCurWhtDC,int d)
+bool CNoGo::DrawChess()
 {
-	double pixel=0.8,shadow=0.7;
-	BOOL Alias=true;
+	char filename[MAX_PATH] = { 0 };
+	HBITMAP hBlcBmp, hWhtBmp, hMarkBmp;
 
-	int red=255-GetRValue(BoardColor);
-	int green=255-GetGValue(BoardColor);
-	int blue=255-GetBValue(BoardColor);
+	strcpy(filename, LibPath);
+	strcat(filename, "\\bmp\\black.bmp");
+	hBlcBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, d * 2, d, LR_LOADFROMFILE);
 
-	COLORREF pb,pw;
-	double di,dj,d2=(double)d/2.0-5e-1,r=d2-2e-1,f=sqrt(3.0);
-	double x,y,z,xr,xg,hh;
-	int g;
+	strcpy(filename, LibPath);
+	strcat(filename, "\\bmp\\white.bmp");
+	hWhtBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, d * 2, d, LR_LOADFROMFILE);
 
-	for (int i=0; i<d; i++)
-	{
-		for (int j=0; j<d; j++)
-		{	
-			di=i-d2; dj=j-d2;
-			hh=r-sqrt(di*di+dj*dj);
-			if (hh>=0)
-			{	
-				z=r*r-di*di-dj*dj;
-			    if (z>0) z=sqrt(z)*f;
-			    else z=0;
-				x=di; y=dj;
-				xr=sqrt(6*(x*x+y*y+z*z));
-				xr=(2*z-x+y)/xr;
-				if (xr>0.9) xg=(xr-0.9)*10;
-				else xg=0;
-				if (hh>pixel || !Alias)
-				{
-					g=(int)(10+10*xr+xg*140);
-					pb=(g<<16)|(g<<8)|g;
-					g=(int)(200+10*xr+xg*45);
-					pw=(g<<16)|(g<<8)|g;
-				}
-				else
-				{	hh=(pixel-hh)/pixel;
-					g=(int)(10+10*xr+xg*140);
-					double shade;
-					if (di-dj<r/3) shade=1;
-					else shade=shadow;
+	strcpy(filename, LibPath);
+	strcat(filename, "\\bmp\\mark.bmp");
+	hMarkBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, d * 2, d, LR_LOADFROMFILE);
 
-					pb=(//(255<<24)|
-					    (((int)((1-hh)*g+hh*shade*red))<<16)
-						|(((int)((1-hh)*g+hh*shade*green))<<8)
-						|((int)((1-hh)*g+hh*shade*blue)));
+	SelectObject(hBlcDC, hBlcBmp);
+	SelectObject(hWhtDC, hWhtBmp);
+	SelectObject(hMarkDC, hMarkBmp);
 
-					g=(int)(200+10*xr+xg*45);
+	DeleteObject(hBlcBmp);
+	DeleteObject(hWhtBmp);
+	DeleteObject(hMarkBmp);
 
-					pw=(//(255<<24)|
-					    (((int)((1-hh)*g+hh*shade*red))<<16)
-						|(((int)((1-hh)*g+hh*shade*green))<<8)
-						|((int)((1-hh)*g+hh*shade*blue)));
-				}
-				//pb=RGB(0,0,0);
-				//pw=RGB(255,255,255);
-			}
-			else 
-			{
-				pb=pw=RGB(255,255,255);				
-			}
-					
-			SetPixel(hBlcDC,j,i,pb);
-			SetPixel(hWhtDC,j,i,pw);			
-			
-			SetPixel(hCurBlcDC,j,i,pb);
-			SetPixel(hCurWhtDC,j,i,pw);			
-		}
-	}
-	HPEN hPen=CreatePen(PS_SOLID,1,RGB(255,0,0));
-
-	HPEN hOldPen=(HPEN)SelectObject(hCurBlcDC,hPen);
-	MoveToEx(hCurBlcDC,d/2,d/4,NULL);LineTo(hCurBlcDC,d/2,d*3/4);
-	MoveToEx(hCurBlcDC,d/4,d/2,NULL);LineTo(hCurBlcDC,d*3/4,d/2);	
-	SelectObject(hCurBlcDC,hOldPen);	
-	
-	hOldPen=(HPEN)SelectObject(hCurWhtDC,hPen);
-	MoveToEx(hCurWhtDC,d/2,d/4,NULL);LineTo(hCurWhtDC,d/2,d*3/4);
-	MoveToEx(hCurWhtDC,d/4,d/2,NULL);LineTo(hCurWhtDC,d*3/4,d/2);	
-	SelectObject(hCurWhtDC,hOldPen);	 
 	return true;
 }
 
@@ -353,24 +265,26 @@ VOID CNoGo::InitBoard()
 
 BOOL CNoGo::OnLButtonDown(int x,int y)
 {
-	if (!InsideRect(&rtBoard, x, y) || count == -1)//count=-1时return0可能造成意外
-		return 0;		
+	Point point;
+	if (!InsideRect(&rtBoard, x, y))
+		return 2;
+	if (count == -1)//count=-1时return0可能造成意外
+		return 0;
 
-	x=(int)((x-rtBoard.left-side/20)*10/side);//把棋盘坐标转换成数组坐标
-	y=(int)((y-rtBoard.top-side/20)*10/side);
-	if (x >= 0 && x<9 && y >= 0 && y<9)
-		return SToS(x, y);
-	return 0;
+	point.x = ((x - rtBoard.left) * 10 - side / 2) / side;//把棋盘坐标转换成数组坐标
+	point.y = ((y - rtBoard.top) * 10 - side / 2) / side;
+	if (point.x < 0 || point.x >= 9 || point.y < 0 || point.y >= 9)
+		return 0;
+	return SToS(point);
 }
 
-BOOL CNoGo::SToS(int x,int y)
+BOOL CNoGo::SToS(Point point)
 {
 	Step tStep;
-	if (board[x][y] != EMPTY)
+	if (board[point.x][point.y] != EMPTY)
 		return -1;
-	board[x][y]=player;	
-	tStep.point.x = x;
-	tStep.point.y = y;
+	board[point.x][point.y] = player;
+	tStep.point = point;
 	tStep.side = player;
 	stepStack.push(tStep);
 	InvalidateRect(hWnd, &rtBoard, FALSE);
