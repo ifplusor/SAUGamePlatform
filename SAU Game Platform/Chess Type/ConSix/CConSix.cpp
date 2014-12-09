@@ -82,8 +82,8 @@ VOID CConSix::DrawBoard(HDC hDC)//绘制棋盘
 		letter[0] = 'A' + i - 1;
 		itoa(i - 1, number, 10);
 
-		TextOut(hDC, rtBoard.left + side*i / 20 - fWidth / 2, rtBoard.top + fHeight / 2, letter, 1);//绘制文字				
-		TextOut(hDC, rtBoard.left + side*i / 20 - fWidth, rtBoard.top + side * 19 / 20 + fHeight / 2, number, 2);
+		TextOut(hDC, rtBoard.left + side*i / 20 - fWidth / 2, rtBoard.top + side / 40 - fHeight / 2, letter, 1);//绘制文字				
+		TextOut(hDC, rtBoard.left + side*i / 20 - fWidth, rtBoard.top + side * 39 / 40 - fHeight / 2, number, 2);
 
 		MoveToEx(hDC, rtBoard.left + side / 20, rtBoard.top + side*i / 20, NULL);//绘制线
 		LineTo(hDC, rtBoard.left + side * 19 / 20, rtBoard.top + side*i / 20);
