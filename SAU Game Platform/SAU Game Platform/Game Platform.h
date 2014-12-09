@@ -17,7 +17,6 @@
 #pragma comment(lib,"comctl32.lib")
 #pragma comment(lib,"Lib\\CommFunc.lib")
 #pragma comment(lib,"Lib\\FileDlg.lib")
-#pragma comment(lib,"Lib\\Thread.lib")
 
 
 #include <Windows.h>
@@ -29,7 +28,6 @@
 #include "Set.h"
 #include "Include\\CommFunc.h"
 #include "Include\\FileDlg.h"
-#include "Include\\Thread.h"
 
 using namespace std;
 

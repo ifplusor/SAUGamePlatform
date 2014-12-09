@@ -10,6 +10,7 @@
 #define CONTROL_H_GAMEPLATFORM
 
 #include "Game Platform.h"
+#include "Thread.h"
 #include "CEngine.h"
 
 
