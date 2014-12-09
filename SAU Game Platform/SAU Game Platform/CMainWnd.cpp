@@ -929,7 +929,7 @@ VOID CMainWnd::SetName(char* nameCmd, int player)
 	else if (player == WHITE)
 	{
 		if (nameCmd == NULL)
-			strcpy(strBlcName, EName);
+			strcpy(strWhtName, EName);
 		else
 		{
 			strncpy(strWhtName, nameCmd, 49);
