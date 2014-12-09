@@ -20,7 +20,7 @@ class CAmazon : public CChess
 {
 public:	
 
-	CAmazon();
+	CAmazon(HINSTANCE hInst, HWND hWnd, char *LibPath);
 	~CAmazon();
 
 	//…Ë÷√∆Â≈Ã¥Û–°

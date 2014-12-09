@@ -3,7 +3,7 @@
 #include "Amazon.h"
 
 HINSTANCE hInst;
-CAmazon Amazon;
+CAmazon *Amazon;
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
                        DWORD  ul_reason_for_call, 
@@ -36,57 +36,57 @@ DLLFUCTION VOID CheckModule(char *Info, char *ChessName, int *ChessType)
 
 DLLFUCTION VOID InitModule(HWND hWnd, char *LibPath)
 {
-	Amazon.hWnd = hWnd;
-	strncpy(Amazon.LibPath, LibPath, MAX_PATH - 1);
-	Amazon.InitGame();
+	Amazon = new CAmazon(hInst, hWnd, LibPath);
+	Amazon->InitGame();
 }
 
 VOID ExitModule()
 {
+	delete Amazon;
 }
 
 DLLFUCTION VOID OnSize(RECT rtBoard)
 {
-	Amazon.SetBoard(rtBoard);
+	Amazon->SetBoard(rtBoard);
 }
 
 DLLFUCTION VOID DrawBoard(HDC hDC)
 {
-	Amazon.DrawBoard(hDC);
+	Amazon->DrawBoard(hDC);
 }
 
 DLLFUCTION INT OnLButtonDown(int x, int y)
 {
-	return Amazon.OnLButtonDown(x, y);
+	return Amazon->OnLButtonDown(x, y);
 }
 
 DLLFUCTION INT OkMove(char *denCmd)
 {
 	INT k;
-	k = Amazon.OkMove();
-	strcpy(denCmd, Amazon.denCmd);
+	k = Amazon->OkMove();
+	strcpy(denCmd, Amazon->denCmd);
 	return k;
 }
 
 DLLFUCTION VOID CancelMove()
 {
-	Amazon.CancelMove();
+	Amazon->CancelMove();
 }
 
 DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {
-	INT k = Amazon.ProcessMove(moveCmd);
-	strcpy(curCmd, Amazon.curCmd);
-	strcpy(denCmd, Amazon.denCmd);
+	INT k = Amazon->ProcessMove(moveCmd);
+	strcpy(curCmd, Amazon->curCmd);
+	strcpy(denCmd, Amazon->denCmd);
 	return k;
 }
 
 DLLFUCTION VOID OnRun()
 {
-	Amazon.InitGame();
+	Amazon->InitGame();
 }
 
 DLLFUCTION INT GetCurPlayer()
 {
-	return Amazon.player;
+	return Amazon->player;
 }
