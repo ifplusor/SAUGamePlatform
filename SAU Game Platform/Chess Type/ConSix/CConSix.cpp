@@ -106,13 +106,13 @@ VOID CConSix::DrawBoard(HDC hDC)//ªÊ÷∆∆Â≈Ã
 		{
 			if (board[i][j] == BLACK)
 			{
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hBlcDC, d, 0, SRCAND);
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hBlcDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(i*2 + 1) / 40, rtBoard.top + side*(j*2 + 1) / 40, d, d, hBlcDC, d, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i*2 + 1) / 40, rtBoard.top + side*(j*2 + 1) / 40, d, d, hBlcDC, 0, 0, SRCPAINT);
 			}
 			else if (board[i][j] == WHITE)
 			{
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hWhtDC, d, 0, SRCAND);
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 20 - d / 2, rtBoard.top + side*(j + 1) / 20 - d / 2, d, d, hWhtDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(i*2 + 1) / 40, rtBoard.top + side*(j*2 + 1) / 40, d, d, hWhtDC, d, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i*2 + 1) / 40, rtBoard.top + side*(j*2 + 1) / 40, d, d, hWhtDC, 0, 0, SRCPAINT);
 			}
 		}
 	}
@@ -125,15 +125,15 @@ VOID CConSix::DrawBoard(HDC hDC)//ªÊ÷∆∆Â≈Ã
 		{
 			x = curStep.first.x;
 			y = curStep.first.y;
-			BitBlt(hDC, rtBoard.left + side*(x + 1) / 20 - d / 2, rtBoard.top + side*(y + 1) / 20 - d / 2, d, d, hMarkDC, d, 0, SRCAND);
-			BitBlt(hDC, rtBoard.left + side*(x + 1) / 20 - d / 2, rtBoard.top + side*(y + 1) / 20 - d / 2, d, d, hMarkDC, 0, 0, SRCPAINT);
+			BitBlt(hDC, rtBoard.left + side*(x*2 + 1) / 40, rtBoard.top + side*(y*2 + 1) / 40, d, d, hMarkDC, d, 0, SRCAND);
+			BitBlt(hDC, rtBoard.left + side*(x*2 + 1) / 40, rtBoard.top + side*(y*2 + 1) / 40, d, d, hMarkDC, 0, 0, SRCPAINT);
 		}
 		IsChess(curStep.second)
 		{
 			x = curStep.second.x;
 			y = curStep.second.y;
-			BitBlt(hDC, rtBoard.left + side*(x + 1) / 20 - d / 2, rtBoard.top + side*(y + 1) / 20 - d / 2, d, d, hMarkDC, d, 0, SRCAND);
-			BitBlt(hDC, rtBoard.left + side*(x + 1) / 20 - d / 2, rtBoard.top + side*(y + 1) / 20 - d / 2, d, d, hMarkDC, 0, 0, SRCPAINT);
+			BitBlt(hDC, rtBoard.left + side*(x*2 + 1) / 40, rtBoard.top + side*(y*2 + 1) / 40, d, d, hMarkDC, d, 0, SRCAND);
+			BitBlt(hDC, rtBoard.left + side*(x*2 + 1) / 40, rtBoard.top + side*(y*2 + 1) / 40, d, d, hMarkDC, 0, 0, SRCPAINT);
 		}
 	}
 
