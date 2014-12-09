@@ -1,0 +1,5 @@
+Library FileDlg
+EXPORTS
+	DoModal @1
+	GetFilePath @2
+	GetFolderPath @3
