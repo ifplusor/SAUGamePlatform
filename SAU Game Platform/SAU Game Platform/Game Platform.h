@@ -26,8 +26,8 @@
 #include "resource.h"
 #include "re_function.h"
 #include "Set.h"
-#include "Include\\CommFunc.h"
-#include "Include\\FileDlg.h"
+#include "..\CommFunc\CommFunc.h"
+#include "..\FileDlg\FileDlg.h"
 
 using namespace std;
 

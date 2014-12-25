@@ -22,10 +22,10 @@ typedef struct _PROCESSDESCRIBE
 	HANDLE engine_read, platform_write;//引擎读平台写匿名管道
 	HANDLE platform_read, engine_write;//引擎写平台读匿名管道
 	HANDLE hPipe;//命名管道
-	HANDLE hEProcess;
+	HANDLE hEProcess;//引擎进程句柄
 	HWND console_hwnd;//引擎信息窗口句柄
 	HANDLE console_write, console_read;//引擎信息窗口管道
-	HANDLE hCProcess;
+	HANDLE hCProcess;//信息窗口进程句柄
 }PROCESSDESCRIBE;
 
 class CEngine
@@ -61,7 +61,7 @@ private:
 	char readBuffer[FULLBUFSIZE];//读引擎信息缓存区
 	char indexBuf;
 
-	PROCESSDESCRIBE pde;
+	PROCESSDESCRIBE pde;//引擎相关进程描述符
 
 	//通过匿名管道连接引擎引擎
 	bool LinkEngineWithUnnamed();
