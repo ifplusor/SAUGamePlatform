@@ -3,6 +3,8 @@
 
 
 #include "Game Platform.h"
+#include "CNetWnd.h"
+#include "CChatWnd.h"
 
 
 #define WM_SOCKET		0X1016

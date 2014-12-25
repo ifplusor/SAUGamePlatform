@@ -317,7 +317,7 @@ DWORD CEngine::ReadMsg(char *msg,int size)
 //ÍùÒıÇæĞ´ÏûÏ¢
 DWORD CEngine::WriteMsg(char *msg)
 {
-	DWORD dwWrite,temp;	
+	DWORD dwWrite;	
 	HANDLE hFile=NULL;	
 	if(linkType==UNNAMEDPIPE)
 		hFile=pde.platform_write;

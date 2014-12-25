@@ -52,6 +52,13 @@ void mapFunction(int menuID,FILE *fp)
 			break;
 		case IDF_MANUAL_SHOT:
 			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::ShotBoard));
+			break;
+		case IDF_NETWORK_OPEN:
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::NetworkStart));
+			break;
+		case IDF_NETWORK_CLOSE:
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::NetworkStop));
+			break;
 		default:
 			break;
 		}
@@ -102,7 +109,7 @@ HMENU CreateMainMenu(FILE *fp)
 	hMenu=CreateMenu();//´´½¨²Ëµ¥
 	if(hMenu==NULL)
 	{
-		ErrorBox("Create Language Menu failed !");
+		ErrorBox("Create main menu failed !");
 		return NULL;
 	}
 
@@ -163,7 +170,6 @@ HMENU CreateSubMenu(FILE *fp)
 {
 	char tag[30];
 	char string[80];
-	int type;
 	HMENU hMenu=NULL;
 	MENUITEMINFO menuItem;
 

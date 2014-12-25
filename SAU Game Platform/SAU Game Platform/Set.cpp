@@ -20,17 +20,17 @@ VOID InitialWithIni()
 	//默认棋种选择
 	GetPrivateProfileString("CHESS", "Default", "\0", gameSet.DefualtChess, sizeof(gameSet.DefualtChess), ".\\Config.ini");
 	//引擎信息显示，默认显示
-	gameSet.swEngine=GetPrivateProfileInt("SHOW","EngineInfo",1,".\\Config.ini");
+	gameSet.swEngine=GetPrivateProfileInt("SHOW","EngineInfo",TRUE,".\\Config.ini");
 	//棋盘材质，默认无棋盘材质
 	GetPrivateProfileString("BOARD","Material","\0",gameSet.BoardFileName,sizeof(gameSet.BoardFileName),".\\Config.ini");
 	//棋谱保存位置
 	GetPrivateProfileString("SAVE","sfgDir","\0",gameSet.cmDir,sizeof(gameSet.cmDir),".\\Config.ini");
 	//是否单步保存棋谱，默认为否
-	gameSet.SingleStep=GetPrivateProfileInt("SAVE","SingleStep",0,".\\Config.ini");
+	gameSet.SingleStep=GetPrivateProfileInt("SAVE","SingleStep",FALSE,".\\Config.ini");
 	//是否一起保存棋谱，默认为否
-	gameSet.AllStep=GetPrivateProfileInt("SAVE","AllStep",0,".\\Config.ini");
+	gameSet.AllStep=GetPrivateProfileInt("SAVE","AllStep",FALSE,".\\Config.ini");
 	//是否截图，默认为否
-	gameSet.PrintScr=GetPrivateProfileInt("SAVE","PrintScr",0,".\\Config.ini");
+	gameSet.PrintScr=GetPrivateProfileInt("SAVE","PrintScr",FALSE,".\\Config.ini");
 	//截图位置
 	GetPrivateProfileString("SAVE","PrintScrDir","\0",gameSet.PrintScrDir,sizeof(gameSet.PrintScrDir),".\\Config.ini");
 	//背景图片
@@ -44,9 +44,9 @@ VOID InitialWithIni()
 	//音量，默认30
 	gameSet.volume=GetPrivateProfileInt("MUSIC","Volume",30,".\\Config.ini");
 	//单曲循环，默认循环
-	gameSet.CirclePlay=GetPrivateProfileInt("MUSIC","CirclePlay",1,".\\Config.ini");
+	gameSet.CirclePlay=GetPrivateProfileInt("MUSIC","CirclePlay",TRUE,".\\Config.ini");
 	//停止播放，默认停止
-	gameSet.StopPlay=GetPrivateProfileInt("MUSIC","StopPlay",1,".\\Config.ini");
+	gameSet.StopPlay=GetPrivateProfileInt("MUSIC","StopPlay",TRUE,".\\Config.ini");
 	//读取图片索引值
 	gameSet.indexBdPic=GetPrivateProfileInt("PICTURE","indexBdPic",0,".\\Config.ini");
 	gameSet.indexBkPic=GetPrivateProfileInt("PICTURE","indexBkPic",0,".\\Config.ini");

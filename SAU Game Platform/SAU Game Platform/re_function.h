@@ -17,8 +17,10 @@
 #define IDF_TOOL					4
 #define IDF_DELETE					5
 #define IDF_MANUAL_SHOT				6
+
 #define IDF_GAME_START				11
 #define IDF_GAME_STOP				12
+
 #define IDF_BLACK_LOAD				21
 #define IDF_BLACK_UNLOAD			22
 #define IDF_BLACK_SHOW				23
@@ -30,9 +32,11 @@
 #define IDF_WHITE_UNNAMEPIPE		29
 #define IDF_WHITE_NAMEPIPE			30
 #define IDF_SHOW_FULLSCREEN
-#define	IDF_NETWORK_OPEN
-#define IDF_NETWORK_CLOSE
+
+#define	IDF_NETWORK_OPEN			41
+#define IDF_NETWORK_CLOSE			42
 #define IDF_NETWORK_SET
+
 #define IDF_INSTRUCTION
 #define IDF_ABOUT
 

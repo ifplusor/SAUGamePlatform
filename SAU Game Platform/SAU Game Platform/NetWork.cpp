@@ -1,27 +1,25 @@
-#include "NetWork.h"
-#include "CNetWnd.h"
-#include "CChatWnd.h"
+#include "Network.h"
 #include "Control.h"
 #include "GameType.h"
 
 
-ServerInfo HOSTINFO={{0,1037},NULL},CLIENTINFO={{0,1037},NULL},SERVERINFO={{0,1036},NULL};
+char buffer[MTU]; //缓存区
+char FAR * lpBuffer = buffer;
+
+ServerInfo HOSTINFO={{0,2048},NULL},CLIENTINFO={{0,2048},NULL},SERVERINFO={{0,2047},NULL};
 MessageQueue SendBuffer,ReceiveBuffer;
 HANDLE SendProc,ReceiveProc;
 
 ClientInfo clientInfo={0};
-char buffer[MTU]; 
-char FAR * lpBuffer = buffer; 
 
 LPHOSTENT phost;
 struct hostent far *hostaddr;//服务器网络信息
 struct hostent hostnm; 
 
-int NetWork=0;//联网方式工作标志:0.未开启网络模块 1.点对点 2.客户机-服务器
+int NetWork=0;//网络服务标志: 0.未开启网络服务 1.点对点 2.客户机-服务器
 int GameMode_2;//辅助对弈模式标记
-bool NetMode=false;
-bool ConnectMode=false;
-bool start=false;
+bool NetMode=false;//点对点连接模式中角色标志: true.作为服务器 false.作为客户端
+bool ConnectMode=false;//客户机-服务器连接模式中连接标志: true.已连接到服务器 false.未连接到服务器
 int index=0;
 
 
@@ -41,19 +39,31 @@ BOOL Connect(HWND hWnd,WPARAM wParam,LPARAM lParam);
 BOOL Server(HWND hWnd,WPARAM wParam,LPARAM lParam);
 BOOL Accept(HWND hWnd,WPARAM wParam,LPARAM lParam);
 
-int NetError(char *message);
+
+int NetError(char *message)
+{
+	char buf[256];
+	int error;
+	error = WSAGetLastError();
+	sprintf(buf, "%s\nerror:%d\n", message, error);
+	MessageBox(NULL, (LPSTR)buf, "Warning", MB_ICONEXCLAMATION);
+	return error;
+}
 
 
+/**
+ * NetWndProc - 网络服务窗口回调函数
+ */
 LRESULT CALLBACK NetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	switch(uMsg)
 	{
-	case WM_CREATE:
-		//开启WinSock模块
+	case WM_CREATE://开启WinSock模块
 		WORD wMajorVersion, wMinorVersion; //WinSock支持版本
 		LPWSADATA lpmyWSAData; 
 		WORD VersionReqd; 
-		int ret; 
+		int ret;
+
 		wMajorVersion = MAJOR_VERSION; 
 		wMinorVersion = MINOR_VERSION; 
 		VersionReqd = WSA_MAKEWORD(wMajorVersion,wMinorVersion);
@@ -63,29 +73,25 @@ LRESULT CALLBACK NetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			MsgBox("内存申请出错!开启WinSock失败","Error",0);
 			break;
 		}
+		//启动WinSock模块
 		if ((ret=WSAStartup(VersionReqd, lpmyWSAData))!= 0) 
 			NetError("WSAStartup() failed\n"); 
+
 		//获取本机IP
 		gethostname(buffer,sizeof(buffer));
 		phost=gethostbyname(buffer);
 		HOSTINFO.ad.ip=ntohl(((struct in_addr *)phost->h_addr)->S_un.S_addr);
 
-		start=true;
-		SendProc=CreateThread(NULL,NULL,SendInfo,NULL,NULL,0);
-		ReceiveProc=CreateThread(NULL,NULL,DealReceiveInfo,NULL,NULL,0);
-		//网络工作模式初始化
-		NetWork=2;
+		//初始化网络服务模块
+		NetWork=1;
 		NetMode=false;
 		ConnectMode=false;
-		ChatWnd.hNet=NetWnd.hNet=CreateDialog(hInst,MAKEINTRESOURCE(IDD_NET),NULL,NetSetWndProc);
+		ChatWnd->hNet=NetWnd->hNet=CreateDialog(hInst,MAKEINTRESOURCE(IDD_NET),NULL,NetSetWndProc);//创建网络设置对话框
+
+		SendProc=CreateThread(NULL,NULL,SendInfo,NULL,NULL,0);
+		ReceiveProc=CreateThread(NULL,NULL,DealReceiveInfo,NULL,NULL,0);
 		break;
-	case GM_CREATECHAT:				
-		ChatWnd.CreateWnd();
-		break;
-	case GM_DESTROYCHAT:
-		DestroyWindow(ChatWnd.hWnd);
-		break;
-	case WM_SOCKET:
+	case WM_SOCKET://套接字消息
 		if(WSAGETSELECTERROR(lParam))
 		{
 			NetError("WSAGETSELECTERROR!");
@@ -97,7 +103,7 @@ LRESULT CALLBACK NetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		{
 			switch(WSAGETSELECTEVENT(lParam))
 			{
-			case FD_READ:
+			case FD_READ://接收信息
 				ReceiveInfo(hWnd,wParam,lParam);
 				break;
 			case FD_WRITE:
@@ -111,15 +117,17 @@ LRESULT CALLBACK NetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			case FD_CLOSE:
 				if(WSAAsyncSelect((SOCKET)wParam,hWnd,0,0) == SOCKET_ERROR) 
 					NetError("WSAAsyncSelect Failed.\n");
-				if(wParam==SERVERINFO.s)
-					SendMessage(NetWnd.hNet,IDB_DISCONNECT_SERVER,NULL,NULL);
-				else if(wParam==CLIENTINFO.s)
+				if (wParam == SERVERINFO.s)//服务器套接字断开连接
+				{
+					SendMessage(NetWnd->hNet, IDB_DISCONNECT_SERVER, NULL, NULL);
+				}
+				else if(wParam==CLIENTINFO.s)//客户端套接字断开连接
 				{
 					closesocket(wParam);
 					CLIENTINFO.s=NULL;
 					MsgBox("Opponent has disconnect!","Msg",2000);
-					if(ChatWnd.hWnd!=NULL)
-						SendMessage(NetWnd.hWnd,GM_DESTROYCHAT,NULL,NULL);
+					if(ChatWnd->hWnd!=NULL)
+						SendMessage(NetWnd->hWnd,GM_DESTROYCHAT,NULL,NULL);
 				}
 				else
 					closesocket(wParam);
@@ -128,16 +136,23 @@ LRESULT CALLBACK NetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 		}
 		break;
 	case WM_DESTROY:
-		NetWnd.hNet=NULL;
-		start=false;
+		NetWork=0;//设置网络服务标志
+		DestroyWindow(NetWnd->hNet);//销毁网络设置对话框
+		NetWnd->hNet=NULL;
+		// 关闭打开的套接字
 		if(SERVERINFO.s!=NULL)
 			closesocket(SERVERINFO.s);
 		if(CLIENTINFO.s!=NULL)
 			closesocket(CLIENTINFO.s);
 		if(HOSTINFO.s!=NULL)
 			closesocket(HOSTINFO.s);
-		WSACleanup();
-		NetWork=0;
+		WSACleanup();//关闭WinSock模块
+		break;
+	case GM_CREATECHAT:
+		ChatWnd->CreateWnd();
+		break;
+	case GM_DESTROYCHAT:
+		DestroyWindow(ChatWnd->hWnd);
 		break;
 	default:
 		return DefWindowProc(hWnd,uMsg,wParam,lParam);
@@ -145,7 +160,9 @@ LRESULT CALLBACK NetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
-//网络外壳，负责对套接字发送接收的信息的处理
+/**
+ * NetShell - 网络外壳，负责对套接字发送、接收的信息的处理
+ */
 VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 {
 	char message[MTU+5];
@@ -155,7 +172,7 @@ VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 		switch(command[1])
 		{
 		case 'm':
-			ChatWnd.AppendMessage(&command[4],1);
+			ChatWnd->AppendMessage(&command[4],1);
 			break;
 		case 'e':
 			ZeroMemory(message,sizeof(message));
@@ -165,7 +182,7 @@ VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 			switch(command[4])
 			{
 			case 'R':
-				EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_RS),TRUE);
+				EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_RS),TRUE);
 				break;
 			case 'S':
 				game.StartGame();
@@ -173,33 +190,33 @@ VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 			case 'Q':
 				if(command[5]=='B')
 				{
-					EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_WHT),FALSE);
-					if(MessageBox(ChatWnd.hWnd,"Opponent request is BLACK,whether or\nnot to accept the request?","Apply",MB_YESNO)==IDYES)
+					EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_WHT),FALSE);
+					if(MessageBox(ChatWnd->hWnd,"Opponent request is BLACK,whether or\nnot to accept the request?","Apply",MB_YESNO)==IDYES)
 					{
 						GameMode_2=1;
-						EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_BLC),TRUE);
+						EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_BLC),TRUE);
 						NetShell(hWnd,ns,"-AB",sizeof("-AB"),3);
 					}
 					else
 					{
 						GameMode_2=0;
-						EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_WHT),TRUE);
+						EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_WHT),TRUE);
 						NetShell(hWnd,ns,"-DW",sizeof("-DW"),3);
 					}
 				}
 				else
 				{
-					EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_BLC),FALSE);
-					if(MessageBox(ChatWnd.hWnd,"Opponent request is WHITE,whether or\nnot to accept the request?","Apply",MB_YESNO)==IDYES)
+					EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_BLC),FALSE);
+					if(MessageBox(ChatWnd->hWnd,"Opponent request is WHITE,whether or\nnot to accept the request?","Apply",MB_YESNO)==IDYES)
 					{
 						GameMode_2=0;
-						EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_WHT),TRUE);
+						EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_WHT),TRUE);
 						NetShell(hWnd,ns,"-AW",sizeof("-AW"),3);
 					}
 					else
 					{
 						GameMode_2=1;
-						EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_BLC),TRUE);
+						EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_BLC),TRUE);
 						NetShell(hWnd,ns,"-DB",sizeof("-DB"),3);
 					}
 				}
@@ -208,12 +225,12 @@ VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 				if(command[5]=='B')
 				{
 					GameMode_2=0;
-					EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_WHT),TRUE);
+					EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_WHT),TRUE);
 				}
 				else
 				{
 					GameMode_2=1;
-					EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_BLC),TRUE);
+					EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_BLC),TRUE);
 				}
 				MsgBox("Opponent accept your request","Answer",1500);
 				break;
@@ -221,12 +238,12 @@ VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 				if(command[5]=='B')
 				{
 					GameMode_2=1;
-					EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_BLC),TRUE);
+					EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_BLC),TRUE);
 				}
 				else
 				{
 					GameMode_2=0;
-					EnableWindow(GetDlgItem(ChatWnd.hWnd,IDB_CHAT_APPLY_WHT),TRUE);
+					EnableWindow(GetDlgItem(ChatWnd->hWnd,IDB_CHAT_APPLY_WHT),TRUE);
 				}
 				MsgBox("Opponent refused your request","Answer",1500);
 				break;
@@ -236,16 +253,16 @@ VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 			switch(command[4])
 			{
 			case 'S'://开始更新连接列表
-				EnableWindow(GetDlgItem(NetWnd.hNet,IDB_SERVER_REFRESH),FALSE);
+				EnableWindow(GetDlgItem(NetWnd->hNet,IDB_SERVER_REFRESH),FALSE);
 				index=0;
-				ListView_DeleteAllItems(GetDlgItem(NetWnd.hNet,IDL_SERVER_LIST));//添加之前先清空
+				ListView_DeleteAllItems(GetDlgItem(NetWnd->hNet,IDL_SERVER_LIST));//添加之前先清空
 				break;
 			case 'L'://增加连接列表项
 				sscanf(command,"-s -L %s %s %s %s",clientInfo.IP,clientInfo.chessType,clientInfo.state,clientInfo.code);
 				AddNetLVWnd(&clientInfo);
 				break;
 			case 'E'://停止更新连接列表
-				EnableWindow(GetDlgItem(NetWnd.hNet,IDB_SERVER_REFRESH),TRUE);
+				EnableWindow(GetDlgItem(NetWnd->hNet,IDB_SERVER_REFRESH),TRUE);
 				break;
 			case 'Q'://查询连接列表
 				break;
@@ -256,13 +273,13 @@ VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 					GameMode_2=0;
 				else
 					GameMode_2=1;
-				SendMessage(NetWnd.hWnd,GM_CREATECHAT,NULL,NULL);
+				SendMessage(NetWnd->hWnd,GM_CREATECHAT,NULL,NULL);
 				break;
 			case 'D'://断开连接
 				MsgBox("Opponent has disconnect!","Msg",2000);
-				if(ChatWnd.hWnd!=NULL)
-					SendMessage(NetWnd.hWnd,GM_DESTROYCHAT,NULL,NULL);
-				EnableWindow(GetDlgItem(NetWnd.hNet,ConnectMode==false?IDB_CONNECT:IDB_CONNECT_SERVER),TRUE);
+				if(ChatWnd->hWnd!=NULL)
+					SendMessage(NetWnd->hWnd,GM_DESTROYCHAT,NULL,NULL);
+				EnableWindow(GetDlgItem(NetWnd->hNet,ConnectMode==false?IDB_CONNECT:IDB_CONNECT_SERVER),TRUE);
 				break;
 			case 'T'://棋种类型
 				sprintf(message,"-T %s",chessType[chesstype].chessStr);
@@ -340,17 +357,10 @@ VOID NetShell(HWND hWnd,SOCKET ns,LPSTR command,INT size,BOOL send_tag)
 	}
 }
 
-VOID DealMessage(UINT msg,WPARAM wParam,LPARAM lParam)
-{
-	switch(msg)
-	{
-	case 0:
-		break;
-	default:
-		break;
-	}
-}
-
+/**
+ * UpdateCheck - 更新网络设置窗口选中项标记
+ * @hWnd:	网络设置窗口句柄
+ */
 VOID UpdateCheck(HWND hWnd)
 {
 	if(NetWork==1)
@@ -403,7 +413,6 @@ VOID UpdateCheck(HWND hWnd)
 		SendMessage(GetDlgItem(hWnd,IDR_CONNECT_SERVER),BM_SETCHECK,(WPARAM)BST_UNCHECKED,(LPARAM)0);
 		SetWindowText(GetDlgItem(hWnd,IDB_CONNECT_SERVER),"连接服务器");
 	}
-
 }
 
 BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
@@ -412,14 +421,14 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	char command[30];
 	switch(uMsg)
 	{
-	case WM_INITDIALOG:	
+	case WM_INITDIALOG:	//初始化
 		InitNetSet(hWnd);
 		break;
 	case WM_COMMAND:
 		ID=LOWORD(wParam);
 		switch(ID)
 		{
-		case IDR_CONNECT_P2P:
+		case IDR_CONNECT_P2P://点对点模式
 			if(NetWork==1)
 				break;
 			NetWork=1;//从客户机-服务器模式切换到点对点模式，初始状态为客户机端
@@ -429,7 +438,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			else
 				UpdateCheck(hWnd);
 			break;
-		case IDR_CONNECT_SERVER:
+		case IDR_CONNECT_SERVER://客户机-服务器模式
 			if(NetWork==2)
 				break;
 			NetWork=2;//点对点模式切换到从客户机-服务器模式，初始状态客户端不连接服务器
@@ -440,7 +449,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			UpdateCheck(hWnd);
 			break;
-		case IDR_AS_CLIENT:
+		case IDR_AS_CLIENT://点对点连接模式中作为客户端
 			if(NetMode)
 			{
 				NetMode=false;
@@ -452,7 +461,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			}
 			UpdateCheck(hWnd);
 			break;
-		case IDR_AS_SERVER:
+		case IDR_AS_SERVER://点对点连接模式中作为服务器
 			if(NetMode==true)
 				break;
 			EnableWindow(hWnd,FALSE);
@@ -461,13 +470,13 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			EnableWindow(hWnd,TRUE);
 			UpdateCheck(hWnd);
 			break;
-		case IDB_CONNECT:
+		case IDB_CONNECT://点对点模式中连接平台副本
 			if(ConnectClient(hWnd))
 			{
 				EnableWindow((HWND)lParam,FALSE);
 			}
 			break;
-		case IDB_CONNECT_SERVER:
+		case IDB_CONNECT_SERVER://连接互联网上的服务器
 			if(ConnectMode==false)
 			{
 				if(ConnectServer(hWnd))
@@ -495,7 +504,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 				}
 			}
 			break;
-		case IDB_DISCONNECT_SERVER:
+		case IDB_DISCONNECT_SERVER://断开与服务器的连接
 			if(SERVERINFO.s!=NULL)
 			{
 				closesocket(SERVERINFO.s);
@@ -504,7 +513,7 @@ BOOL CALLBACK NetSetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			ConnectMode=false;
 			UpdateCheck(hWnd);
 			break;
-		case IDB_SERVER_REFRESH:
+		case IDB_SERVER_REFRESH://刷新服务列表
 			NetShell(hWnd,SERVERINFO.s,"-Q",sizeof("-Q"),4);
 			break;
 		}
@@ -597,7 +606,7 @@ VOID InitNetSet(HWND hWnd)
 
 VOID AddNetLVWnd(ClientInfo *clientInfo)
 {
-	HWND hWnd=GetDlgItem(NetWnd.hNet,IDL_SERVER_LIST);
+	HWND hWnd=GetDlgItem(NetWnd->hNet,IDL_SERVER_LIST);
 	LVITEM lvI;	
 	ZeroMemory (&lvI,sizeof(lvI));
 	// 有效的项
@@ -624,6 +633,9 @@ VOID AddNetLVWnd(ClientInfo *clientInfo)
 	return;
 }
 
+/**
+ * ConnectClient - 连接另一个平台副本
+ */
 BOOL ConnectClient(HWND hWnd)
 {
 	char PORT[10];
@@ -645,6 +657,9 @@ BOOL ConnectClient(HWND hWnd)
 	return Client(hWnd,CLIENTINFO.ad.port,CLIENTINFO.ad.ip);
 }
 
+/**
+ * ConnectServer - 连接互联网上的服务器
+ */
 BOOL ConnectServer(HWND hWnd)
 {
 	char PORT[10];
@@ -666,6 +681,9 @@ BOOL ConnectServer(HWND hWnd)
 	return Client(hWnd,SERVERINFO.ad.port,SERVERINFO.ad.ip);
 }
 
+/**
+ * ChatWndProc - 网络协作窗口回调函数
+ */
 LRESULT CALLBACK ChatWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
 	int ID;
@@ -673,10 +691,10 @@ LRESULT CALLBACK ChatWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 	switch(uMsg)
 	{
 	case WM_CREATE:
-		ChatWnd.CreateCtrl(hWnd);
+		ChatWnd->CreateCtrl(hWnd);
 		break;
 	case WM_PAINT:
-		ChatWnd.OnPaint(wParam,lParam);
+		ChatWnd->OnPaint(wParam,lParam);
 		break;
 	case WM_ERASEBKGND:
 		break;
@@ -708,7 +726,7 @@ LRESULT CALLBACK ChatWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 					CLIENTINFO.s=NULL;
 				}
 			DestroyWindow(hWnd);
-			EnableWindow(GetDlgItem(NetWnd.hNet,IDB_CONNECT_SERVER),TRUE);
+			EnableWindow(GetDlgItem(NetWnd->hNet,IDB_CONNECT_SERVER),TRUE);
 			break;
 		case IDB_CHAT_APPLY_BLC:
 			EnableWindow((HWND)lParam,FALSE);
@@ -720,19 +738,19 @@ LRESULT CALLBACK ChatWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 			break;
 		case IDB_CHAT_SEND:
 			GetText(GetDlgItem(hWnd,IDE_CHAT_SEND),buffer,MTU);
-			ChatWnd.AppendMessage(buffer,0);
+			ChatWnd->AppendMessage(buffer,0);
 			NetShell(hWnd,ConnectMode?SERVERINFO.s:CLIENTINFO.s,buffer,strlen(buffer)+1,1);
 			SetText(GetDlgItem(hWnd,IDE_CHAT_SEND),"");
 			break;
 		}
 		break;
 	case WM_SIZE:
-		ChatWnd.AdjustCtrlPos(hWnd);
+		ChatWnd->AdjustCtrlPos(hWnd);
 		break;
 	case WM_CLOSE:
 		break;
 	case WM_DESTROY:
-		ChatWnd.OnDestroy(wParam,lParam);
+		ChatWnd->OnDestroy(wParam,lParam);
 		break;
 	default:
 		return DefWindowProc(hWnd,uMsg,wParam,lParam);
@@ -763,7 +781,7 @@ DWORD WINAPI SendInfo(LPVOID lpThreadParameter)
 	int l,len;
 	SendBuffer.head=0;
 	SendBuffer.tail=0;
-	while(start)
+	while(NetWork!=0)
 	{
 		if(SendBuffer.head==SendBuffer.tail)
 			Sleep(100);
@@ -818,7 +836,7 @@ DWORD WINAPI DealReceiveInfo(LPVOID lpThreadParameter)
 {
 	ReceiveBuffer.head=0;
 	ReceiveBuffer.tail=0;
-	while(start)
+	while(NetWork!=0)
 	{
 		if(ReceiveBuffer.head==ReceiveBuffer.tail)
 			Sleep(100);
@@ -833,7 +851,13 @@ DWORD WINAPI DealReceiveInfo(LPVOID lpThreadParameter)
 	return 0;
 }
 
+
 //客户端部分
+//=====================================================================================
+
+/**
+ * Client - 客户端程序，用来连接目标套接字
+ */
 BOOL Client(HWND hWnd,WPARAM wParam,LPARAM lParam)
 {
 	SOCKET s;
@@ -847,7 +871,7 @@ BOOL Client(HWND hWnd,WPARAM wParam,LPARAM lParam)
 		NetError("Socket Failed"); 
 		return FALSE; 
 	} 
-	if(WSAAsyncSelect(s,NetWnd.hWnd,WM_SOCKET,FD_CONNECT|FD_CLOSE) == SOCKET_ERROR)//异步请求事件：连接、关闭
+	if(WSAAsyncSelect(s,NetWnd->hWnd,WM_SOCKET,FD_CONNECT|FD_CLOSE) == SOCKET_ERROR)//异步请求事件：连接、关闭
 	{
 		NetError("WSAAsyncSelect failed");
 		return FALSE; 
@@ -856,9 +880,13 @@ BOOL Client(HWND hWnd,WPARAM wParam,LPARAM lParam)
 	return TRUE;
 
 }
+
+/**
+ * Connect - 连接处理
+ */
 BOOL Connect(HWND hWnd,WPARAM wParam,LPARAM lParam)
 {
-	if(WSAAsyncSelect((SOCKET)wParam,NetWnd.hWnd,WM_SOCKET,FD_WRITE|FD_READ|FD_CLOSE) == SOCKET_ERROR)//异步请求事件：连接、关闭
+	if(WSAAsyncSelect((SOCKET)wParam,NetWnd->hWnd,WM_SOCKET,FD_WRITE|FD_READ|FD_CLOSE) == SOCKET_ERROR)//异步请求事件：读、写、关闭
 	{
 		NetError("WSAAsyncSelect failed");
 		return FALSE; 
@@ -880,7 +908,13 @@ BOOL Connect(HWND hWnd,WPARAM wParam,LPARAM lParam)
 	return TRUE;
 }
 
+
 //服务器部分
+//===============================================================================================
+
+/**
+ * Server - 服务器程序，用来监听连接请求
+ */
 BOOL Server(HWND hWnd,WPARAM wParam,LPARAM lParam)
 {
 	SOCKET s;
@@ -907,7 +941,7 @@ BOOL Server(HWND hWnd,WPARAM wParam,LPARAM lParam)
 		NetError("Bind() failed!"); 
 		return FALSE; 
 	}
-	if(WSAAsyncSelect(s,NetWnd.hWnd,WM_SOCKET,FD_ACCEPT|FD_CLOSE) == SOCKET_ERROR)//异步请求事件：连接、关闭
+	if(WSAAsyncSelect(s,NetWnd->hWnd,WM_SOCKET,FD_ACCEPT|FD_CLOSE) == SOCKET_ERROR)//异步请求事件：接受、关闭
 	{
 		NetError("WSAAsyncSelect failed");
 		return FALSE; 
@@ -921,6 +955,10 @@ BOOL Server(HWND hWnd,WPARAM wParam,LPARAM lParam)
 	MsgBox("As server successed!","Msg",1500);
 	return TRUE;
 }
+
+/*
+ * Accept - 连接请求处理
+ */
 BOOL Accept(HWND hWnd,WPARAM wParam,LPARAM lParam)
 {
 	SOCKET s;
@@ -935,7 +973,7 @@ BOOL Accept(HWND hWnd,WPARAM wParam,LPARAM lParam)
 	}
 	else
 	{
-		if(CLIENTINFO.s!=NULL)
+		if(CLIENTINFO.s!=NULL)//已完成连接，则拒绝请求
 		{
 			closesocket(s);
 			return FALSE;
@@ -956,12 +994,4 @@ BOOL Accept(HWND hWnd,WPARAM wParam,LPARAM lParam)
 }
 
 
-int NetError(char *message) 
-{
-	char buf[256];
-	int error;
-	error=WSAGetLastError();
-	sprintf(buf,"%s\nerror:%d\n",message,error);
-	MessageBox(NULL,(LPSTR)buf, "Warning", MB_ICONEXCLAMATION); 
-	return error; 
-} 
+

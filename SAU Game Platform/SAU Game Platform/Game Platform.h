@@ -57,11 +57,11 @@ using namespace std;
 
 
 //自定义消息
-#define GM_NAME			0X1011
-#define GM_SHOWSTEP		0X1012
-#define GM_WINLOSE		0X1013
-#define GM_CREATECHAT   0X1014
-#define GM_DESTROYCHAT  0X1015
+#define GM_NAME			0X1011		//引擎重命名
+#define GM_SHOWSTEP		0X1012		//显示着法信息
+#define GM_WINLOSE		0X1013		//分出胜负
+#define GM_CREATECHAT   0X1014		//创建网络协作窗口
+#define GM_DESTROYCHAT  0X1015		//销毁网络协作窗口
 
 
 typedef int (__stdcall *MSGBOXAAPI)(IN HWND hWnd,IN LPCSTR lpText,IN LPCSTR lpCaption,IN UINT uType,IN WORD wLanguageID,IN DWORD dwMilliseconds);

@@ -451,7 +451,6 @@ VOID CMainWnd::OnNotify(WPARAM wParam,LPARAM lParam)
 VOID CMainWnd::OnCommand(WPARAM wParam,LPARAM lParam)
 {
 	int ID=LOWORD(wParam);	//菜单项ID或者按钮ID
-	FUNCTION function;
 	map<int,FUNCTION>::iterator iter;
 	switch(ID)
 	{

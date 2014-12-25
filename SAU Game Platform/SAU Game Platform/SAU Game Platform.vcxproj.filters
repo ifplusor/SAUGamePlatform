@@ -45,9 +45,6 @@
     <ClCompile Include="CNetWnd.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NetWork.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="CTime.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -58,6 +55,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Thread.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Network.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,9 +98,6 @@
     <ClInclude Include="CNetWnd.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="NetWork.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="CTime.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -111,6 +108,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Thread.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Network.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

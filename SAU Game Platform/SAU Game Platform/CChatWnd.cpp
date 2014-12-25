@@ -4,7 +4,7 @@
 
 extern int GameMode_2;
 
-CChatWnd ChatWnd;
+CChatWnd *ChatWnd;
 
 CChatWnd::CChatWnd()
 {	

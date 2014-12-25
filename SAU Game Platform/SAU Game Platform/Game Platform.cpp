@@ -10,7 +10,7 @@
 #include "Menu.h"
 #include "CMainWnd.h"
 #include "GameType.h"
-#include "NetWork.h"
+#include "Network.h"
 
 
 HINSTANCE hInst=NULL;//程序实例句柄
@@ -31,21 +31,37 @@ BOOL PrepareForApp(HINSTANCE hInstance);//程序准备
  */
 int WINAPI WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nShowCmd)
 {
-	PrepareForApp(hInstance);
+	if(PrepareForApp(hInstance)==FALSE)
+		return -1;
+
+	//初始化棋种模块
 	InitialChessType(hMenu);
 
+	// 注册主窗口类，并创建主窗体
 	MainWnd=new CMainWnd;
 	if(MainWnd->RegisterWnd(hInstance)==FALSE||MainWnd->CreateWnd(NULL,hMenu)==FALSE)
 	{
 		ErrorBox("Create MainWnd failed!");
 		return -1;
 	}
-//	if(!NetWnd.RegisterWnd(hInstance)||!ChatWnd.RegisterWnd(hInstance))
-//	{
-//		ErrorBox("Register NetWnd or ChatWnd failed");
-//		return 0;
-//	}
 
+	// 注册网络服务窗口类
+	NetWnd = new CNetWnd;
+	if(!NetWnd->RegisterWnd(hInstance))
+	{
+		ErrorBox("Register NetWnd failed");
+		return 0;
+	}
+
+	// 注册网络协作窗口类
+	ChatWnd = new CChatWnd;
+	if (!ChatWnd->RegisterWnd(hInstance))
+	{
+		ErrorBox("Register ChatWnd failed");
+		return 0;
+	}
+
+	// 程序主循环
 	GetAndDispatchMessage();
 
 	return 0;
@@ -56,14 +72,18 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In
  */
 VOID GetAndDispatchMessage()
 {
-	HACCEL hAccTable;
-	MSG msg;
-	hAccTable=LoadAccelerators(hInst,MAKEINTRESOURCE(IDR_ACCELERATOR));//载入快捷键
+	HACCEL hAccTable;//加速键表
+	MSG msg;//消息
+
+	// 载入快捷键
+	hAccTable=LoadAccelerators(hInst,MAKEINTRESOURCE(IDR_ACCELERATOR));
+
 #ifdef _DEBUG
 	MsgBox("进入消息循环成功！","Msg",1500);
 #endif
 
-	while(GetMessage(&msg,NULL,0,0))//从消息队列中取得消息
+	// 消息循环
+	while(GetMessage(&msg,NULL,0,0))//从消息队列中取得消息，有阻塞
 	{
 		if(!TranslateAccelerator(msg.hwnd,hAccTable,&msg))//把快捷键消息转换成字符消息
 		{
@@ -71,7 +91,9 @@ VOID GetAndDispatchMessage()
 			DispatchMessage(&msg);//派发消息
 		}
 	}
-	DestroyAcceleratorTable(hAccTable);//删除加速键表
+
+	//删除加速键表
+	DestroyAcceleratorTable(hAccTable);
 }
 
 /*
@@ -87,6 +109,7 @@ BOOL PrepareForApp(HINSTANCE hInstance)
 		return FALSE;
 	}
 
+	// 获得MessageBoxTimeout系统调用
 	HMODULE hUser32=GetModuleHandle("user32.dll");
 	if(hUser32)
 	{
@@ -95,10 +118,14 @@ BOOL PrepareForApp(HINSTANCE hInstance)
 			MessageBox(NULL,"Load MessageBoxTimeoutA fouction failed!","error",MB_OK);
 	}
 
-	GetChessTypeResourse();
-	hMenu=CreateUserMenu();
-	CreateChessTypeMenu(hMenu);
-	InitialWithIni();
+	// 获取程序相关资源
+	if(GetChessTypeResourse()==FALSE)//获取棋种组件信息
+		return FALSE;
+	hMenu=CreateUserMenu();//创建菜单栏
+	if (hMenu == NULL)
+		return FALSE;
+	CreateChessTypeMenu(hMenu);//向菜单栏中加入棋种选择菜单
+	InitialWithIni();//使用配置文件初始化程序设置
 
 	return TRUE;
 }

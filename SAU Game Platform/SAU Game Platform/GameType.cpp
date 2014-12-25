@@ -181,15 +181,20 @@ VOID CreateChessTypeMenu(HMENU hMenu)
 VOID InitialChessType(HMENU hMenu)
 {
 	int i;
-	chesstype=0;//置新语言标志
+
+	//置语言标志
+	chesstype = 0;
 	for (i = 0; i < chessNum; i++)
 	{
+		//使用默认棋种查找棋种资源表，查表失败则用第一个棋种资源
 		if (strcmp(chessType[i].chessStr, gameSet.DefualtChess) == 0)
 		{
 			chesstype = i;
 			break;
 		}
 	}
+
+	// 标记选中棋种
 	for(i=0;i<chessNum;i++)
 	{
 		if(i==chesstype)
@@ -197,6 +202,7 @@ VOID InitialChessType(HMENU hMenu)
 		else
 			CheckMenuItem(hMenu,CHESSTYPE+i,MF_UNCHECKED);			
 	}
+
 	//动态获取DLL库中函数地址
 	CT_InitModule=(_InitModule)GetProcAddress(chessType[chesstype].chessTP,"InitModule");
 	CT_OnSize=(_OnSize)GetProcAddress(chessType[chesstype].chessTP,"OnSize");

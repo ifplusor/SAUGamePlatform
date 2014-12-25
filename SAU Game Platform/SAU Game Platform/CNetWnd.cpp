@@ -1,7 +1,7 @@
 #include "CNetWnd.h"
 
 
-CNetWnd NetWnd;
+CNetWnd *NetWnd;
 
 CNetWnd::CNetWnd()
 {	

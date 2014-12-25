@@ -9,6 +9,8 @@
 #include "Control.h"
 #include "GameType.h"
 #include "CMainWnd.h"
+#include "Network.h"
+
 
 Game game;
 
@@ -55,8 +57,19 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 		}
 		if(wMMsg[0]!='\0')
 			side->WriteMsg(wMMsg);
-		if(wDMsg[0]!='\0'&&temp == 2)//机器对弈，发给对方引擎
-			unside->WriteMsg(wDMsg);
+		if (wDMsg[0] != '\0')//机器对弈，发给对方引擎
+		{
+			switch (temp)
+			{
+			case 2:
+				unside->WriteMsg(wDMsg);
+				break;
+			case 4:
+			case 5:
+				NetShell(NULL, ConnectMode ? SERVERINFO.s : CLIENTINFO.s, wDMsg, strlen(wDMsg) + 1, 2);
+				break;
+			}
+		}
 	}
 
 	return 0;
@@ -140,39 +153,65 @@ void Game::StartGame()
 	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
 	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
 	MainWnd->GameStart();
-		if(BlackE.GetLoaded() && WhiteE.GetLoaded())//黑白引擎都加在载
+	if (NetWork == 0)
+	{
+		if (BlackE.GetLoaded() && WhiteE.GetLoaded())//黑白引擎都加在载
 		{
-			GameMode=2;
+			GameMode = 2;
 			BlackE.WriteMsg("new black\n");
 			WhiteE.WriteMsg("new white\n");
 		}
-		else if(BlackE.GetLoaded() || WhiteE.GetLoaded())//只加载一个引擎
+		else if (BlackE.GetLoaded() || WhiteE.GetLoaded())//只加载一个引擎
 		{
-			if(chessType[chesstype].type!=0)
+			if (chessType[chesstype].type != 0)
 			{
-				MsgBox("该棋种不支持人机对弈！","error",0);
+				MsgBox("该棋种不支持人机对弈！", "error", 0);
 				return;
 			}
-			if(BlackE.GetLoaded())
+			if (BlackE.GetLoaded())
 			{
-				GameMode=1;
+				GameMode = 1;
 				BlackE.WriteMsg("new black\n");
-			}			
+			}
 			else
 			{
-				GameMode=0;
-				WhiteE.WriteMsg("new white\n"); 
-			}								
+				GameMode = 0;
+				WhiteE.WriteMsg("new white\n");
+			}
 		}
 		else//人人对弈
 		{
-			if(chessType[chesstype].type!=0)
+			if (chessType[chesstype].type != 0)
 			{
-				MsgBox("该棋种不支持人人对弈！","error",0);
+				MsgBox("该棋种不支持人人对弈！", "error", 0);
 				return;
 			}
-			GameMode=3;
+			GameMode = 3;
 		}
+	}
+	else
+	{
+		if (GameMode_2 == 0)//执黑
+		{
+			if (BlackE.GetLoaded())
+			{
+				GameMode = 4;
+				BlackE.WriteMsg("new black\n");
+			}
+			else
+				GameMode = 0;
+		}
+		else
+		{
+			if (WhiteE.GetLoaded())
+			{
+				GameMode = 5;
+				WhiteE.WriteMsg("new white\n");
+			}
+			else
+				GameMode = 1;
+		}
+	}
 }
 
 void Game::StopGame()
@@ -253,35 +292,17 @@ bool Game::MoveStep(int x,int y)
 			case 2://不是可落位置
 				break;
 			}
-//			player=CT_GetCurPlayer();
-//			if(player!=GameMode)//行棋换手
-//			{
-//				if(NetWork==0)
-//				{
-//					if(player==BLACK)
-//						BlackE.WriteMsg(wMsg);
-//					else
-//						WhiteE.WriteMsg(wMsg);
-//				}
-//				else
-//				{
-//					if(player==BLACK)
-//						NetShell(NULL,ConnectMode?SERVERINFO.s:CLIENTINFO.s,wMsg,strlen(wMsg)+1,2);
-//					else
-//						NetShell(NULL,ConnectMode?SERVERINFO.s:CLIENTINFO.s,wMsg,strlen(wMsg)+1,2);
-//				}
-//			}
 		}
 		else
 		{
-//			if(NetWork==0)
-//			{
-//				MsgBox("The computer hasn't move,stop clicking in board!","error",1500);
-//			}
-//			else
-//			{
+			if(NetWork==0)
+			{
+				MsgBox("The computer hasn't move,stop clicking in board!","error",1500);
+			}
+			else
+			{
 				MsgBox("Opponent hasn't move,stop clicking in board!","error",1500);
-//			}
+			}
 		}
 	}
 	return true;
@@ -309,15 +330,23 @@ void Game::OkMove()
 	BYTE player = CT_GetCurPlayer();
 	int temp = GameMode;
 	CT_OkMove(denCmd);
-	switch (temp)
+	if (NetWork == 0)
 	{
-	case 0:
-		WhiteE.WriteMsg(denCmd);
-		break;
-	case 1:
-		BlackE.WriteMsg(denCmd);
-		break;
+		switch (temp)
+		{
+		case 0:
+			WhiteE.WriteMsg(denCmd);
+			break;
+		case 1:
+			BlackE.WriteMsg(denCmd);				
+			break;
+		}
 	}
+	else
+	{
+		NetShell(NULL, ConnectMode ? SERVERINFO.s : CLIENTINFO.s, denCmd, strlen(denCmd) + 1, 2);
+	}
+
 	if (player == 0)
 	{
 		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);

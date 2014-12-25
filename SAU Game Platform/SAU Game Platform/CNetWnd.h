@@ -17,6 +17,9 @@ public:
 	BOOL RegisterWnd(HINSTANCE hInst);
 	BOOL CreateWnd(HWND hParentWnd=NULL,HMENU hMenu=NULL);
 	LRESULT WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam){return 0;};
+
+private:
+
 	VOID OnCreate(HWND hWnd,WPARAM wParam,LPARAM lParam){};
 	VOID OnPaint(WPARAM wParam,LPARAM lParam){};
 	BOOL OnEraseBkgnd(WPARAM wParam,LPARAM lParam){return FALSE;};	
@@ -34,7 +37,7 @@ public:
 	VOID OnDestroy(WPARAM wParam,LPARAM lParam);
 };
 
-extern CNetWnd NetWnd;
+extern CNetWnd *NetWnd;//网络服务窗口指针
 
 LRESULT CALLBACK NetWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam);
 

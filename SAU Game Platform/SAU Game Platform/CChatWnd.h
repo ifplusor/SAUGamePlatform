@@ -19,6 +19,10 @@ public:
 	BOOL RegisterWnd(HINSTANCE hInst);
 	BOOL CreateWnd(HWND hParentWnd=NULL,HMENU hMenu=NULL);
 	LRESULT WndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam){return 0;};
+	friend LRESULT CALLBACK ChatWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	VOID AppendMessage(char *Msg, int tag);
+
+private:
 	VOID OnCreate(HWND hWnd,WPARAM wParam,LPARAM lParam){};
 	VOID OnPaint(WPARAM wParam,LPARAM lParam);
 	BOOL OnEraseBkgnd(WPARAM wParam,LPARAM lParam){return FALSE;};	
@@ -37,10 +41,9 @@ public:
 
 	BOOL CreateCtrl(HWND hWnd);
 	BOOL AdjustCtrlPos(HWND hWnd);
-	VOID AppendMessage(char *Msg,int tag);
 };
 
-extern CChatWnd ChatWnd;
+extern CChatWnd *ChatWnd;
 
 LRESULT CALLBACK ChatWndProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam);
 
