@@ -31,6 +31,7 @@ public:
 	static int ShotBoard();//截图
 	static int NetworkStart();//启动网络对战
 	static int NetworkStop();//关闭网络对战
+	static int NetworkSet();//设置网络对战
 
 	//菜单不可引用功能
 	static int MoveStep(int x, int y);//用户行棋

@@ -59,6 +59,9 @@ void mapFunction(int menuID,FILE *fp)
 		case IDF_NETWORK_CLOSE:
 			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::NetworkStop));
 			break;
+		case IDF_NETWORK_SET:
+			menuFunction.insert(pair<int, FUNCTION>(menuID, Function::NetworkSet));
+			break;
 		default:
 			break;
 		}

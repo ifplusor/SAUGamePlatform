@@ -35,7 +35,7 @@
 
 #define	IDF_NETWORK_OPEN			41
 #define IDF_NETWORK_CLOSE			42
-#define IDF_NETWORK_SET
+#define IDF_NETWORK_SET				43
 
 #define IDF_INSTRUCTION
 #define IDF_ABOUT

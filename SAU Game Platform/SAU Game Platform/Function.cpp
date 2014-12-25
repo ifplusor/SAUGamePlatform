@@ -123,3 +123,12 @@ int Function::NetworkStop()
 		DestroyWindow(NetWnd->hWnd);
 	return 0;
 }
+
+/** 设置网络对战 */
+int Function::NetworkSet()
+{
+	//显示网络对战服务窗体
+	if (NetWnd->hWnd != NULL)
+		ShowWindow(NetWnd->hNet, SW_SHOW);
+	return 0;
+}
