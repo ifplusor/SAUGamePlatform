@@ -214,6 +214,17 @@ VOID InitialChessType(HMENU hMenu)
 	CT_OnRun=(_OnRun)GetProcAddress(chessType[chesstype].chessTP,"OnRun");
 	CT_GetCurPlayer=(_GetCurPlayer)GetProcAddress(chessType[chesstype].chessTP,"GetCurPlayer");
 
+	//设置自动截图目录
+	strcpy(gameSet.PrintScrDir, ".\\chess manual\\");
+	strcat(gameSet.PrintScrDir, chessType[chesstype].chessStr);
+	strcat(gameSet.PrintScrDir, "\\bmp");
+	CreateFolder(gameSet.PrintScrDir);
+	//设置棋谱保存目录
+	strcpy(gameSet.cmDir, ".\\chess manual\\");
+	strcat(gameSet.cmDir, chessType[chesstype].chessStr);
+	strcat(gameSet.cmDir, "\\sgf");
+	CreateFolder(gameSet.cmDir);
+
 	return;
 }
 
@@ -248,14 +259,17 @@ VOID SetChessType(int i,HMENU hMenu)
 	CT_InitModule(MainWnd->hWnd,chessType[chesstype].LibPath);
 	CT_OnSize(MainWnd->GetBoardPos());
 	InvalidateRect(MainWnd->hWnd,NULL,false);
+
 	//设置自动截图目录
 	strcpy(gameSet.PrintScrDir,".\\chess manual\\");
 	strcat(gameSet.PrintScrDir,chessType[chesstype].chessStr);
 	strcat(gameSet.PrintScrDir,"\\bmp");
+	CreateFolder(gameSet.PrintScrDir);
 	//设置棋谱保存目录
 	strcpy(gameSet.cmDir, ".\\chess manual\\");
 	strcat(gameSet.cmDir,chessType[chesstype].chessStr);
 	strcat(gameSet.cmDir,"\\sgf");
+	CreateFolder(gameSet.cmDir);
 
 	return;
 }

@@ -23,7 +23,55 @@ BOOL APIENTRY DllMain( HINSTANCE hModule,
     return TRUE;
 }
 
-//删除文件夹下的文件
+/** 创建新目录 */
+BOOL __cdecl CreateFolder(char *Dir)
+{
+	HANDLE hFile;
+	WIN32_FIND_DATA fData;
+	int error;
+	char findPath[MAX_PATH] = { 0 };
+	char directory[MAX_PATH] = { 0 };
+	strcpy(findPath, Dir);
+	hFile = FindFirstFile(findPath, &fData);//寻找指定目录下的首个符合条件的文件
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		if (CreateDirectory(Dir, NULL) == 0)
+		{
+			error = GetLastError();
+			if (error == 3)
+			{
+				char *p = directory;
+				lstrcpyn(directory, Dir, strlen(Dir));//复制路径
+				while ((*++p));
+				while (1)//回查，找到文件夹路径
+				{
+					if ((*p) == '\\')
+					{
+						(*p) = '\0';
+						break;
+					}
+					(*p) = '\0';//清零
+					p--;
+				}
+				if (CreateFolder(directory) == TRUE)
+				{
+					if (CreateDirectory(Dir, NULL) == 0)
+						ErrorBox("Create folder failes!");
+				}
+				else
+					return FALSE;
+			}
+			else
+			{
+				ErrorBox("Create folder failes!");
+				return FALSE;
+			}
+		}
+	}
+	return TRUE;
+}
+
+/** 删除文件夹下的文件 */
 VOID __cdecl DelFile(char *dir,bool all)
 {
 	char szPath[MAX_PATH]={0};
@@ -59,7 +107,7 @@ VOID __cdecl DelFile(char *dir,bool all)
 	return;
 }
 
-//显示图片
+/** 显示图片 */
 BOOL __cdecl DisplayImage(HDC hDC, LPCTSTR szImagePath,RECT *rt)//展示bmp、jpg、gif（第一帧）图片
 {
 	//首先打开szImagePath指定文件
@@ -94,7 +142,7 @@ BOOL __cdecl DisplayImage(HDC hDC, LPCTSTR szImagePath,RECT *rt)//展示bmp、jpg、
 	return TRUE;
 }
 
-//播放音乐
+/** 播放音乐 */
 VOID __cdecl PlayMusic(char *filename,bool circle,int vol)
 {	
 	char shortname[MAX_PATH];
@@ -116,7 +164,7 @@ VOID __cdecl PlayMusic(char *filename,bool circle,int vol)
 	return;
 }
 
-//停止音乐播放
+/** 停止音乐播放 */
 VOID __cdecl StopMusic(char *filename)
 {	
 	char shortname[MAX_PATH]={0};
@@ -129,7 +177,7 @@ VOID __cdecl StopMusic(char *filename)
 	return;
 }
 
-//截屏
+/** 截屏 */
 BOOL __cdecl PrintScreen(char *filename,int left,int top,int width,int height)
 {
 	HDC hDC=GetDC(NULL);
@@ -338,7 +386,7 @@ HWND __cdecl GetProcessMainWnd(DWORD dwProcessId) //获取进程窗口句柄
 }
 
 
-//获取系统时间
+/** 获取系统时间 */
 VOID __stdcall GetSystemTimeEx(SYSTEMTIME *st,int region)
 {
 	GetSystemTime(st);

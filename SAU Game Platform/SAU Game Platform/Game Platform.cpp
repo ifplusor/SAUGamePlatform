@@ -127,6 +127,9 @@ BOOL PrepareForApp(HINSTANCE hInstance)
 	CreateChessTypeMenu(hMenu);//向菜单栏中加入棋种选择菜单
 	InitialWithIni();//使用配置文件初始化程序设置
 
+	// 创建依赖文件夹
+	CreateFolder("PrintScr");//创建截图文件夹
+
 	return TRUE;
 }
 

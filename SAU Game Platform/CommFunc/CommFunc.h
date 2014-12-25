@@ -8,6 +8,7 @@
 
 #pragma comment(lib,"winmm.lib")
 
+BOOL __cdecl CreateFolder(char *Dir);//创建新目录
 VOID __cdecl DelFile(char *dir,bool all);//删除指定目录下的文件，dll控制子目录下文件的删除
 BOOL __cdecl DisplayImage(HDC hDC, LPCTSTR szImagePath,RECT *rt);//展示bmp、jpg、gif（第一帧）图片
 VOID __cdecl PlayMusic(char *filename,bool circle,int vol);
