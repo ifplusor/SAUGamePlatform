@@ -64,8 +64,6 @@ VOID CAmazon::SetBoard(RECT rtBoard)
 	fWidth = d / 3;
 	fHeight = d * 2 / 3;
 	hFont = CreateSimpleFont(fWidth, fHeight);
-	cHeight = d; cWidth = cHeight * 2 / 3;
-	offset = (d - cWidth + pixel) / 2;
 	DrawChess();
 }
 
@@ -126,13 +124,13 @@ VOID CAmazon::DrawBoard(HDC hDC)
 		{
 			if (board[i][j] == BLACK)
 			{
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 12 + offset, rtBoard.top + side*(j + 1) / 12, cWidth, cHeight, hBlcDC, cWidth, 0, SRCAND);
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 12 + offset, rtBoard.top + side*(j + 1) / 12, cWidth, cHeight, hBlcDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 12, rtBoard.top + side*(j + 1) / 12, d, d, hBlcDC, d, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 12, rtBoard.top + side*(j + 1) / 12, d, d, hBlcDC, 0, 0, SRCPAINT);
 			}
 			else if (board[i][j] == WHITE)
 			{
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 12 + offset, rtBoard.top + side*(j + 1) / 12, cWidth, cHeight, hWhtDC, cWidth, 0, SRCAND);
-				BitBlt(hDC, rtBoard.left + side*(i + 1) / 12 + offset, rtBoard.top + side*(j + 1) / 12, cWidth, cHeight, hWhtDC, 0, 0, SRCPAINT);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 12, rtBoard.top + side*(j + 1) / 12, d, d, hWhtDC, d, 0, SRCAND);
+				BitBlt(hDC, rtBoard.left + side*(i + 1) / 12, rtBoard.top + side*(j + 1) / 12, d, d, hWhtDC, 0, 0, SRCPAINT);
 			}
 			else if (board[i][j] == BAR)
 			{
@@ -168,11 +166,11 @@ bool CAmazon::DrawChess()
 
 	strcpy(filename, LibPath);
 	strcat(filename, "\\bmp\\black.bmp");
-	hBlcBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, cWidth * 2, cHeight, LR_LOADFROMFILE);
+	hBlcBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, d * 2, d, LR_LOADFROMFILE);
 
 	strcpy(filename, LibPath);
 	strcat(filename, "\\bmp\\white.bmp");
-	hWhtBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, cWidth * 2, cHeight, LR_LOADFROMFILE);
+	hWhtBmp = (HBITMAP)LoadImage(hInst, filename, IMAGE_BITMAP, d * 2, d, LR_LOADFROMFILE);
 
 	strcpy(filename, LibPath);
 	strcat(filename, "\\bmp\\bar.bmp");

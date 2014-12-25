@@ -52,7 +52,6 @@ private:
 	int d;//亚马逊棋棋盘刻线间距
 	double pixel;//亚马逊棋棋盘刻线宽度
 	int fWidth,fHeight;//字体宽、高
-	int cWidth, cHeight, offset;
 
 	stack<Step> stepStack;//着法栈
 
