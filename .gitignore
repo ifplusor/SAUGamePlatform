@@ -193,6 +193,7 @@ ModelManifest.xml
 /SAU Game Platform/SAU Game Platform/ChessType/*/*.*
 /SAU Game Platform/SAU Game Platform/chess manual
 /SAU Game Platform/SAU Game Platform/PrintScr
+!/SAU Game Platform/SAU Game Platform/bin/
 
 
 
