@@ -14,6 +14,7 @@
 //平台棋种支持模块接口函数指针
 _CheckModule CT_CheckModule = NULL;
 _InitModule CT_InitModule = NULL;
+_ExitModule CT_ExitModule = NULL;
 _OnSize CT_OnSize = NULL;
 _DrawBoard CT_DrawBoard = NULL;
 _OnLButtonDown CT_OnLButtonDown = NULL;
@@ -205,7 +206,8 @@ VOID InitialChessType(HMENU hMenu)
 
 	//动态获取DLL库中函数地址
 	CT_InitModule=(_InitModule)GetProcAddress(chessType[chesstype].chessTP,"InitModule");
-	CT_OnSize=(_OnSize)GetProcAddress(chessType[chesstype].chessTP,"OnSize");
+	CT_ExitModule = (_ExitModule)GetProcAddress(chessType[chesstype].chessTP, "ExitModule");
+	CT_OnSize = (_OnSize)GetProcAddress(chessType[chesstype].chessTP, "OnSize");
 	CT_DrawBoard=(_DrawBoard)GetProcAddress(chessType[chesstype].chessTP,"DrawBoard");
 	CT_OnLButtonDown=(_OnLButtonDown)GetProcAddress(chessType[chesstype].chessTP,"OnLButtonDown");
 	CT_OkMove = (_OkMove)GetProcAddress(chessType[chesstype].chessTP, "OkMove");
@@ -236,6 +238,9 @@ VOID SetChessType(int i,HMENU hMenu)
 {	
 	if(i==chesstype||i>=chessNum)//所选棋种非当前棋种
 		return;
+
+	CT_ExitModule();
+
 	chesstype=i;//置新语言标志
 	strcpy(gameSet.DefualtChess, chessType[chesstype].chessStr);
 	for(int i=0;i<chessNum;i++)
@@ -247,6 +252,7 @@ VOID SetChessType(int i,HMENU hMenu)
 	}
 	//动态获取DLL库中函数地址
 	CT_InitModule = (_InitModule)GetProcAddress(chessType[chesstype].chessTP, "InitModule");
+	CT_ExitModule = (_ExitModule)GetProcAddress(chessType[chesstype].chessTP, "ExitModule");
 	CT_OnSize = (_OnSize)GetProcAddress(chessType[chesstype].chessTP, "OnSize");
 	CT_DrawBoard = (_DrawBoard)GetProcAddress(chessType[chesstype].chessTP, "DrawBoard");
 	CT_OnLButtonDown = (_OnLButtonDown)GetProcAddress(chessType[chesstype].chessTP, "OnLButtonDown");

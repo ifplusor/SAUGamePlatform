@@ -43,7 +43,7 @@ DLLFUCTION VOID InitModule(HWND hWnd,char *LibPath)
 	ConSix->InitGame();
 }
 
-VOID ExitModule()
+DLLFUCTION VOID ExitModule()
 {
 	delete ConSix;
 }

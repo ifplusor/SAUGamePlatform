@@ -40,7 +40,7 @@ DLLFUCTION VOID InitModule(HWND hWnd, char *LibPath)
 	Amazon->InitGame();
 }
 
-VOID ExitModule()
+DLLFUCTION VOID ExitModule()
 {
 	delete Amazon;
 }

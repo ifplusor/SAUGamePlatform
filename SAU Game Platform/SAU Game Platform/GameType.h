@@ -30,6 +30,7 @@ struct _CHESSTYPE{
 typedef VOID (*_CheckModule)(char *Info, char *ChessName, int *ChessType);
 //初始化模块
 typedef VOID (*_InitModule)(HWND hWnd, char *LibPath);
+typedef VOID (*_ExitModule)();
 //响应棋盘大小改变
 typedef VOID (*_OnSize)(RECT rtBoard);
 //绘制棋盘
@@ -51,6 +52,7 @@ typedef INT (*_GetCurPlayer)();
 
 extern _CheckModule CT_CheckModule;
 extern _InitModule CT_InitModule;
+extern _ExitModule CT_ExitModule;
 extern _OnSize CT_OnSize;
 extern _DrawBoard CT_DrawBoard;
 extern _OnLButtonDown CT_OnLButtonDown;

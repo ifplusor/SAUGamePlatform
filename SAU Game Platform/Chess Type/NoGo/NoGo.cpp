@@ -39,7 +39,7 @@ DLLFUCTION VOID InitModule(HWND hWnd, char *LibPath)
 	NoGo->InitGame();
 }
 
-VOID ExitModule()
+DLLFUCTION VOID ExitModule()
 {
 	delete NoGo;
 }

@@ -550,6 +550,7 @@ VOID CMainWnd::OnClose(WPARAM wParam,LPARAM lParam)
 		return;
 	}
 	RecordUserOper();
+	CT_ExitModule();//退出棋种支持模块
 	DestroyWindow(hWnd);//销毁窗体
 	return;
 }
