@@ -90,8 +90,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\CChess.h" />
+    <ClInclude Include="..\include\Chess.h" />
     <ClInclude Include="CNoGo.h" />
-    <ClInclude Include="NoGo.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

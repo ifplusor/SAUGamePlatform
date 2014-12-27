@@ -29,13 +29,13 @@
     <ClInclude Include="CConSix.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ConSix.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\include\CChess.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Chess.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,13 +1,12 @@
 #define CHESSTYPE
 
-#include "ConSix.h"
+#include "..\include\Chess.h"
+#include "CConSix.h"
+
 
 HINSTANCE hInst;
 CConSix *ConSix;
 
-
-//ÍË³öÄ£¿é
-VOID ExitModule();
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
                        DWORD  ul_reason_for_call, 
@@ -20,11 +19,11 @@ BOOL APIENTRY DllMain( HINSTANCE hModule,
 			hInst=hModule;
 			break;
 		case DLL_THREAD_ATTACH:
+			hInst = hModule;
 			break;
 		case DLL_THREAD_DETACH:
 			break;
 		case DLL_PROCESS_DETACH:
-			ExitModule();
 			break;
     }
     return TRUE;

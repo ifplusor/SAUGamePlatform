@@ -90,7 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\CChess.h" />
-    <ClInclude Include="Amazon.h" />
+    <ClInclude Include="..\include\Chess.h" />
     <ClInclude Include="CAmazon.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

@@ -1,9 +1,12 @@
 #define CHESSTYPE
 
-#include "Amazon.h"
+#include "..\include\Chess.h"
+#include "CAmazon.h"
+
 
 HINSTANCE hInst;
 CAmazon *Amazon;
+
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
                        DWORD  ul_reason_for_call, 
