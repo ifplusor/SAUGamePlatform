@@ -15,25 +15,37 @@
  * @size:	待查缓存区长度
  * @cmd:	待查命令字首地址
  * @return:	命令字在缓存区中的偏移量，-1表示不存在
- * description：因为平台-引擎通信协议规定：引擎向平台发送的命令格式为"命令字+' '+参数"，故在命令字匹配过程中要检查是否已' '结束。
-				因为数据量不大，以朴素字符串匹配算法实现。引擎返回数据中的关键字只有“name”和“move”。
+ * description：因为平台-引擎通信协议规定：引擎向平台发送的命令格式为"命令字+' '+参数"，故在命令字匹配过程中要检查是否以' '结束。
+				引擎返回数据中的关键字只有“name”和“move”。
  */
 int getcmd(char *scr,int size,char *cmd)
 {
 	int pos=-1,i,j,len;
+	bool start = true;
 	len=strlen(cmd);
-	for(i=0;i<=size-len;i++)
+	size -= len;
+	for(i=0;i<=size;i++)
 	{
-		for(j=0;j<len;j++)
+		if (start)//匹配启动控制
 		{
-			if(scr[i+j]!=cmd[j])
+			for (j = 0; j<len; j++)
+			{
+				if (scr[i + j] != cmd[j])
+					break;
+			}
+			if (j == len&&scr[i + j] == ' ')//引擎向平台发送的数据如果有意义，关键字后必有空格
+			{
+				pos = i;
 				break;
+			}
+			else//匹配失败
+			{
+				i += j;
+				start = false;
+			}
 		}
-		if(j==len&&scr[i+j]==' ')
-		{
-			pos=i;
-			break;
-		}
+		if (scr[i] == ' ' || scr[i] == '\n' || scr[i] == '\t'|| scr[i] == '\0')//关键字前必为这些字符
+			start = false;
 	}
 	return pos;
 }
@@ -358,14 +370,14 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 		dwSize=ReadMsg(readBuffer+BUFSIZE,BUFSIZE);
 		memcpy(readBuffer+indexBuf,readBuffer+BUFSIZE,dwSize);
 		indexBuf+=dwSize;
-		if(dwSize==BUFSIZE)//当 dwSize=BUFSIZE 时，具有字符截断可能
+		if(dwSize==BUFSIZE)//当 dwSize=BUFSIZE 时，具有字符截断的可能
 		{
 			pos=getcmd(readBuffer,indexBuf,cmd);
 			if(pos==-1)//未找到命令字，进行防截断处理
 			{
 				for(i=indexBuf-1;indexBuf-i<len&&i>=0;i--)
 				{
-					if(readBuffer[i]==' '||readBuffer[i]=='\n'||readBuffer[i]=='\0')//寻找间隔符
+					if (readBuffer[i] == ' ' || readBuffer[i] == '\n' || readBuffer[i] == '\t' || readBuffer[i] == '\0')//向前寻找间隔符
 						break;
 				}
 				if(indexBuf-i>=len)//最后串长度大于关键字长度，必不是关键字
@@ -380,7 +392,7 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 			{
 				for(i=pos+len+1;i<indexBuf;i++)
 				{
-					if(readBuffer[i]==' '||readBuffer[i]=='\r'||readBuffer[i]=='\n'||readBuffer[i]=='\0')//命令字后有完整参数  从引擎读入的数据中'\n'前包含'\r'
+					if (readBuffer[i] == ' ' || readBuffer[i] == '\r' || readBuffer[i] == '\n' || readBuffer[i] == '\t' || readBuffer[i] == '\0')//命令字后有完整参数  从引擎读入的数据中'\n'前包含'\r'
 					{
 						memcpy(CMD,readBuffer+pos,i-pos);
 						CMD[i-pos]='\0';
@@ -403,7 +415,7 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 			{
 				for(i=pos+len+1;i<indexBuf;i++)
 				{
-					if(readBuffer[i]==' '||readBuffer[i]=='\r'||readBuffer[i]=='\n'||readBuffer[i]=='\0')//命令字后有完整参数
+					if (readBuffer[i] == ' ' || readBuffer[i] == '\r' || readBuffer[i] == '\n' || readBuffer[i] == '\t' || readBuffer[i] == '\0')//命令字后有完整参数
 					{
 						memcpy(CMD,readBuffer+pos,i-pos);
 						CMD[i-pos]='\0';
