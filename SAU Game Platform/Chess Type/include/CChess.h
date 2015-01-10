@@ -71,6 +71,8 @@ public:
 	//取消着法
 	virtual VOID CancelMove() = 0;
 
+	//显示招法历史
+	VOID ShowStepHis(char *msg);
 	//绘制点（圆形）
 	static bool DrawPoint(HDC hDC,int r,COLORREF ptColor,COLORREF bkColor);	
 	//绘制圆形辅助位图

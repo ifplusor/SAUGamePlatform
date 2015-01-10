@@ -66,8 +66,6 @@ private:
 	//判断棋步合法性
 	bool JudgeRule(Point src, Point des);
 	bool FitRules();
-	//显示招法历史
-	VOID ShowStepHis(char *msg);
 	//播放落子音效
 	bool PlaySnd(int sel);
 };

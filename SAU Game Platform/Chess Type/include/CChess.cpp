@@ -14,6 +14,23 @@ CChess::~CChess()
 
 }
 
+VOID CChess::ShowStepHis(char *msg)
+{
+	char step[50];
+	memset(step, 0, sizeof(step));
+	if (player == BLACK)
+	{
+		strcpy(step, "Black: ");
+	}
+	else if (player == WHITE)
+	{
+		strcpy(step, "White: ");
+	}
+	strcat(step, msg);
+	SendMessage(hWnd, GM_SHOWSTEP, (WPARAM)step, (LPARAM)player);
+	return;
+}
+
 //画特定大小的点(圆形)
 bool CChess::DrawPoint(HDC hDC,int r,COLORREF ptColor,COLORREF bkColor)
 {	

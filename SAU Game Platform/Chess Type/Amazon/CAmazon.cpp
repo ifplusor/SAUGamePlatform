@@ -271,23 +271,6 @@ bool CAmazon::PlaySnd(int sel)//播放音效
 	return true;
 }
 
-VOID CAmazon::ShowStepHis(char *msg)
-{
-	char step[50];
-	memset(step, 0, sizeof(step));
-	if (player == BLACK)
-	{
-		strcpy(step, "Black: ");
-	}
-	else if (player == WHITE)
-	{
-		strcpy(step, "White: ");
-	}
-	strcat(step, msg);
-	SendMessage(hWnd, GM_SHOWSTEP, (WPARAM)step, (LPARAM)player);
-	return;
-}
-
 VOID CAmazon::InitGame()
 {
 	memset(StepNum, 0, sizeof(StepNum));
@@ -480,7 +463,7 @@ bool CAmazon::WinOrLose()
 	}
 	if (wht == 4 || blc == 4)//白方无路可走则黑赢,黑方无路可走则白赢
 	{
-		SendMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)wht == 4 ? BLACK : WHITE);
+		SendMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)(wht == 4 ? BLACK : WHITE));
 		return true;
 	}
 	return false;

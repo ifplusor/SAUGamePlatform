@@ -221,22 +221,6 @@ bool CNoGo::PlaySnd(int sel)
 	return true;
 }
 
-VOID CNoGo::ShowStepHis(char *msg)
-{
-	char step[1000];	
-	memset(step,0,sizeof(step));
-	if(player==BLACK)
-	{
-		strcpy(step,"Black: ");
-	}
-	else if(player==WHITE)
-	{
-		strcpy(step,"White: ");
-	}	
-	strcat(step,msg);
-	SendMessage(hWnd,GM_SHOWSTEP,(WPARAM)step,(LPARAM)player);
-	return;
-}
 
 VOID CNoGo::InitGame()//”Œœ∑≥ı ºªØ
 {
