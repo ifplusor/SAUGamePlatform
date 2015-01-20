@@ -34,14 +34,14 @@ VOID CChess::ShowStepHis(char *msg)
 //画特定大小的点(圆形)
 bool CChess::DrawPoint(HDC hDC,int r,COLORREF ptColor,COLORREF bkColor)
 {	
-	for(int i=0;i<=2*r;i++)
+	for(int i=1;i<=2*r;i++)
 	{
-		for(int j=0;j<=2*r;j++)
+		for(int j=1;j<=2*r;j++)
 		{
-			if((i-r)*(i-r)+(j-r)*(j-r)<r*r)
-				SetPixel(hDC,i,j,ptColor);
+			if((i-r)*(i-r)+(j-r)*(j-r)<=r*r)
+				SetPixel(hDC,i-1,j-1,ptColor);
 			else
-				SetPixel(hDC,i,j,bkColor);
+				SetPixel(hDC,i-1,j-1,bkColor);
 		}		
 	}
 	return true;
@@ -50,14 +50,14 @@ bool CChess::DrawPoint(HDC hDC,int r,COLORREF ptColor,COLORREF bkColor)
 //绘制圆形辅助位图(做透明处理)
 bool CChess::DrawAssist(HDC hAssistDC,int r)
 {
-	for(int i=0;i<r*2;i++)
+	for(int i=1;i<=r*2;i++)
 	{
-		for(int j=0;j<r*2;j++)
+		for(int j=1;j<=r*2;j++)
 		{
-			if ((i - r)*(i - r) + (j - r)*(j - r)<r*r)//圆内
-				SetPixel(hAssistDC,i,j,RGB(255,255,255));//白色
+			if ((i - r)*(i - r) + (j - r)*(j - r)<=r*r)//圆内
+				SetPixel(hAssistDC,i-1,j-1,RGB(255,255,255));//白色
 			else//圆外
-				SetPixel(hAssistDC,i,j,RGB(0,0,0));//黑色
+				SetPixel(hAssistDC,i-1,j-1,RGB(0,0,0));//黑色
 		}
 	}
 	return true;
