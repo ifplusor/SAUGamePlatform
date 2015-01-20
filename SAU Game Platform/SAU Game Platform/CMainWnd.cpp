@@ -397,11 +397,17 @@ VOID CMainWnd::OnPaint(WPARAM wParam,LPARAM lParam)
 	hBitmap=CreateCompatibleBitmap(hDC,rtClient.right-rtClient.left,rtClient.bottom-rtClient.top);//创建位图
 	hOldBitmap=(HBITMAP)SelectObject(hMemDC,hBitmap);//将位图选入兼容DC
 
-	FillBkAndBoard(hMemDC);//绘制主体界面背景
-	DrawCtrlBoard(hMemDC);//绘制操作面板
-	CT_DrawBoard(hMemDC);//绘制棋盘
+	if (ps.rcPaint.left <= rtBackground.right)
+	{
+		FillBkAndBoard(hMemDC);//绘制主体界面背景
+		CT_DrawBoard(hMemDC);//绘制棋盘
+	}
+	if (ps.rcPaint.right >= rtBoardPart.left)
+	{
+		DrawCtrlBoard(hMemDC);//绘制操作面板
+	}
 
-	BitBlt(hDC,rtClient.left,rtClient.top,rtClient.right-rtClient.left,rtClient.bottom-rtClient.top,hMemDC,rtClient.left,rtClient.top,SRCCOPY);//用兼容DC图像更新窗口图像
+	BitBlt(hDC, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right - ps.rcPaint.left, ps.rcPaint.bottom - ps.rcPaint.top, hMemDC, ps.rcPaint.left, ps.rcPaint.top, SRCCOPY);//用兼容DC图像更新窗口图像
 	
 	DeleteObject(hBitmap);
 	DeleteDC(hMemDC);
