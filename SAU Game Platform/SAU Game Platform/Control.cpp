@@ -330,29 +330,32 @@ void Game::OkMove()
 	BYTE player = CT_GetCurPlayer();
 	int temp = GameMode;
 	CT_OkMove(denCmd);
-	if (NetWork == 0)
+	if (denCmd[0] != '\0')//具有向另一方发送信息的意向
 	{
-		switch (temp)
+		if (NetWork == 0)//非网络工作模式
 		{
-		case 0:
-			WhiteE.WriteMsg(denCmd);
-			break;
-		case 1:
-			BlackE.WriteMsg(denCmd);				
-			break;
+			switch (temp)
+			{
+			case 0://执黑，发送给白方
+				WhiteE.WriteMsg(denCmd);
+				break;
+			case 1://执白，发送给黑方
+				BlackE.WriteMsg(denCmd);
+				break;
+			}
+		}
+		else//网络工作模式
+		{
+			NetShell(NULL, ConnectMode ? SERVERINFO.s : CLIENTINFO.s, denCmd, strlen(denCmd) + 1, 2);
 		}
 	}
-	else
-	{
-		NetShell(NULL, ConnectMode ? SERVERINFO.s : CLIENTINFO.s, denCmd, strlen(denCmd) + 1, 2);
-	}
 
-	if (player == 0)
+	if (player == 0)//禁用黑方按钮
 	{
 		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
 		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
 	}
-	else
+	else//禁用白方按钮
 	{
 		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
 		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
