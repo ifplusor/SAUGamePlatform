@@ -190,13 +190,13 @@ BOOL CNoGo::ProcessMove(char *moveCmd)
 		sprintf(denCmd, "move %c%c\n", tStep.point.x + 'A', tStep.point.y + 'A');//生成写消息
 		sprintf(curCmd, "\0");
 	}
+	StepNum[player]++;//累计步数
 	if(WinOrLose())//判断胜负
 	{
 		sprintf(denCmd + strlen(denCmd), "end\n");
 		sprintf(curCmd, "end\n");
 		return 2;
 	}	
-	StepNum[player]++;//累计步数
 	player = NEXTPLAYER(player);
 	return 1;
 }

@@ -216,9 +216,11 @@ BOOL CAmazon::ProcessMove(char *moveCmd)
 		tStep.side = player;
 		stepStack.push(tStep);
 
-
 		if (!FitRules())//判断是否符合规则
 		{
+			sprintf(curCmd, "error\n");
+			sprintf(denCmd, "\0");
+			stepStack.pop();//行棋违规，弹出栈顶着法
 			return -1;
 		}
 		board[tStep.first.x][tStep.first.y] = EMPTY;
@@ -232,13 +234,13 @@ BOOL CAmazon::ProcessMove(char *moveCmd)
 		sprintf(denCmd, "move %c%c%c%c%c%c\n", tStep.first.x + 'A', tStep.first.y + 'A', tStep.second.x + 'A', tStep.second.y + 'A', tStep.third.x + 'A', tStep.third.y + 'A');//生成写消息
 		sprintf(curCmd, "\0");
 	}
+	StepNum[player]++;//步数加1
 	if (WinOrLose())//判断胜负
 	{
 		sprintf(denCmd + strlen(denCmd), "end\n");
 		sprintf(curCmd, "end\n");
 		return 2;
 	}
-	StepNum[player]++;
 	player = NEXTPLAYER(player);
 	return 1;
 }
@@ -557,7 +559,7 @@ bool CAmazon::FitRules()
 	if (tStep.third.x < 0 || tStep.third.x>9 || tStep.third.y < 0 || tStep.third.y>9)
 		return false;
 	if (board[tStep.first.x][tStep.first.y] != tStep.side || board[tStep.second.x][tStep.second.y] != EMPTY						//起点有子，落点无子
-		|| (tStep.second.x == tStep.third.x&&tStep.second.y == tStep.third.y)													//落点和障碍点不为同一点
+		|| (tStep.second.x == tStep.third.x && tStep.second.y == tStep.third.y)													//落点和障碍点不为同一点
 		|| ((tStep.third.x != tStep.first.x || tStep.third.y != tStep.first.y) && board[tStep.third.x][tStep.third.y] != EMPTY))	//障碍点非起点时，障碍点无子
 		return false;
 	if (!JudgeRule(tStep.first, tStep.second))

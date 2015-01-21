@@ -217,13 +217,13 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 		sprintf(denCmd, "move %c%c%c%c\n", tStep.first.x + 'A', tStep.first.y + 'A', tStep.second.x + 'A', tStep.second.y + 'A');//生成写消息
 		sprintf(curCmd, "\0");
 	}
+	StepNum[player]++;//累计步数
 	if (WinOrLose())//判断胜负
 	{
 		sprintf(denCmd + strlen(denCmd), "end\n");
 		sprintf(curCmd, "end\n");
 		return 2;//分出胜负
 	}
-	StepNum[player]++;//累计步数
 	player = NEXTPLAYER(player);
 	return 1;//获取成功
 }
