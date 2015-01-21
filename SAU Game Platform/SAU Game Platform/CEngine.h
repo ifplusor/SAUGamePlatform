@@ -35,7 +35,8 @@ public:
 	~CEngine();
 
 	void SetType(int type){linkType=type;}
-	bool GetLoaded(){return linked;}
+	void SetStatus(int status){ this->status = status; }
+	int GetStatus(){ return status; }
 	void SetName(char *nameCmd);
 	char* GetName(){return name;}
 	//加载引擎
@@ -53,7 +54,7 @@ public:
 
 private:
 	int linkType;//连接类型
-	bool linked;//是否已连接引擎
+	int status;//引擎状态：-1.未连接；0.准备中；1.就绪
 	char name[256];//引擎名
 	LPCTSTR path;//引擎程序路径
 	OVERLAPPED ol;

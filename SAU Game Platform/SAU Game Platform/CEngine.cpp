@@ -52,7 +52,7 @@ int getcmd(char *scr,int size,char *cmd)
 
 CEngine::CEngine()
 {
-	linked=false;//未连接引擎
+	status=-1;//未连接引擎
 	linkType=UNNAMEDPIPE;//匿名管道连接
 	indexBuf=0;
 }
@@ -69,7 +69,7 @@ void CEngine::SetName(char *nameCmd)
 //通过匿名管道连接引擎引擎
 bool CEngine::LinkEngineWithUnnamed()
 {
-	linked = true;
+	status = 0;//引擎连接未就绪
 
 	SECURITY_ATTRIBUTES sa;
 	sa.nLength=sizeof(sa);
@@ -103,7 +103,7 @@ bool CEngine::LinkEngineWithUnnamed()
 		if(!CreateProcess(path,"",NULL,NULL,true,0,NULL,EngineDir,&si,&pi))//打开引擎进程
 		{
 			ErrorBox("CreateProcess failed");
-			linked = false;
+			status = -1;
 			return false;
 		}
 		CloseHandle(pde.engine_read);
@@ -116,7 +116,7 @@ bool CEngine::LinkEngineWithUnnamed()
 	}
 	else
 	{
-		linked = false;
+		status = -1;
 		return false;
 	}
 
@@ -126,7 +126,7 @@ bool CEngine::LinkEngineWithUnnamed()
 //通过命名管道连接引擎
 bool CEngine::LinkEngineWithNamed()
 {
-	linked = true;
+	status = 0;
 	CreatePipeAndConnectClient();//创建命名管道并等待客户端连接
 
 	char Filter[]="(exe files)|*.exe|(all files)|*.*||";//文件滤镜	
@@ -150,7 +150,7 @@ bool CEngine::LinkEngineWithNamed()
 		if(!CreateProcess(path,"",NULL,NULL,true,0,NULL,EngineDir,&si,&pi))//打开引擎进程
 		{
 			ErrorBox("CreateProcess failed");
-			linked=false;
+			status = -1;
 			return false;
 		}
 		SetCurrentDirectory(gameSet.CurDir);//恢复当前主应用程序的进程
@@ -158,7 +158,7 @@ bool CEngine::LinkEngineWithNamed()
 	}
 	else
 	{
-		linked = false;
+		status = -1;
 		return false;
 	}			
 
@@ -177,7 +177,7 @@ bool CEngine::LinkEngineWithNamed()
 //加载引擎
 bool CEngine::LoadEngine()
 {
-	if(linked==true)
+	if(status!=-1)//引擎处于连接状态
 	{
 		MsgBox("Engine has loaded!","error",3000);
 		return false;
@@ -196,7 +196,7 @@ bool CEngine::LoadEngine()
 
 VOID CEngine::ShowEngineWindow(int nCmdShow)
 {
-	if(linked)
+	if(status!=-1)
 		ShowWindow(pde.console_hwnd,nCmdShow);
 }
 
@@ -251,12 +251,11 @@ bool CEngine::CreateEngineInfoBoard()
 bool CEngine::UnloadEngine()
 {
 	DWORD k;
-	if(linked==false)//看是否已卸载
+	if(status == -1)//看是否已卸载
 	{
 		MsgBox("Engine has unloaded!","Msg",1500);
 		return true;
 	}
-	linked = false;
 	if (!GetExitCodeProcess(pde.hEProcess, &k))//获取退出码
 	{
 		ErrorBox("Get exit code failed!");
@@ -273,6 +272,7 @@ bool CEngine::UnloadEngine()
 				CloseHandle(pde.platform_write);
 				CloseHandle(pde.platform_read);
 			}
+			status = -1;
 			return true;
 		}
 	}
@@ -290,9 +290,9 @@ bool CEngine::UnloadEngine()
 	else
 	{
 		ErrorBox("UnLoadEngine failed");
-		linked = true;
 		return false;
 	}
+	status = -1;
 	return true;
 }
 

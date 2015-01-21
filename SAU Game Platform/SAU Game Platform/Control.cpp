@@ -42,6 +42,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 	side->GetCommand("name",rMsg);//获取引擎名称
 	side->SetName(rMsg);
 	MainWnd->SetName(rMsg,(int)lpParam);
+	side->SetStatus(1);//引擎就绪
 	while(1)
 	{
 		side->GetCommand("move",rMsg);//获取行棋事件
@@ -107,7 +108,7 @@ bool Game::UnloadEngine(int side)
 {
 	if(side==BLACK)
 	{
-		if(BlackE.GetLoaded()==false)//看是否已卸载
+		if(BlackE.GetStatus()==-1)//看是否已卸载
 		{
 			MsgBox("Engine has unloaded!","Msg",1500);
 			return true;
@@ -119,7 +120,7 @@ bool Game::UnloadEngine(int side)
 	}
 	else if(side==WHITE)
 	{
-		if(WhiteE.GetLoaded()==false)//看是否已卸载
+		if(WhiteE.GetStatus()==-1)//看是否已卸载
 		{
 			MsgBox("Engine has unloaded!","Msg",1500);
 			return true;
@@ -135,7 +136,7 @@ bool Game::UnloadEngine(int side)
 
 bool Game::CheckEngineLoad()
 {
-	if (BlackE.GetLoaded() || WhiteE.GetLoaded())
+	if (BlackE.GetStatus()!=-1 || WhiteE.GetStatus()!=-1)//有引擎处于连接状态
 		return true;
 	return false;
 }
@@ -153,30 +154,45 @@ void Game::StartGame()
 	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
 	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
 	MainWnd->GameStart();
-	if (NetWork == 0)
+	if (NetWork == 0)//本地对弈
 	{
-		if (BlackE.GetLoaded() && WhiteE.GetLoaded())//黑白引擎都加在载
+		if (BlackE.GetStatus() != -1 && WhiteE.GetStatus() != -1)//黑白引擎都加在载
 		{
-			GameMode = 2;
-			BlackE.WriteMsg("new black\n");
-			WhiteE.WriteMsg("new white\n");
+			if (BlackE.GetStatus() == 1 && WhiteE.GetStatus() == 1)
+			{
+				GameMode = 2;
+				BlackE.WriteMsg("new black\n");
+				WhiteE.WriteMsg("new white\n");
+			}
+			else
+				MsgBox("引擎未就绪", "error", 3000);
 		}
-		else if (BlackE.GetLoaded() || WhiteE.GetLoaded())//只加载一个引擎
+		else if (BlackE.GetStatus() != -1 || WhiteE.GetStatus() != -1)//只加载一个引擎
 		{
 			if (chessType[chesstype].type != 0)
 			{
 				MsgBox("该棋种不支持人机对弈！", "error", 0);
 				return;
 			}
-			if (BlackE.GetLoaded())
+			if (BlackE.GetStatus() != -1)
 			{
-				GameMode = 1;
-				BlackE.WriteMsg("new black\n");
+				if (BlackE.GetStatus() == 1)
+				{
+					GameMode = 1;
+					BlackE.WriteMsg("new black\n");
+				}
+				else
+					MsgBox("引擎未就绪", "error", 3000);
 			}
 			else
 			{
-				GameMode = 0;
-				WhiteE.WriteMsg("new white\n");
+				if (WhiteE.GetStatus() == 1)
+				{
+					GameMode = 0;
+					WhiteE.WriteMsg("new white\n");
+				}
+				else
+					MsgBox("引擎未就绪", "error", 3000);
 			}
 		}
 		else//人人对弈
@@ -189,11 +205,11 @@ void Game::StartGame()
 			GameMode = 3;
 		}
 	}
-	else
-	{
+	else//跨网络对弈
+	{//跨网络对弈中，因为用户协商机制，只提供就绪状态引擎的对弈服务，即当引擎已加载但未就绪时开始的对弈按自然人对弈处理。
 		if (GameMode_2 == 0)//执黑
 		{
-			if (BlackE.GetLoaded())
+			if (BlackE.GetStatus() == 1)
 			{
 				GameMode = 4;
 				BlackE.WriteMsg("new black\n");
@@ -203,7 +219,7 @@ void Game::StartGame()
 		}
 		else
 		{
-			if (WhiteE.GetLoaded())
+			if (WhiteE.GetStatus() == 1)
 			{
 				GameMode = 5;
 				WhiteE.WriteMsg("new white\n");
