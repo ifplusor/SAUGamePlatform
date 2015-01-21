@@ -85,6 +85,10 @@
     <ClInclude Include="..\include\CChess.h" />
     <ClInclude Include="..\include\Chess.h" />
     <ClInclude Include="CDotsAndBoxes.h" />
+    <ClInclude Include="resource1.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DotsAndBoxes.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

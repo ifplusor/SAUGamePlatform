@@ -139,9 +139,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileDlg.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FileDlg.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FileDlg.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
