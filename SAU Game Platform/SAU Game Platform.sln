@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Amazon", "Chess Type\Amazon
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileDlg", "FileDlg\FileDlg.vcxproj", "{569A505E-A153-4CB0-A0D0-1149224853F7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DotsAndBoxes", "Chess Type\DotsAndBoxes\DotsAndBoxes.vcxproj", "{594EFC09-4F46-47BC-988C-574C0524EC42}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -45,6 +47,10 @@ Global
 		{569A505E-A153-4CB0-A0D0-1149224853F7}.Debug|Win32.Build.0 = Debug|Win32
 		{569A505E-A153-4CB0-A0D0-1149224853F7}.Release|Win32.ActiveCfg = Release|Win32
 		{569A505E-A153-4CB0-A0D0-1149224853F7}.Release|Win32.Build.0 = Release|Win32
+		{594EFC09-4F46-47BC-988C-574C0524EC42}.Debug|Win32.ActiveCfg = Debug|Win32
+		{594EFC09-4F46-47BC-988C-574C0524EC42}.Debug|Win32.Build.0 = Debug|Win32
+		{594EFC09-4F46-47BC-988C-574C0524EC42}.Release|Win32.ActiveCfg = Release|Win32
+		{594EFC09-4F46-47BC-988C-574C0524EC42}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
