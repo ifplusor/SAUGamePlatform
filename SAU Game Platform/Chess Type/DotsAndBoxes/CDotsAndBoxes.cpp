@@ -209,9 +209,9 @@ bool CDotsAndBoxes::DrawChess()
 BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 {				
 	char *res;
-	int pos=0,cs;
+	int pos=0,cs,cn;
 	Step tStep;
-	int len=strlen("move ");
+	int len=strlen("move A ");
 	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
 	{
 		return 0;
@@ -223,8 +223,21 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 		
 		InitStep(tStep);
 		tStep.side = player;
+		cn = moveCmd[pos - 2] - '@';//连线数目
 		cs = 0;
 		do{
+			if (cs >= cn)//连线过多
+			{
+				sprintf(curCmd, "error\n");
+				sprintf(denCmd, "\0");
+				while (cs)//取消之前判别连线
+				{
+					tStep = stepStack.top();
+					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;
+					stepStack.pop();
+				}
+				return -1;
+			}
 			tStep.line.k = moveCmd[pos + cs * 3] - 'A';
 			tStep.line.i = moveCmd[pos + cs * 3 + 1] - 'A';
 			tStep.line.j = moveCmd[pos + cs * 3 + 2] - 'A';
@@ -246,6 +259,18 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 			line[tStep.line.k][tStep.line.i][tStep.line.j] = player;
 			cs++;
 		} while (HaveBox(tStep.line));
+		if (cs != cn)//连线数不足
+		{
+			sprintf(curCmd, "error\n");
+			sprintf(denCmd, "\0");
+			while (cs)//取消之前判别连线
+			{
+				tStep = stepStack.top();
+				line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;
+				stepStack.pop();
+			}
+			return -1;
+		}
 
 		InvalidateRect(hWnd, &rtBoard, FALSE);
 		PlaySnd(1);
@@ -386,7 +411,7 @@ INT CDotsAndBoxes::OkMove()
 	Step tStep;
 	tStep = stepStack.top();
 	denCmd[0] = '\0';
-	sprintf(denCmd + (5 + connectS * 3), "%c%c%c", tStep.line.k + 'A', tStep.line.i + 'A', tStep.line.j + 'A');
+	sprintf(denCmd + (7 + connectS * 3), "%c%c%c", tStep.line.k + 'A', tStep.line.i + 'A', tStep.line.j + 'A');
 	if (HaveBox(tStep.line))//捕获格子不换手，并显示格子颜色
 	{
 		connectS++;//连续连线数目加1
@@ -395,9 +420,9 @@ INT CDotsAndBoxes::OkMove()
 	}
 	else
 	{
-		ShowStepHis(denCmd + 5);//换手后显示着法历史，并产生裁判指示
-		sprintf(denCmd, "move");
-		denCmd[4] = ' ';
+		ShowStepHis(denCmd + 7);//换手后显示着法历史，并产生裁判指示
+		sprintf(denCmd, "move %c", 'A'+connectS);
+		denCmd[6] = ' ';
 		sprintf(denCmd + strlen(denCmd), "\n");
 		StepNum[player]++;//换手时累计步数
 		player = NEXTPLAYER(player);
@@ -405,9 +430,9 @@ INT CDotsAndBoxes::OkMove()
 	}
 	if (WinOrLose())
 	{
-		ShowStepHis(denCmd + 5);
-		sprintf(denCmd, "move");
-		denCmd[4] = ' ';
+		ShowStepHis(denCmd + 7);
+		sprintf(denCmd, "move %c", 'A' + connectS);
+		denCmd[6] = ' ';
 		sprintf(denCmd + strlen(denCmd), "\nend\n");
 		return 2;
 	}
