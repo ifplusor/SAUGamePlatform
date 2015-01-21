@@ -228,6 +228,7 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 			tStep.line.k = moveCmd[pos + cs * 3] - 'A';
 			tStep.line.i = moveCmd[pos + cs * 3 + 1] - 'A';
 			tStep.line.j = moveCmd[pos + cs * 3 + 2] - 'A';
+			LineToPoint(tStep);
 			stepStack.push(tStep);
 			if (!FitRules())//判断是否符合规则
 			{
@@ -564,10 +565,32 @@ bool CDotsAndBoxes::PonitToLine(Step &step)
 	return true;
 }
 
+bool CDotsAndBoxes::LineToPoint(Step &step)
+{
+	if (step.line.k == 0)
+	{
+		step.start.x = step.line.j;
+		step.start.y = step.line.i;
+		step.end.x = step.start.x + 1;
+		step.end.y = step.start.y;
+	}
+	else if (step.line.k == 1)
+	{
+		step.start.x = step.line.i;
+		step.start.y = step.line.j;
+		step.end.x = step.start.x;
+		step.end.y = step.start.y + 1;
+	}
+	else
+		return false;
+
+	return true;
+}
+
 bool CDotsAndBoxes::FitRules()
 {
 	Step tStep = stepStack.top();
-	if (tStep.line.k < 0 || tStep.line.i > 1 || tStep.line.i < 0 || tStep.line.i > 5 || tStep.line.j < 0 || tStep.line.j > 4)
+	if (tStep.line.k < 0 || tStep.line.k > 1 || tStep.line.i < 0 || tStep.line.i > 5 || tStep.line.j < 0 || tStep.line.j > 4)
 		return false;
 	if (line[tStep.line.k][tStep.line.i][tStep.line.j] != EMPTY)
 		return false;
