@@ -40,7 +40,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Resource.rc">
+    <ResourceCompile Include="ConSix.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>

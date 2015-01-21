@@ -114,7 +114,7 @@
     <ClInclude Include="Thread.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
+    <ResourceCompile Include="GamePlatform.rc" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="GamePlatform.manifest" />
