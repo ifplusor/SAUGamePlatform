@@ -7,6 +7,7 @@
 
 
 #include "GameType.h"
+#include "Control.h"
 #include "CMainWnd.h"
 
 
@@ -238,6 +239,11 @@ VOID SetChessType(int i,HMENU hMenu)
 {	
 	if(i==chesstype||i>=chessNum)//所选棋种非当前棋种
 		return;
+	if (game.GameMode != -1)
+	{
+		MsgBox("对弈正在进行，不能进行棋种切换！", "error", 0);
+		return;
+	}
 
 	CT_ExitModule();
 
