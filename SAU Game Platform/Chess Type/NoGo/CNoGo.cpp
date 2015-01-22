@@ -344,12 +344,12 @@ bool CNoGo::WinOrLose()//判断胜负
 {
 	Step tStep = stepStack.top();
 	BYTE side = tStep.side;
+	int deplayer = 1 - side;
 	if (GetQi(tStep.point.x, tStep.point.y, side) == 0)//自杀
 	{
-		PostMessage(hWnd,GM_WINLOSE,(WPARAM)(StepNum[BLACK]<<16)+StepNum[WHITE],(LPARAM)1-side);
+		PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)deplayer);
 		return true;
 	}
-	int deplayer = 1 - side;
 	int i,j,k,tx, ty;
 	int emptyPN=0,wnPN=0;
 	for(j=0;j<9;j++)
@@ -360,27 +360,27 @@ bool CNoGo::WinOrLose()//判断胜负
 			{
 				if(GetQi(i,j,deplayer)==0)//使对方子无气
 				{
-					PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)1 - side);
+					PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)deplayer);
 					return true;
 				}
 			}
 			else if(board[i][j]==EMPTY)
 			{
-				emptyPN++;
-				board[i][j]=deplayer;
+				emptyPN ++;
+				board[i][j] = deplayer;
 				if (GetQi(i, j, deplayer) == 0)//对方若落子将自杀
 				{
-					wnPN++;
+					wnPN ++;
 					board[i][j] = EMPTY;
 					continue;
 				}
 				for (k = 0; k < 4; k++)
 				{
-					tx = i + lineVector[0][0];
-					ty = j + lineVector[0][1];
-					if (tx >= 0 && tx < 9 && ty >= 0 && ty < 9 && board[tx][ty] == side&&GetQi(tx, ty, side) == 0)
+					tx = i + lineVector[k][0];
+					ty = j + lineVector[k][1];
+					if (tx >= 0 && tx < 9 && ty >= 0 && ty < 9 && board[tx][ty] == side && GetQi(tx, ty, side) == 0)//对方若落子将使本方无气
 					{
-						wnPN++;
+						wnPN ++;
 						break;
 					}
 				}
@@ -388,7 +388,7 @@ bool CNoGo::WinOrLose()//判断胜负
 			}
 		}
 	}
-	if(emptyPN==wnPN)//对方没有可正常落子点
+	if(emptyPN == wnPN)//对方没有可正常落子点
 	{
 		PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)side);
 		return true;
@@ -403,7 +403,7 @@ bool CNoGo::FitRules()//是否符合规则
 	{
 		return false;
 	}
-	if (board[sp.point.x][sp.point.y] != EMPTY)
+	if (board[sp.point.x][sp.point.y] != EMPTY)//只要是空点就可以落子
 	{
 		return false;
 	}
