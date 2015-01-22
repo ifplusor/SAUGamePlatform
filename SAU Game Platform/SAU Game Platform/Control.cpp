@@ -25,7 +25,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 {
 	CEngine *side,*unside;
 	char rMsg[BUFSIZE],wMMsg[BUFSIZE],wDMsg[BUFSIZE];
-	int temp;
+	int temp;//记录处理着法前的GameMode，防止因获胜置-1使着法不能发给对方引擎
 
 	if((int)lpParam==BLACK)//判断线程承担的引擎角色
 	{
@@ -56,7 +56,12 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 			sprintf(errorMsg, "Break rule!\nError command: %s", rMsg);
 			MessageBox(MainWnd->hWnd, errorMsg, "error", MB_OK);
 		}
-		if(wMMsg[0]!='\0')
+		if ((chessType[chesstype].type & 4) && (CT_GetCurPlayer() == game.GameMode))//允许pass，人行棋
+		{
+			SetText(GetDlgItem(MainWnd->hWnd, (game.GameMode == 0) ? IDB_CONTROL_OK_BLC : IDB_CONTROL_OK_WHT), "Pass");
+			EnableWindow(GetDlgItem(MainWnd->hWnd, (game.GameMode == 0) ? IDB_CONTROL_OK_BLC : IDB_CONTROL_OK_WHT), TRUE);
+		}
+		if (wMMsg[0] != '\0')
 			side->WriteMsg(wMMsg);
 		if (wDMsg[0] != '\0')//机器对弈，发给对方引擎
 		{
@@ -79,10 +84,157 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 Game::Game()
 {
 	GameMode=-1;
+	passB = passW = false;
+	okB = okW = false;
+	cancelB = cancelW = false;
 }
 
 Game::~Game()
 {
+}
+
+void Game::OpenCB()
+{
+	if (!cancelB)
+	{
+		cancelB = true;
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), TRUE);
+	}
+	if (passB)
+		ClosePB();
+}
+
+void Game::OpenCW()
+{
+	if (!cancelW)
+	{
+		cancelW = true;
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), TRUE);
+	}
+	if (passW)
+		ClosePW();
+}
+
+void Game::OpenOCB()
+{
+	if (!okB)
+	{
+		okB = true;
+		if (passB)
+		{
+			passB = false;
+			SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), "Ok");
+		}
+		else
+		{
+			EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), TRUE);
+		}
+	}
+	if (!cancelB)
+		OpenCB();
+}
+
+void Game::OpenOCW()
+{
+	if (!okW)
+	{
+		okW = true;
+		if (passW)
+		{
+			passW = false;
+			SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), "Ok");
+		}
+		else
+		{
+			EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), TRUE);
+		}
+	}
+	if (!cancelW)
+		OpenCW();
+}
+
+void Game::OpenPB()
+{
+	if (!passB)
+	{
+		passB = true;
+		if (okB)
+		{
+			okB = false;
+			SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), "Pass");
+		}
+		else
+		{
+			SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), "Pass");
+			EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), TRUE);
+		}
+	}
+}
+
+void Game::OpenPW()
+{
+	if (!passW)
+	{
+		passW = true;
+		if (okW)
+		{
+			okW = false;
+			SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), "Pass");
+		}
+		else
+		{
+			SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), "Pass");
+			EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), TRUE);
+		}
+	}
+}
+
+void Game::CloseOCB()
+{
+	if (okB)
+	{
+		okB = false;
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
+	}
+	if (cancelB)
+	{
+		cancelB = false;
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
+	}
+}
+
+void Game::CloseOCW()
+{
+	if (okW)
+	{
+		okW = false;
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
+	}
+	if (cancelW)
+	{
+		cancelW = false;
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
+	}
+}
+
+void Game::ClosePB()
+{
+	if (passB)
+	{
+		passB = false;
+		SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), "Ok");
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
+	}
+}
+
+void Game::ClosePW()
+{
+	if (passW)
+	{
+		passW = false;
+		SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), "Ok");
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
+	}
 }
 
 bool Game::LoadEngine(int side)
@@ -149,10 +301,8 @@ void Game::StartGame()
 		return;
 	}
 	CT_OnRun();//初始化棋局
-	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
-	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
-	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
-	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
+	CloseOCB();
+	CloseOCW();
 	MainWnd->GameStart();
 	if (NetWork == 0)//本地对弈
 	{
@@ -169,12 +319,12 @@ void Game::StartGame()
 		}
 		else if (BlackE.GetStatus() != -1 || WhiteE.GetStatus() != -1)//只加载一个引擎
 		{
-			if (chessType[chesstype].type != 0)
+			if (chessType[chesstype].type & 1)
 			{
 				MsgBox("该棋种不支持人机对弈！", "error", 0);
 				return;
 			}
-			if (BlackE.GetStatus() != -1)
+			if (BlackE.GetStatus() != -1)//人执白
 			{
 				if (BlackE.GetStatus() == 1)
 				{
@@ -184,12 +334,16 @@ void Game::StartGame()
 				else
 					MsgBox("引擎未就绪", "error", 3000);
 			}
-			else
+			else//人执黑
 			{
 				if (WhiteE.GetStatus() == 1)
 				{
 					GameMode = 0;
 					WhiteE.WriteMsg("new white\n");
+					if (chessType[chesstype].type & 4)//允许pass
+					{
+						OpenPB();
+					}
 				}
 				else
 					MsgBox("引擎未就绪", "error", 3000);
@@ -197,12 +351,16 @@ void Game::StartGame()
 		}
 		else//人人对弈
 		{
-			if (chessType[chesstype].type != 0)
+			if (chessType[chesstype].type & 1)
 			{
 				MsgBox("该棋种不支持人人对弈！", "error", 0);
 				return;
 			}
 			GameMode = 3;
+			if (chessType[chesstype].type & 4)//允许pass
+			{
+				OpenPB();
+			}
 		}
 	}
 	else//跨网络对弈
@@ -214,8 +372,14 @@ void Game::StartGame()
 				GameMode = 4;
 				BlackE.WriteMsg("new black\n");
 			}
-			else
+			else//人执黑
+			{
 				GameMode = 0;
+				if (chessType[chesstype].type & 4)//允许pass
+				{
+					OpenPB();
+				}
+			}
 		}
 		else
 		{
@@ -230,6 +394,10 @@ void Game::StartGame()
 	}
 }
 
+/**
+ * StopGame - 结束对弈
+ * description：	该函数用于结束对弈逻辑，用户强制结束对弈和终盘时调用
+ */
 void Game::StopGame()
 {
 	if(IsStop()==TRUE)
@@ -237,7 +405,7 @@ void Game::StopGame()
 		MsgBox("对弈尚未开始","error",3000);
 		return;
 	}
-	MainWnd->GameStop();
+	MainWnd->GameStop();//关闭计时器
 	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
 	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
 	EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
@@ -278,9 +446,16 @@ bool Game::MoveStep(int x,int y)
 			MessageBox(MainWnd->hWnd, "error step!","error", MB_OK);
 			return false;
 		case 1://着法成立
-			EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_OK_WHT : IDB_CONTROL_OK_BLC), TRUE);
+			if (player == BLACK)
+				OpenOCB();
+			else
+				OpenOCW();
+			break;
 		case 0://着法进行
-			EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_CANCEL_WHT : IDB_CONTROL_CANCEL_BLC), TRUE);
+			if (player == BLACK)
+				OpenCB();
+			else
+				OpenCW();
 			break;
 		case 2://不是可落位置
 			break;
@@ -301,9 +476,16 @@ bool Game::MoveStep(int x,int y)
 				MessageBox(MainWnd->hWnd, "error step!", "error", MB_OK);
 				return false;
 			case 1://着法成立
-				EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_OK_WHT : IDB_CONTROL_OK_BLC), TRUE);
+				if (player == BLACK)
+					OpenOCB();
+				else
+					OpenOCW();
+				break;
 			case 0://着法进行
-				EnableWindow(GetDlgItem(MainWnd->hWnd, player ? IDB_CONTROL_CANCEL_WHT : IDB_CONTROL_CANCEL_BLC), TRUE);
+				if (player == BLACK)
+					OpenCB();
+				else
+					OpenCW();
 				break;
 			case 2://不是可落位置
 				break;
@@ -324,18 +506,32 @@ bool Game::MoveStep(int x,int y)
 	return true;
 }
 
+/**
+ * MoveStep - 行棋
+ * @step：	行棋命令
+ * description：	该函数用于跨网络对弈，对网络另一端的行棋着法进行解析
+ */
 bool Game::MoveStep(char *step)
 {
 	char wMMsg[256],wDMsg[256];
-	int temp = GameMode;
 	CT_ProcessMove(step, wMMsg, wDMsg);
-	if (temp == 4)
+	if (GameMode == 4)//机器执黑
 	{
 		BlackE.WriteMsg(wDMsg);
 	}
-	else if (temp == 5)
+	else if (GameMode == 5)//机器执白
 	{
 		WhiteE.WriteMsg(wDMsg);
+	}
+	else//人行棋
+	{
+		if (chessType[chesstype].type & 4)
+		{
+			if (GameMode == BLACK)
+				OpenPB();
+			else
+				OpenPW();
+		}
 	}
 	return true;
 }
@@ -344,7 +540,7 @@ void Game::OkMove()
 {
 	char denCmd[256];
 	BYTE player = CT_GetCurPlayer();
-	int temp = GameMode;
+	int temp = GameMode;//记录处理着法前的GameMode，防止因获胜置-1使着法不能发给对方引擎
 	CT_OkMove(denCmd);
 	if (denCmd[0] != '\0')//具有向另一方发送信息的意向
 	{
@@ -368,13 +564,19 @@ void Game::OkMove()
 
 	if (player == 0)//禁用黑方按钮
 	{
-		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
-		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
+		if ((chessType[chesstype].type & 4) && GameMode == 3)
+		{
+			OpenPW();
+		}
+		CloseOCB();
 	}
 	else//禁用白方按钮
 	{
-		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
-		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
+		if ((chessType[chesstype].type & 4) && GameMode == 3)
+		{
+			OpenPB();
+		}
+		CloseOCW();
 	}
 }
 
@@ -384,12 +586,18 @@ void Game::CancelMove()
 	CT_CancelMove();
 	if (player == 0)
 	{
-		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
-		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
+		CloseOCB();
+		if (chessType[chesstype].type & 4)
+		{
+			OpenPB();
+		}
 	}
 	else
 	{
-		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
-		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
+		CloseOCW();
+		if (chessType[chesstype].type & 4)
+		{
+			OpenPW();
+		}
 	}
 }

@@ -19,8 +19,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam);//引擎运行线程函数
 class Game
 {
 public:
-	int GameMode;	//对弈模式  -1:未开始 0：人执黑，机器\网络执白 1：人执白，机器\网络执黑 2：机器对弈 3：人对弈
-					//4：机器执黑，网络执白 5：机器执白，网络执黑
+	int GameMode;	//对弈模式  -1:未开始 0：人执黑，机器\网络执白 1：人执白，机器\网络执黑 2：机器对弈 3：人对弈 4：机器执黑，网络执白 5：机器执白，网络执黑
 
 	Game();
 	~Game();
@@ -40,6 +39,21 @@ public:
 private:
 	CEngine BlackE,WhiteE;//引擎对象
 	CThread BlackT,WhiteT;//线程对象
+
+	bool okB,okW;//ok按钮标记
+	bool cancelB,cancelW;//cancel按钮标记
+	bool passB,passW;//pass按钮标记
+
+	void OpenCB();
+	void OpenCW();
+	void OpenOCB();
+	void OpenOCW();
+	void OpenPB();
+	void OpenPW();
+	void CloseOCB();
+	void CloseOCW();
+	void ClosePB();
+	void ClosePW();
 };
 
 extern Game game;
