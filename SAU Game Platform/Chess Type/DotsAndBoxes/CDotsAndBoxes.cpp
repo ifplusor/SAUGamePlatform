@@ -212,6 +212,7 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 	int pos=0,cs,cn;
 	Step tStep;
 	int len=strlen("move A ");
+	curCmd[0] = denCmd[0] = '\0';//默认空消息
 	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
 	{
 		return 0;
@@ -229,7 +230,6 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 			if (cs >= cn)//连线过多
 			{
 				sprintf(curCmd, "error\n");
-				sprintf(denCmd, "\0");
 				while (cs)//取消之前判别连线
 				{
 					tStep = stepStack.top();
@@ -246,7 +246,6 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 			if (!FitRules())//判断是否符合规则
 			{
 				sprintf(curCmd, "error\n");
-				sprintf(denCmd, "\0");
 				stepStack.pop();
 				while (cs)//取消之前判别连线
 				{
@@ -262,7 +261,6 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 		if (cs != cn)//连线数不足
 		{
 			sprintf(curCmd, "error\n");
-			sprintf(denCmd, "\0");
 			while (cs)//取消之前判别连线
 			{
 				tStep = stepStack.top();

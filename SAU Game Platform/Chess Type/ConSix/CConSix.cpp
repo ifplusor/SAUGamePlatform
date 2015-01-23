@@ -175,6 +175,7 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 	char *res;
 	int pos = 0;
 	int len = strlen("move ");
+	curCmd[0] = denCmd[0] = '\0';//默认空消息
 	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
 	{
 		return 0;//未找到关键字
@@ -194,7 +195,6 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 		if (!FitRules())//判断是否符合规则
 		{
 			sprintf(curCmd, "error\n");
-			sprintf(denCmd, "\0");
 			stepStack.pop();
 			return -1;//行棋违规
 		}
@@ -210,12 +210,11 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 		}
 		InvalidateRect(hWnd, &rtBoard, FALSE);
 		SendMessage(hWnd, WM_PAINT, NULL, NULL);
-		//		PlaySnd(0);
+		PlaySnd(0);
 		moveCmd[pos + 4] = '\0';
 		ShowStepHis(moveCmd + pos);
 
 		sprintf(denCmd, "move %c%c%c%c\n", tStep.first.x + 'A', tStep.first.y + 'A', tStep.second.x + 'A', tStep.second.y + 'A');//生成写消息
-		sprintf(curCmd, "\0");
 	}
 	StepNum[player]++;//累计步数
 	if (WinOrLose())//判断胜负

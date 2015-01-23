@@ -159,6 +159,7 @@ BOOL CNoGo::ProcessMove(char *moveCmd)
 	char *res;
 	int pos=0;
 	int len=strlen("move ");
+	curCmd[0] = denCmd[0] = '\0';//默认空消息
 	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
 	{
 		return 0;
@@ -176,7 +177,6 @@ BOOL CNoGo::ProcessMove(char *moveCmd)
 		if(!FitRules())//判断是否符合规则
 		{
 			sprintf(curCmd, "error\n");
-			sprintf(denCmd, "\0");
 			stepStack.pop();
 			return -1;
 		}
@@ -188,7 +188,6 @@ BOOL CNoGo::ProcessMove(char *moveCmd)
 		ShowStepHis(moveCmd + pos);
 
 		sprintf(denCmd, "move %c%c\n", tStep.point.x + 'A', tStep.point.y + 'A');//生成写消息
-		sprintf(curCmd, "\0");
 	}
 	StepNum[player]++;//累计步数
 	if(WinOrLose())//判断胜负

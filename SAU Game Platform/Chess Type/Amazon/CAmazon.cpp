@@ -198,6 +198,7 @@ BOOL CAmazon::ProcessMove(char *moveCmd)
 	char *res;
 	int pos = 0;
 	int len = strlen("move ");
+	curCmd[0] = denCmd[0] = '\0';//默认空消息
 	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
 	{
 		return 0;
@@ -219,7 +220,6 @@ BOOL CAmazon::ProcessMove(char *moveCmd)
 		if (!FitRules())//判断是否符合规则
 		{
 			sprintf(curCmd, "error\n");
-			sprintf(denCmd, "\0");
 			stepStack.pop();//行棋违规，弹出栈顶着法
 			return -1;
 		}
@@ -232,7 +232,6 @@ BOOL CAmazon::ProcessMove(char *moveCmd)
 		ShowStepHis(moveCmd + pos);
 
 		sprintf(denCmd, "move %c%c%c%c%c%c\n", tStep.first.x + 'A', tStep.first.y + 'A', tStep.second.x + 'A', tStep.second.y + 'A', tStep.third.x + 'A', tStep.third.y + 'A');//生成写消息
-		sprintf(curCmd, "\0");
 	}
 	StepNum[player]++;//步数加1
 	if (WinOrLose())//判断胜负
