@@ -529,25 +529,33 @@ bool Game::MoveStep(int x,int y)
  */
 bool Game::MoveStep(char *step)
 {
-	char wMMsg[256],wDMsg[256];
-	CT_ProcessMove(step, wMMsg, wDMsg);
-	if (GameMode == 4)//机器执黑
+	char curCmd[256], denCmd[256];
+	CT_ProcessMove(step, curCmd, denCmd);
+	//由NetShell调用，为网络另一方平台副本的逻辑输入。
+	if (curCmd[0] != '\0')//返回给网络另一端平台副本的命令。因为另一端平台副本的维护，所以不存在非法着法，故不含有“error”命令。
 	{
-		BlackE.WriteMsg(wDMsg);
+		NetShell(NULL, ConnectMode ? SERVERINFO.s : CLIENTINFO.s, curCmd, strlen(curCmd) + 1, 2);
 	}
-	else if (GameMode == 5)//机器执白
+	if (denCmd[0] != '\0')//交付给本地棋手的命令
 	{
-		WhiteE.WriteMsg(wDMsg);
-	}
-	else//人行棋
-	{
-		if (chessType[chesstype].type & 4)
+		if (GameMode == 4)//机器执黑
 		{
-			if (GameMode == BLACK)
-				OpenPB();
-			else
-				OpenPW();
+			BlackE.WriteMsg(denCmd);
 		}
+		else if (GameMode == 5)//机器执白
+		{
+			WhiteE.WriteMsg(denCmd);
+		}
+		else//人行棋
+		{
+			if (chessType[chesstype].type & 4)
+			{
+				if (GameMode == BLACK)
+					OpenPB();
+				else
+					OpenPW();
+			}
+	}
 	}
 	return true;
 }
