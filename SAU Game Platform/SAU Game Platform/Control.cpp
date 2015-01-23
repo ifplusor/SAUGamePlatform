@@ -201,6 +201,12 @@ void Game::CloseOCB()
 		cancelB = false;
 		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_BLC), FALSE);
 	}
+	if (passB)
+	{
+		passB = false;
+		SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), "Ok");
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_BLC), FALSE);
+	}
 }
 
 void Game::CloseOCW()
@@ -214,6 +220,12 @@ void Game::CloseOCW()
 	{
 		cancelW = false;
 		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_CANCEL_WHT), FALSE);
+	}
+	if (passW)
+	{
+		passW = false;
+		SetText(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), "Ok");
+		EnableWindow(GetDlgItem(MainWnd->hWnd, IDB_CONTROL_OK_WHT), FALSE);
 	}
 }
 
@@ -319,7 +331,7 @@ void Game::StartGame()
 		}
 		else if (BlackE.GetStatus() != -1 || WhiteE.GetStatus() != -1)//只加载一个引擎
 		{
-			if (chessType[chesstype].type & 1)
+			if (chessType[chesstype].type & 2)
 			{
 				MsgBox("该棋种不支持人机对弈！", "error", 0);
 				return;
@@ -365,6 +377,10 @@ void Game::StartGame()
 	}
 	else//跨网络对弈
 	{//跨网络对弈中，因为用户协商机制，只提供就绪状态引擎的对弈服务，即当引擎已加载但未就绪时开始的对弈按自然人对弈处理。
+		if (chessType[chesstype].type & 8)
+		{
+			MsgBox("该棋种不支持网络对弈！", "error", 0);
+		}
 		if (GameMode_2 == 0)//执黑
 		{
 			if (BlackE.GetStatus() == 1)

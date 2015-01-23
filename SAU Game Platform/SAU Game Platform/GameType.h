@@ -20,7 +20,7 @@
 //棋种支持模块描述符
 struct _CHESSTYPE{
 	HINSTANCE chessTP;//棋种包资源实例句柄
-	int type;//棋种类型位标记  0bit：禁用人人对弈标记；1bit：允许Pass标记
+	int type;//棋种类型位标记  0bit：禁用人人对弈标记；1bit：禁用人机对弈；2bit：允许Pass标记；3bit：禁用网络对战
 	char chessStr[20];//棋种名
 	char LibPath[MAX_PATH];
 };
