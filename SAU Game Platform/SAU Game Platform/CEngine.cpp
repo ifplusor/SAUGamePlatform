@@ -45,7 +45,7 @@ int getcmd(char *scr,int size,char *cmd)
 			}
 		}
 		if (scr[i] == ' ' || scr[i] == '\n' || scr[i] == '\t'|| scr[i] == '\0')//关键字前必为这些字符
-			start = false;
+			start = true;
 	}
 	return pos;
 }
@@ -367,8 +367,7 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 	len=strlen(cmd);
 	while(1)
 	{
-		dwSize=ReadMsg(readBuffer+BUFSIZE,BUFSIZE);
-		memcpy(readBuffer+indexBuf,readBuffer+BUFSIZE,dwSize);
+		dwSize = ReadMsg(readBuffer + indexBuf, BUFSIZE);
 		indexBuf+=dwSize;
 		if(dwSize==BUFSIZE)//当 dwSize=BUFSIZE 时，具有字符截断的可能
 		{
@@ -384,8 +383,8 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 					indexBuf=0;
 				else
 				{
-					memcpy(readBuffer,readBuffer+(i+1),indexBuf-i+1);
-					indexBuf=indexBuf-i+1;
+					memmove(readBuffer, readBuffer + (i + 1), indexBuf - i - 1);
+					indexBuf=indexBuf-i-1;
 				}
 			}
 			else
@@ -396,13 +395,13 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 					{
 						memcpy(CMD,readBuffer+pos,i-pos);
 						CMD[i-pos]='\0';
-						memcpy(readBuffer,readBuffer+(i+1),indexBuf-i-1);
+						memmove(readBuffer, readBuffer + (i + 1), indexBuf - i - 1);
 						indexBuf=indexBuf-i-1;
 						return;
 					}
 				}
 				//命令字后无完整参数，保留关键字并继续读取引擎信息
-				memcpy(readBuffer,readBuffer+pos,indexBuf-pos);
+				memmove(readBuffer, readBuffer + pos, indexBuf - pos);
 				indexBuf=indexBuf-pos;
 			}
 		}
@@ -419,13 +418,13 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 					{
 						memcpy(CMD,readBuffer+pos,i-pos);
 						CMD[i-pos]='\0';
-						memcpy(readBuffer,readBuffer+(i+1),indexBuf-i-1);
+						memmove(readBuffer, readBuffer + (i + 1), indexBuf - i - 1);
 						indexBuf=indexBuf-i-1;
 						return;
 					}
 				}
 				//命令字后无完整参数，保留关键字并继续读取引擎信息
-				memcpy(readBuffer,readBuffer+pos,indexBuf-pos);
+				memmove(readBuffer, readBuffer + pos, indexBuf - pos);
 				indexBuf=indexBuf-pos;
 			}
 		}

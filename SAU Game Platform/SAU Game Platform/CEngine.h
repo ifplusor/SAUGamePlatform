@@ -60,7 +60,7 @@ private:
 	OVERLAPPED ol;
 
 	char readBuffer[FULLBUFSIZE];//读引擎信息缓存区
-	char indexBuf;
+	int indexBuf;
 
 	PROCESSDESCRIBE pde;//引擎相关进程描述符
 
