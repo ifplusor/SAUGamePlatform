@@ -1,5 +1,5 @@
-#ifndef CPhantomGo_H_GAMEPLATFORM
-#define CPhantomGo_H_GAMEPLATFORM
+#ifndef CPHANYOMGO_H_GAMEPLATFORM
+#define CPHANTOMGO_H_GAMEPLATFORM
 
 #include "..\include\CChess.h"
 
