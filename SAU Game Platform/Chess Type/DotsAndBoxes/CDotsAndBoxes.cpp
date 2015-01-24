@@ -1,7 +1,6 @@
 #pragma comment(lib,"winmm.lib")
 
 #include "CDotsAndBoxes.h"
-#include <stdio.h>
 
 
 VOID __cdecl ErrorBox(LPTSTR ErrorInfo)//错误提示框
@@ -23,8 +22,6 @@ CDotsAndBoxes::CDotsAndBoxes(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	BoardColor=RGB(0,255,255);
 	hPen = NULL;
 	hFont = NULL;
-	InitGame();
-	count = -1;
 
 	HDC hDC = GetDC(hWnd);
 	hBlcDC = CreateCompatibleDC(hDC);
@@ -270,7 +267,8 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
 			return -1;
 		}
 
-		InvalidateRect(hWnd, &rtBoard, FALSE);
+		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+		UpdateWindow(hWnd);
 		PlaySnd(1);
 
 		moveCmd[pos + cs * 3] = '\0';
@@ -321,13 +319,11 @@ bool CDotsAndBoxes::PlaySnd(int sel)
 VOID CDotsAndBoxes::InitGame()
 {
 	memset(StepNum, 0, sizeof(StepNum));
-
 	player = BLACK;
 	connectS = 0;
-	InitBoard();
 	count = 0;
-
 	CleanStack(stepStack);
+	InitBoard();
 	return;
 }
 
@@ -351,7 +347,8 @@ VOID CDotsAndBoxes::InitBoard()
 			box[i][j] = EMPTY;
 		}
 	}
-	InvalidateRect(hWnd, &rtBoard, FALSE);
+	InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+	UpdateWindow(hWnd);
 	return;
 }
 
@@ -384,7 +381,8 @@ BOOL CDotsAndBoxes::SToS(Point point)
 		tStep.side = player;
 		stepStack.push(tStep);
 		count = 1;
-		::InvalidateRect(hWnd, &rtBoard, FALSE);
+		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+		UpdateWindow(hWnd);
 		PlaySnd(0);
 	}
 	else if (count == 1)
@@ -397,7 +395,8 @@ BOOL CDotsAndBoxes::SToS(Point point)
 		line[tStep.line.k][tStep.line.i][tStep.line.j] = player;
 		stepStack.push(tStep);
 		count = -1;
-		::InvalidateRect(hWnd, &rtBoard, FALSE);
+		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+		UpdateWindow(hWnd);
 		PlaySnd(1);
 		return 1;
 	}
@@ -413,7 +412,8 @@ INT CDotsAndBoxes::OkMove()
 	if (HaveBox(tStep.line))//捕获格子不换手，并显示格子颜色
 	{
 		connectS++;//连续连线数目加1
-		::InvalidateRect(hWnd, &rtBoard, FALSE);
+		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+		UpdateWindow(hWnd);
 		PlaySnd(2);
 	}
 	else
@@ -449,8 +449,8 @@ VOID CDotsAndBoxes::CancelMove()
 	{
 		line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;
 	}
-	InvalidateRect(hWnd, &rtBoard, FALSE);
-	SendMessage(hWnd, WM_PAINT, NULL, NULL);
+	InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+	UpdateWindow(hWnd);
 	count = 0;
 	return;
 }

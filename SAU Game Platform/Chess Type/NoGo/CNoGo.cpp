@@ -1,7 +1,7 @@
 #pragma comment(lib,"winmm.lib")
 
 #include "CNoGo.h"
-#include <stdio.h>
+
 
 const int lineVector[4][2] = { 0, 1, 0, -1, -1, 0, 1, 0 };
 
@@ -25,8 +25,6 @@ CNoGo::CNoGo(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	BoardColor = RGB(255, 255, 0);
 	hPen = NULL;
 	hFont = NULL;
-	InitGame();
-	count = -1;
 
 	HDC hDC = GetDC(hWnd);
 	hBlcDC = CreateCompatibleDC(hDC);
@@ -181,8 +179,8 @@ BOOL CNoGo::ProcessMove(char *moveCmd)
 			return -1;
 		}
 		board[tStep.point.x][tStep.point.y] = tStep.side;
-		InvalidateRect(hWnd,&rtBoard,FALSE);
-		SendMessage(hWnd,WM_PAINT,NULL,NULL);
+		InvalidateRect(hWnd, &rtBoard, FALSE);//À¢–¬∆Â≈Ã
+		UpdateWindow(hWnd);
 		PlaySnd(0);
 		moveCmd[pos + 2] = '\0';
 		ShowStepHis(moveCmd + pos);
@@ -225,9 +223,9 @@ VOID CNoGo::InitGame()//”Œœ∑≥ı ºªØ
 {
 	memset(StepNum,0,sizeof(StepNum));
 	player=BLACK;			
-	InitBoard();	//≥ı ºªØ∆Â≈Ã
 	count = 0;
 	CleanStack(stepStack);
+	InitBoard();	//≥ı ºªØ∆Â≈Ã
 	return;
 }
 
@@ -242,7 +240,8 @@ VOID CNoGo::InitBoard()
 		}
 	}
 
-	InvalidateRect(hWnd,&rtBoard,FALSE);//À¢–¬∆Â≈Ã
+	InvalidateRect(hWnd, &rtBoard, FALSE);//À¢–¬∆Â≈Ã
+	UpdateWindow(hWnd);
 	return;
 }
 
@@ -270,9 +269,9 @@ BOOL CNoGo::SToS(Point point)
 	tStep.point = point;
 	tStep.side = player;
 	stepStack.push(tStep);
-	InvalidateRect(hWnd, &rtBoard, FALSE);
-	SendMessage(hWnd,WM_PAINT,NULL,NULL);
-	PlaySnd(0);	
+	InvalidateRect(hWnd, &rtBoard, FALSE);//À¢–¬∆Â≈Ã
+	UpdateWindow(hWnd);
+	PlaySnd(0);
 	count = -1;
 	return 1;
 }
@@ -303,8 +302,8 @@ VOID CNoGo::CancelMove()
 	tStep = stepStack.top();
 	stepStack.pop();
 	board[tStep.point.x][tStep.point.y] = EMPTY;
-	InvalidateRect(hWnd, &rtBoard, FALSE);
-	SendMessage(hWnd, WM_PAINT, NULL, NULL);
+	InvalidateRect(hWnd, &rtBoard, FALSE);//À¢–¬∆Â≈Ã
+	UpdateWindow(hWnd);
 	count = 0;
 	return;
 }

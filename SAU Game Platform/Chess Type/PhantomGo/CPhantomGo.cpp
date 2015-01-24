@@ -1,7 +1,7 @@
 #pragma comment(lib,"winmm.lib")
 
 #include "CPhantomGo.h"
-#include <stdio.h>
+
 
 const int lineVector[4][2] = { 0, 1, 0, -1, -1, 0, 1, 0 };
 
@@ -25,8 +25,6 @@ CPhantomGo::CPhantomGo(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	BoardColor = RGB(255, 255, 0);
 	hPen = NULL;
 	hFont = NULL;
-	InitGame();
-	count = -1;
 
 	HDC hDC = GetDC(hWnd);
 	hBlcDC = CreateCompatibleDC(hDC);
@@ -235,7 +233,7 @@ BOOL CPhantomGo::ProcessMove(char *moveCmd)
 			strcat(denCmd, "move go");//生成写消息
 
 			InvalidateRect(hWnd, &rtBoard, FALSE);
-			SendMessage(hWnd, WM_PAINT, NULL, NULL);
+			UpdateWindow(hWnd);
 			PlaySnd(0);
 
 			moveCmd[pos + 2] = '\0';
@@ -272,12 +270,12 @@ VOID CPhantomGo::InitGame()//游戏初始化
 {
 	memset(StepNum,0,sizeof(StepNum));
 	player=BLACK;			
-	InitBoard();	//初始化棋盘
 	takeNum = 0;
 	flagJ = false;
 	flagP = false;
 	count = 0;
 	CleanStack(stepStack);
+	InitBoard();	//初始化棋盘
 	return;
 }
 
@@ -292,7 +290,8 @@ VOID CPhantomGo::InitBoard()
 		}
 	}
 
-	InvalidateRect(hWnd,&rtBoard,FALSE);//刷新棋盘
+	InvalidateRect(hWnd, &rtBoard, FALSE);
+	UpdateWindow(hWnd);
 	return;
 }
 
@@ -324,8 +323,8 @@ BOOL CPhantomGo::SToS(Point point)
 	}
 	board[point.x][point.y] = player;
 	InvalidateRect(hWnd, &rtBoard, FALSE);
-	SendMessage(hWnd,WM_PAINT,NULL,NULL);
-	PlaySnd(0);	
+	UpdateWindow(hWnd);
+	PlaySnd(0);
 	count = -1;
 	return 1;
 }
@@ -375,6 +374,7 @@ INT CPhantomGo::OkMove()
 					board[takeList[i * 2] - 'A'][takeList[1 + i * 2] - 'A'] = EMPTY;//提子
 			}
 			InvalidateRect(hWnd, &rtBoard, FALSE);
+			UpdateWindow(hWnd);
 		}
 		strcat(denCmd, "move go\n");// "move go\n"命令
 		count = 0;
@@ -393,7 +393,7 @@ VOID CPhantomGo::CancelMove()
 	stepStack.pop();
 	board[tStep.point.x][tStep.point.y] = EMPTY;
 	InvalidateRect(hWnd, &rtBoard, FALSE);
-	SendMessage(hWnd, WM_PAINT, NULL, NULL);
+	UpdateWindow(hWnd);
 	count = 0;
 	return;
 }

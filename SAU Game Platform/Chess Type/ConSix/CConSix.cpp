@@ -1,7 +1,6 @@
 #pragma comment(lib,"winmm.lib")
 
 #include "CConSix.h"
-#include <stdio.h>
 
 
 const int lineVector[8][2] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 } };//方向向量
@@ -26,8 +25,6 @@ CConSix::CConSix(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	BoardColor = RGB(255, 255, 0);
 	hPen = NULL;
 	hFont = NULL;
-	InitGame();
-	count = -1;
 
 	HDC hDC = GetDC(hWnd);
 	hBlcDC = CreateCompatibleDC(hDC);
@@ -208,8 +205,8 @@ BOOL CConSix::ProcessMove(char *moveCmd)
 			if (tStep.second.x != -1 && tStep.second.y != -1)
 				board[tStep.second.x][tStep.second.y] = tStep.side;
 		}
-		InvalidateRect(hWnd, &rtBoard, FALSE);
-		SendMessage(hWnd, WM_PAINT, NULL, NULL);
+		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+		UpdateWindow(hWnd);
 		PlaySnd(0);
 		moveCmd[pos + 4] = '\0';
 		ShowStepHis(moveCmd + pos);
@@ -251,13 +248,11 @@ bool CConSix::PlaySnd(int sel)
 VOID CConSix::InitGame()//游戏初始化
 {
 	memset(StepNum, 0, sizeof(StepNum));
-
 	player = BLACK;
 	first_hand = true;
-	InitBoard();	//初始化棋盘
 	count = 0;
-
 	CleanStack(stepStack);
+	InitBoard();	//初始化棋盘
 	return;
 }
 
@@ -273,6 +268,7 @@ VOID CConSix::InitBoard()
 	}
 
 	InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+	UpdateWindow(hWnd);
 	return;
 }
 
@@ -314,16 +310,16 @@ BOOL CConSix::SToS(Point point)
 		if (first_hand)//人是第一手
 		{
 			count = -1;
-			InvalidateRect(hWnd, &rtBoard, FALSE);
-			SendMessage(hWnd, WM_PAINT, NULL, NULL);
+			InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+			UpdateWindow(hWnd);
 			PlaySnd(0);
 			return 1;
 		}
 		else
 		{
 			count = 1;
-			InvalidateRect(hWnd, &rtBoard, FALSE);
-			SendMessage(hWnd, WM_PAINT, NULL, NULL);
+			InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+			UpdateWindow(hWnd);
 			PlaySnd(0);
 			if (WinOrLose())//识别落一子获胜着法
 			{
@@ -340,8 +336,8 @@ BOOL CConSix::SToS(Point point)
 		tStep.second = point;
 		stepStack.push(tStep);
 		count = -1;
-		InvalidateRect(hWnd, &rtBoard, FALSE);
-		SendMessage(hWnd, WM_PAINT, NULL, NULL);
+		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+		UpdateWindow(hWnd);
 		PlaySnd(0);
 		return 1;
 	}
@@ -381,8 +377,8 @@ VOID CConSix::CancelMove()
 	{
 		board[tStep.first.x][tStep.first.y] = EMPTY;
 	}
-	InvalidateRect(hWnd, &rtBoard, FALSE);
-	SendMessage(hWnd, WM_PAINT, NULL, NULL);
+	InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+	UpdateWindow(hWnd);
 	count = 0;
 	return;
 }

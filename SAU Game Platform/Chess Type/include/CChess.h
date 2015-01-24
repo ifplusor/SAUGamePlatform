@@ -2,6 +2,7 @@
 #define CCHESS_H_GAMEPLATFORM
 
 #include <Windows.h>
+#include <stdio.h>
 #include <math.h>
 #include <stack>
 

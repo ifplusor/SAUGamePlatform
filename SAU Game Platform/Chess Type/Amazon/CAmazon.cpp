@@ -1,7 +1,6 @@
 #pragma comment(lib,"winmm.lib")
 
 #include "CAmazon.h"
-#include <stdio.h>
 
 
 VOID __cdecl ErrorBox(LPTSTR ErrorInfo)//错误提示框
@@ -23,8 +22,6 @@ CAmazon::CAmazon(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	BoardColor = RGB(128, 128, 128);
 	hPen = NULL;
 	hFont = NULL;
-	InitGame();
-	count = -1;
 
 	hBrush = CreateSolidBrush(RGB(115, 74, 18));
 
@@ -227,6 +224,7 @@ BOOL CAmazon::ProcessMove(char *moveCmd)
 		board[tStep.second.x][tStep.second.y] = player;
 		board[tStep.third.x][tStep.third.y] = BAR;
 		InvalidateRect(hWnd, &rtBoard, FALSE);
+		UpdateWindow(hWnd);
 		PlaySnd(2);
 		moveCmd[pos + 6] = '\0';
 		ShowStepHis(moveCmd + pos);
@@ -275,12 +273,10 @@ bool CAmazon::PlaySnd(int sel)//播放音效
 VOID CAmazon::InitGame()
 {
 	memset(StepNum, 0, sizeof(StepNum));
-
 	player = BLACK;//黑方先走	
-	InitBoard();
 	count = 0;
-
 	CleanStack(stepStack);
+	InitBoard();
 	return;
 }
 
@@ -300,6 +296,7 @@ VOID CAmazon::InitBoard()
 	board[9][3] = WHITE; board[9][6] = BLACK;
 
 	InvalidateRect(hWnd, &rtBoard, FALSE);
+	UpdateWindow(hWnd);
 	return;
 }
 
@@ -330,7 +327,8 @@ BOOL CAmazon::SToS(Point point)
 		tStep.side = player;
 		stepStack.push(tStep);
 		count = 1;
-		::InvalidateRect(hWnd, &rtBoard, FALSE);
+		InvalidateRect(hWnd, &rtBoard, FALSE);
+		UpdateWindow(hWnd);
 		PlaySnd(0);
 		return 0;
 	}
@@ -342,7 +340,8 @@ BOOL CAmazon::SToS(Point point)
 			stepStack.pop();
 			tStep.first = point;
 			stepStack.push(tStep);
-			::InvalidateRect(hWnd, &rtBoard, FALSE);
+			InvalidateRect(hWnd, &rtBoard, FALSE);
+			UpdateWindow(hWnd);
 			PlaySnd(0);
 			return 0;
 		}
@@ -356,7 +355,8 @@ BOOL CAmazon::SToS(Point point)
 		tStep.second = point;
 		stepStack.push(tStep);
 		count = 2;
-		::InvalidateRect(hWnd, &rtBoard, FALSE);
+		InvalidateRect(hWnd, &rtBoard, FALSE);
+		UpdateWindow(hWnd);
 		PlaySnd(1);
 		return 0;
 	}
@@ -370,7 +370,8 @@ BOOL CAmazon::SToS(Point point)
 		tStep.third = point;
 		stepStack.push(tStep);
 		count = -1;
-		::InvalidateRect(hWnd, &rtBoard, FALSE);
+		InvalidateRect(hWnd, &rtBoard, FALSE);
+		UpdateWindow(hWnd);
 		PlaySnd(2);
 		return 1;
 	}
@@ -415,7 +416,7 @@ VOID CAmazon::CancelMove()
 		board[tStep.first.x][tStep.first.y] = tStep.side;
 	}
 	InvalidateRect(hWnd, &rtBoard, FALSE);
-	SendMessage(hWnd, WM_PAINT, NULL, NULL);
+	UpdateWindow(hWnd);
 	count = 0;
 	return;
 }
