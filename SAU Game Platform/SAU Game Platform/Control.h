@@ -36,6 +36,8 @@ public:
 	BOOL IsStop(){if(GameMode==-1)return TRUE;else return FALSE;}
 	CEngine* GetBlackE(){return &BlackE;}//获取黑方引擎对象指针
 	CEngine* GetWhiteE(){return &WhiteE;}//获取白方引擎对象指针
+	void OpenPB();
+	void OpenPW();
 private:
 	CEngine BlackE,WhiteE;//引擎对象
 	CThread BlackT,WhiteT;//线程对象
@@ -48,8 +50,6 @@ private:
 	void OpenCW();
 	void OpenOCB();
 	void OpenOCW();
-	void OpenPB();
-	void OpenPW();
 	void CloseOCB();
 	void CloseOCW();
 	void ClosePB();

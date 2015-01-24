@@ -23,17 +23,20 @@ Game game;
  */
 DWORD WINAPI EngineRun(LPVOID lpParam)
 {
+	int color;
 	CEngine *side,*unside;
 	char rMsg[BUFSIZE],wMMsg[BUFSIZE],wDMsg[BUFSIZE];
 	int temp;//记录处理着法前的GameMode，防止因获胜置-1使着法不能发给对方引擎
 
 	if((int)lpParam==BLACK)//判断线程承担的引擎角色
 	{
+		color = BLACK;
 		side=game.GetBlackE();
 		unside=game.GetWhiteE();
 	}
 	else
 	{
+		color = WHITE;
 		side=game.GetWhiteE();
 		unside=game.GetBlackE();
 	}
@@ -53,13 +56,18 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 		if (CT_ProcessMove(rMsg, wMMsg, wDMsg) == -1)//处理行棋事件，产生相应命令
 		{
 			char errorMsg[500];
-			sprintf(errorMsg, "Break rule!\nError command: %s", rMsg);
-			MessageBox(MainWnd->hWnd, errorMsg, "error", MB_OK);
+			if (!(chessType[chesstype].type & 8))
+			{
+				sprintf(errorMsg, "%s break rule!\nError command: %s", (color == BLACK) ? "Black" : "White", rMsg);
+				MessageBox(MainWnd->hWnd, errorMsg, "error", MB_OK);
+			}
 		}
 		if ((chessType[chesstype].type & 4) && (CT_GetCurPlayer() == game.GameMode))//允许pass，人行棋
 		{
-			SetText(GetDlgItem(MainWnd->hWnd, (game.GameMode == 0) ? IDB_CONTROL_OK_BLC : IDB_CONTROL_OK_WHT), "Pass");
-			EnableWindow(GetDlgItem(MainWnd->hWnd, (game.GameMode == 0) ? IDB_CONTROL_OK_BLC : IDB_CONTROL_OK_WHT), TRUE);
+			if (game.GameMode == 0)
+				game.OpenPB();
+			else
+				game.OpenPW();
 		}
 		if (wMMsg[0] != '\0')
 			side->WriteMsg(wMMsg);
