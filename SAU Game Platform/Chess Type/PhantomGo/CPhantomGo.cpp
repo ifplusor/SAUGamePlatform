@@ -222,7 +222,7 @@ BOOL CPhantomGo::ProcessMove(char *moveCmd)
 						Jie.x = denCmd[6] - 'A';
 						Jie.y = denCmd[7] - 'A';
 					}
-					board[denCmd[6] - 'A'][denCmd[7] - 'A'] = EMPTY;
+					board[denCmd[8] - 'A'][denCmd[9] - 'A'] = EMPTY;
 				}
 				else
 				{
@@ -230,7 +230,7 @@ BOOL CPhantomGo::ProcessMove(char *moveCmd)
 						board[takeList[i * 2] - 'A'][takeList[1 + i * 2] - 'A'] = EMPTY;//提子
 				}
 			}
-			strcat(denCmd, "move go");//生成写消息
+			strcat(denCmd, "move go\n");//生成写消息
 
 			InvalidateRect(hWnd, &rtBoard, FALSE);
 			UpdateWindow(hWnd);
@@ -366,7 +366,7 @@ INT CPhantomGo::OkMove()
 					Jie.x = denCmd[6] - 'A';
 					Jie.y = denCmd[7] - 'A';
 				}
-				board[denCmd[6] - 'A'][denCmd[7] - 'A'] = EMPTY;
+				board[denCmd[8] - 'A'][denCmd[9] - 'A'] = EMPTY;
 			}
 			else
 			{
