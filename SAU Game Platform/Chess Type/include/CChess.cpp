@@ -1,8 +1,22 @@
 #include "CChess.h"
 
 
+/**
+ * ErrorBox - 错误提示框
+ * @ErrorInfo:	错误信息
+ */
+VOID __cdecl ErrorBox(LPTSTR ErrorInfo)
+{
+	CHAR error1[50], error2[20];
+	strcpy(error1, ErrorInfo);
+	sprintf(error2, "\n\nerror: %d", GetLastError());
+	strcat(error1, error2);
+	MessageBox(NULL, error1, "error", MB_OK);
+}
+
 CChess::CChess()
 {	
+	count = -1;
 	player=BLACK;
 	memset(StepNum, 0, sizeof(StepNum));
 	memset(curCmd, 0, sizeof(curCmd));//写入引擎的消息
@@ -11,7 +25,14 @@ CChess::CChess()
 
 CChess::~CChess()
 {
+}
 
+VOID CChess::GetConfig()
+{
+	char filename[MAX_PATH];
+	sprintf(filename, "%s\\Config.ini", LibPath);
+	BX = GetPrivateProfileInt("COORDINATE", "X", 'A', filename);
+	BY = GetPrivateProfileInt("COORDINATE", "Y", 'A', filename);
 }
 
 VOID CChess::ShowStepHis(char *msg)

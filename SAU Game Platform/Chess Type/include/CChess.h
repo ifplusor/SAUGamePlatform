@@ -1,6 +1,9 @@
 #ifndef CCHESS_H_GAMEPLATFORM
 #define CCHESS_H_GAMEPLATFORM
 
+#pragma comment(lib,"winmm.lib")//引入winmm.lib库，用来播放音效
+
+
 #include <Windows.h>
 #include <stdio.h>
 #include <math.h>
@@ -70,7 +73,7 @@ public:
 	//确认着法
 	virtual INT OkMove() = 0;
 	//取消着法
-	virtual VOID CancelMove() = 0;
+	virtual INT CancelMove() = 0;
 
 	//显示招法历史
 	VOID ShowStepHis(char *msg);
@@ -88,6 +91,11 @@ protected:
 	int side;//棋盘宽度
 	int StepNum[2];//黑白双方的步数
 	int count;//鼠标点击输入状态，-1为不接受鼠标点击输入
+	int BX, BY;//坐标基数
+	VOID GetConfig();
 };
+
+VOID __cdecl ErrorBox(LPTSTR ErrorInfo);//错误提示框
+
 
 #endif

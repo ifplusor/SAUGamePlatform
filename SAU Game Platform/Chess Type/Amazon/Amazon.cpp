@@ -71,9 +71,9 @@ DLLFUCTION INT OkMove(char *denCmd)
 	return k;
 }
 
-DLLFUCTION VOID CancelMove()
+DLLFUCTION INT CancelMove()
 {
-	Amazon->CancelMove();
+	return Amazon->CancelMove();
 }
 
 DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)

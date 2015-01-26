@@ -1,31 +1,21 @@
-#pragma comment(lib,"winmm.lib")
-
 #include "CPhantomGo.h"
 
 
 const int lineVector[4][2] = { 0, 1, 0, -1, -1, 0, 1, 0 };
 
 
-VOID __cdecl ErrorBox(LPTSTR ErrorInfo)//错误提示框
-{
-	CHAR error1[50],error2[20];
-	strcpy(error1,ErrorInfo);
-	sprintf(error2,"\n\nerror: %d",GetLastError());	
-	strcat(error1,error2);	
-	MessageBox(NULL,error1,"error",MB_OK);
-}
-
 CPhantomGo::CPhantomGo(HINSTANCE hInst, HWND hWnd, char *LibPath)
 {
 	this->hInst = hInst;
 	this->hWnd = hWnd;
 	strncpy(this->LibPath, LibPath, MAX_PATH - 1);
-
-	BkColor = RGB(0, 0, 0);
-	BoardColor = RGB(255, 255, 0);
 	hPen = NULL;
 	hFont = NULL;
 
+	//获取配置
+	GetConfig();
+
+	//创建兼容DC
 	HDC hDC = GetDC(hWnd);
 	hBlcDC = CreateCompatibleDC(hDC);
 	hWhtDC = CreateCompatibleDC(hDC);
@@ -43,86 +33,113 @@ CPhantomGo::~CPhantomGo()
 	DeleteDC(hMarkDC);
 }
 
-
+/**
+ * SetBoard - 设置棋盘参数
+ * @rtBoard:	棋盘在窗口客户区的位置
+ */
 VOID CPhantomGo::SetBoard(RECT rtBoard)
 {
-	if (hPen != NULL)
-		DeleteObject(hPen);
-	if (hFont != NULL)
-		DeleteObject(hFont);
+	//设置棋盘参数
 	this->rtBoard = rtBoard;
 	side = rtBoard.right - rtBoard.left;
 	d = side / 10;
-	pixel = ((double)side) / 600;
-	hPen = CreatePen(PS_SOLID, (int)(2 * pixel), RGB(0, 0, 0));
+
+	//设置刻线画笔
+	if (hPen != NULL)
+		DeleteObject(hPen);
+	pWidth = (int)(side / 300);
+	if (pWidth == 0)
+		pWidth = 1;
+	hPen = CreatePen(PS_SOLID, pWidth, RGB(0, 0, 0));
+
+	//设置刻度字体
+	if (hFont != NULL)
+		DeleteObject(hFont);
 	fWidth = (int)(d / 3);
 	fHeight = (int)(d * 2 / 3);
 	hFont = CreateSimpleFont(fWidth, fHeight);
+
+	//绘制棋子元素
 	DrawChess();
 }
 
-VOID CPhantomGo::DrawBoard(HDC hDC)//绘制棋盘
+/**
+ * DrawBoard - 绘制棋盘
+ * @hDC:	主窗口DC
+ */
+VOID CPhantomGo::DrawBoard(HDC hDC)
 {
 	int i,j;
 	HPEN hOldPen;
 	HFONT hOldFont;
+
+	//设置刻线画笔
 	hOldPen = (HPEN)SelectObject(hDC, hPen);
+	//设置刻度字体、颜色
 	hOldFont = (HFONT)SelectObject(hDC, hFont);
-	
-	::SetTextColor(hDC, RGB(0, 0, 0));
+	SetTextColor(hDC, RGB(0, 0, 0));
 
-	char letter[2],number[3];
-	memset(letter,0,sizeof(letter));
-	memset(number,0,sizeof(number));
-	for(i=1;i<=9;i++)
-	{			
-		letter[0]='A'+i-1;
-		itoa(i,number,10);
-		
-		TextOut(hDC, rtBoard.left + side*i / 10 - fWidth / 2, rtBoard.top+side/20-fHeight/2, letter, 1);//绘制文字				
-		TextOut(hDC, rtBoard.left + side*i / 10 - fWidth / 2, rtBoard.top + side*19 / 20 - fHeight / 2, number, 2);
+	char letter[2] = { 0 }, number[3] = { 0 };
 
-		MoveToEx(hDC, rtBoard.left + side / 10, rtBoard.top + side*i / 10, NULL);//绘制线
+	//绘制棋盘
+	for (i = 1; i <= 9; i++)//9纬线
+	{
+		//绘制刻线
+		MoveToEx(hDC, rtBoard.left + side / 10, rtBoard.top + side*i / 10, NULL);
 		LineTo(hDC, rtBoard.left + side * 9 / 10, rtBoard.top + side*i / 10);
+		//绘制刻度
+		letter[0] = 'A' + i - 1;
+		itoa(i, number, 10);
+		TextOut(hDC, rtBoard.left + side / 20 - fWidth / 2, rtBoard.top + side*i / 10 - fHeight / 2, letter, 1);
+		TextOut(hDC, rtBoard.left + side * 19 / 20 - fWidth / 2, rtBoard.top + side*i / 10 - fHeight / 2, number, 2);
 	}
-	for(i=1;i<=9;i++)
+	for (i = 1; i <= 9; i++)//9经线
 	{
-		letter[0]='A'+i-1;
-		itoa(i,number,10);
-
-		TextOut(hDC, rtBoard.left+side/20 - fWidth/2, rtBoard.top + side*i / 10 - fHeight / 2, letter, 1);
-		TextOut(hDC, rtBoard.left + side*19 / 20 - fWidth / 2, rtBoard.top + side*i / 10 - fHeight / 2, number, 2);
-		
+		//绘制刻线
 		MoveToEx(hDC, rtBoard.left + side*i / 10, rtBoard.top + side / 10, NULL);
-		LineTo(hDC, rtBoard.left + side*i / 10, rtBoard.top + side*9 / 10);
-	}	
-	
-	for(i=0;i<9;i++)
+		LineTo(hDC, rtBoard.left + side*i / 10, rtBoard.top + side * 9 / 10);
+		//绘制刻度
+		letter[0] = 'A' + i - 1;
+		itoa(i, number, 10);
+		TextOut(hDC, rtBoard.left + side*i / 10 - fWidth / 2, rtBoard.top + side / 20 - fHeight / 2, letter, 1);
+		TextOut(hDC, rtBoard.left + side*i / 10 - fWidth / 2, rtBoard.top + side * 19 / 20 - fHeight / 2, number, 2);
+	}
+
+	//绘制棋子
+	for (i = 0; i < 9; i++)
 	{
-		for(j=0;j<9;j++)
+		for (j = 0; j < 9; j++)
 		{
-			if(board[i][j]==BLACK)
-			{				
+			if (board[i][j] == BLACK)
+			{//rtBoard.left+d*(i+1)-d/2=rtBoard.left+(i+1)*side/10-side/20=rtBoard.left+(2*i+1)*side/20
 				BitBlt(hDC, rtBoard.left + side*(i * 2 + 1) / 20, rtBoard.top + side*(j * 2 + 1) / 20, d, d, hBlcDC, d, 0, SRCAND);
 				BitBlt(hDC, rtBoard.left + side*(i * 2 + 1) / 20, rtBoard.top + side*(j * 2 + 1) / 20, d, d, hBlcDC, 0, 0, SRCPAINT);
 			}
-			else if(board[i][j]==WHITE)
-			{				
+			else if (board[i][j] == WHITE)
+			{
 				BitBlt(hDC, rtBoard.left + side*(i * 2 + 1) / 20, rtBoard.top + side*(j * 2 + 1) / 20, d, d, hWhtDC, d, 0, SRCAND);
 				BitBlt(hDC, rtBoard.left + side*(i * 2 + 1) / 20, rtBoard.top + side*(j * 2 + 1) / 20, d, d, hWhtDC, 0, 0, SRCPAINT);
 			}
 		}
 	}
-	
+
+	//绘制提示标记
 	if (!stepStack.empty())
 	{
 		Step curStep = stepStack.top();
-		int x1 = curStep.point.x; int y1 = curStep.point.y;
-		BitBlt(hDC, rtBoard.left + side*(x1 * 2 + 1) / 20, rtBoard.top + side*(y1 * 2 + 1) / 20, d, d, hMarkDC, d, 0, SRCAND);
-		BitBlt(hDC, rtBoard.left + side*(x1 * 2 + 1) / 20, rtBoard.top + side*(y1 * 2 + 1) / 20, d, d, hMarkDC, 0, 0, SRCPAINT);
+		int x = curStep.point.x;
+		int y = curStep.point.y;
+		BitBlt(hDC, rtBoard.left + side*(x * 2 + 1) / 20, rtBoard.top + side*(y * 2 + 1) / 20, d, d, hMarkDC, d, 0, SRCAND);
+		BitBlt(hDC, rtBoard.left + side*(x * 2 + 1) / 20, rtBoard.top + side*(y * 2 + 1) / 20, d, d, hMarkDC, 0, 0, SRCPAINT);
 	}
+
+	SelectObject(hDC, hOldPen);
+	SelectObject(hDC, hOldFont);
 }
 
+/**
+ * DrawChess - 绘制棋子元素
+ */
 bool CPhantomGo::DrawChess()
 {
 	char filename[MAX_PATH] = { 0 };
@@ -151,253 +168,444 @@ bool CPhantomGo::DrawChess()
 	return true;
 }
 
+/**
+ * PlaySnd - 播放音效
+ * @tag:	音效标签
+ */
+bool CPhantomGo::PlaySnd(int tag)
+{
+	char filename[MAX_PATH] = { 0 };
+
+	switch (tag)
+	{
+	case 0://落子音效
+		strcpy(filename, LibPath);
+		strcat(filename, "\\wav\\落子.wav");
+		break;
+	default:
+		break;
+	}
+
+	//播放音效
+	if (!PlaySound(filename, NULL, SND_NOWAIT | SND_FILENAME))
+	{
+		ErrorBox("PlaySound failed");
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * InitGame - 游戏初始化
+ */
+VOID CPhantomGo::InitGame()
+{
+	memset(StepNum, 0, sizeof(StepNum));
+	player = BLACK;
+	takeNum = 0;
+	flagJ = false;
+	flagP = false;
+	count = 0;
+	CleanStack(stepStack);//清空着法栈
+	InitBoard();//初始化棋盘
+}
+
+/**
+ * InitBoard - 初始化棋盘
+ */
+VOID CPhantomGo::InitBoard()
+{
+	int i, j;
+	for (i = 0; i<9; i++)
+	{
+		for (j = 0; j<9; j++)
+		{
+			board[i][j] = EMPTY;
+		}
+	}
+
+	//刷新棋盘
+	InvalidateRect(hWnd, &rtBoard, FALSE);
+	UpdateWindow(hWnd);
+}
+
+/**
+ * ProcessMove - 处理引擎消息
+ * @moveCmd:	着法信息
+ */
 BOOL CPhantomGo::ProcessMove(char *moveCmd)
 {	
 	Step tStep;
 	char *res;
 	int pos = 0, i;
 	int len=strlen("move ");
-	curCmd[0] = denCmd[0] = '\0';//默认空消息
-	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字，将过滤“access”命令
+
+	curCmd[0] = denCmd[0] = '\0';//默认空命令
+
+	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
 	{
-		return 0;
-	}	
+		return 0;//未找到“move”关键字
+	}
 	else
 	{		
 		pos = (res - moveCmd);
 		pos+=len;
 		
-		if (strncmp("pass", moveCmd + pos, 4) == 0)// "move pass\n"
+		if (strncmp("pass", moveCmd + pos, 4) == 0)// "move pass\n"命令，弃子
 		{
+			//追加着法历史
 			ShowStepHis("pass");
+
 			if (flagP)
 			{
-				StepNum[player]++;//累计步数
+				//累计步数
+				StepNum[player]++;
+
+				//分析胜负
 				WinOrLose();
-				sprintf(denCmd, "move pass\nend\n");
-				sprintf(curCmd, "end\n");
-				return 2;
-			}
-			flagP = true;
-			sprintf(denCmd, "move pass\n");
-		}
-		else if (strncmp("go", moveCmd + pos, 2) == 0)// "move go\n"
-		{
-			sprintf(curCmd, "move quest\n");
-			return 0;
-		}
-		else if (strncmp("quest", moveCmd + pos, 5) == 0)// "move quest\n"
-		{
-			tStep = stepStack.top();
-			sprintf(curCmd, "move %c%c\n", tStep.point.x + 'A', tStep.point.y + 'A');
-			return 0;
-		}
-		else
-		{
-			flagP = false;
 
-			tStep.point.x = moveCmd[pos] - 'A';
-			tStep.point.y = moveCmd[pos + 1] - 'A';
+				//生成命令串
+				strcat(denCmd, "move pass\nend\n");
+				strcat(curCmd, "end\n");
+
+				return 2;//分出胜负
+			}
+
+			flagP = true;//设置pass标记
+
+			//生成命令串
+			strcat(denCmd, "move pass\n");
+
+			//累计步数
+			StepNum[player]++;
+
+			//行棋换手
+			player = NEXTPLAYER(player);
+
+			return 1;//获取成功
+		}
+		else if (strncmp("go", moveCmd + pos, 2) == 0)// "move go\n"命令，通知行棋，用于网络对弈
+		{
+			//询问着法
+			strcat(curCmd, "move quest\n");
+			return 0;
+		}
+		else if (strncmp("quest", moveCmd + pos, 5) == 0)// "move quest\n"命令，询问着法，用于网络对弈
+		{
+			//发送着法
+			tStep = stepStack.top();//获取完整着法
+			sprintf(curCmd, "move %c%c\n", tStep.point.x + BX, tStep.point.y + BY);//如果双方坐标解析协议基准不一致，不能进行网络对弈
+			return 0;
+		}
+		else// "move XY\n"命令，行棋
+		{
+			//解析着法
+			tStep.point.x = moveCmd[pos] - BX;
+			tStep.point.y = moveCmd[pos + 1] - BY;
 			tStep.side = player;
-			stepStack.push(tStep);
-			if (!FitRules())//判断是否符合规则
+			stepStack.push(tStep);//完整着法压栈
+
+			//判断是否符合规则
+			if (!FitRules())
 			{
-				sprintf(curCmd, "error\n");
-				stepStack.pop();
-				return -1;
+				strcat(curCmd, "error\n");
+				stepStack.pop();//非法着法出栈
+				return -1;//行棋违规
 			}
 
-			sprintf(curCmd, "access\n");//接受着法
+			//落子
 			board[tStep.point.x][tStep.point.y] = tStep.side;
+
+			//追加接受着法命令
+			strcat(curCmd, "access\n");
+
+			flagP = false;//消除Pass标记
 			flagJ = false;//取消劫标记
 			if (Take(tStep.point.x, tStep.point.y, tStep.side))//提子测试
 			{
-				sprintf(denCmd, "taked %d %s\n", takeNum, takeList);//记录提子
+				//追加提子命令
+				sprintf(denCmd, "taked %d %s\n", takeNum, takeList);
 				sprintf(curCmd + strlen(curCmd), "take %d %s\n", takeNum, takeList);
+
+				//提子
 				if (takeNum == 1)//提一子，需进一步判断劫
 				{
-					if (Take(takeList[0] - 'A', takeList[1] - 'A', 1 - tStep.side) == 1)//一对一的双方气尽，不用对反手提子和当前落子进行比较
+					//判断劫
+					if (Take(takeList[0] - BX, takeList[1] - BY, 1 - tStep.side) == 1)//一对一的双方气尽，不用对反手提子和当前落子进行比较
 					{
 						flagJ = true;//置劫标记
-						Jie.x = denCmd[6] - 'A';
-						Jie.y = denCmd[7] - 'A';
+						Jie.x = denCmd[6] - BX;
+						Jie.y = denCmd[7] - BY;
 					}
-					board[denCmd[8] - 'A'][denCmd[9] - 'A'] = EMPTY;
+					board[denCmd[8] - BX][denCmd[9] - BY] = EMPTY;//提子
 				}
 				else
 				{
 					for (i = 0; i < takeNum; i++)
-						board[takeList[i * 2] - 'A'][takeList[1 + i * 2] - 'A'] = EMPTY;//提子
+						board[takeList[i * 2] - BX][takeList[1 + i * 2] - BY] = EMPTY;//提子
 				}
 			}
-			strcat(denCmd, "move go\n");//生成写消息
 
+			//刷新棋盘
 			InvalidateRect(hWnd, &rtBoard, FALSE);
 			UpdateWindow(hWnd);
+			//播放落子音效
 			PlaySnd(0);
 
-			moveCmd[pos + 2] = '\0';
+			//追加着法历史
 			ShowStepHis(moveCmd + pos);
+
+			//追加通知行棋
+			strcat(denCmd, "move go\n");
+
+			//累计步数
+			StepNum[player]++;
+
+			//行棋换手
+			player = NEXTPLAYER(player);
+
+			return 1;//获取成功
 		}
 	}
-	StepNum[player]++;//累计步数
-	player = NEXTPLAYER(player);
-	return 1;
+	return 0;
 }
 
-bool CPhantomGo::PlaySnd(int sel)
-{
-	char filename[MAX_PATH]={0};
-	switch(sel)
-	{
-	case 0:
-		strcpy(filename, LibPath);
-		strcat(filename,"\\wav\\落子.wav");
-		break;
-	default:
-		break;
-	}	
-	if(!PlaySound(filename,NULL,SND_NOWAIT |SND_FILENAME))
-	{
-		ErrorBox("PlaySound failed");
-		return false;
-	}
-	return true;
-}
-
-
-VOID CPhantomGo::InitGame()//游戏初始化
-{
-	memset(StepNum,0,sizeof(StepNum));
-	player=BLACK;			
-	takeNum = 0;
-	flagJ = false;
-	flagP = false;
-	count = 0;
-	CleanStack(stepStack);
-	InitBoard();	//初始化棋盘
-	return;
-}
-
-VOID CPhantomGo::InitBoard()
-{
-	int i,j;
-	for(i=0;i<9;i++)
-	{
-		for(j=0;j<9;j++)
-		{
-			board[i][j]=EMPTY;
-		}
-	}
-
-	InvalidateRect(hWnd, &rtBoard, FALSE);
-	UpdateWindow(hWnd);
-	return;
-}
-
+/**
+ * OnLButtonDown - 响应鼠标点击棋盘输入着法
+ * @x:	指针横坐标
+ * @y:	指针纵坐标
+ * return:	返回着法进行状态，-1表示输入错误，0表示输入进行中，1表示输入结束
+ */
 BOOL CPhantomGo::OnLButtonDown(int x, int y)
 {
 	Point point;
-	if (!InsideRect(&rtBoard, x, y))
-		return 2;
-	if (count == -1)//count=-1时return0可能造成意外
+
+	if (count == -1)//处于屏蔽输入状态，count=-1时return0可能造成意外
 		return 0;
 
-	point.x = ((x - rtBoard.left) * 10 - side / 2) / side;//把棋盘坐标转换成数组坐标
+	//把窗口坐标映射为棋盘坐标
+	point.x = ((x - rtBoard.left) * 10 - side / 2) / side;
 	point.y = ((y - rtBoard.top) * 10 - side / 2) / side;
 	if (point.x < 0 || point.x >= 9 || point.y < 0 || point.y >= 9)
 		return 2;
+
 	return SToS(point);
 }
 
+/**
+ * SToS - 手动逻辑处理
+ */
 BOOL CPhantomGo::SToS(Point point)
 {
 	Step tStep;
-	tStep.point = point;
-	tStep.side = player;
-	stepStack.push(tStep);
+
+	//填充临时着法
+	tStep.side = player;//填充棋手
+	tStep.point = point;//填充落点
+	stepStack.push(tStep);//临时着法压栈
+
+	//检查着法合法性
 	if (!FitRules())
 	{
-		stepStack.pop();
-		return -1;
+		stepStack.pop();//临时着法出栈
+		return -1;//着法非法
 	}
+
+	//落子
 	board[point.x][point.y] = player;
+
+	count = -1;//输入完成
+
+	//刷新棋盘
 	InvalidateRect(hWnd, &rtBoard, FALSE);
 	UpdateWindow(hWnd);
+	//播放落子音效
 	PlaySnd(0);
-	count = -1;
-	return 1;
+
+	return 1;//着法成立
 }
 
+/**
+ * OkMove - 确认着法
+ */
 INT CPhantomGo::OkMove()
 {
 	Step tStep;
 	char step[5];
 	int i;
-	denCmd[0] = '\0';
+
+	denCmd[0] = '\0';//默认空命令
+
 	if (count == 0)//pass
 	{
+		//追加着法历史
 		ShowStepHis("pass");
-		if (flagP)//双方Pass进入终盘
+
+		if (flagP)//双方pass进入终盘
 		{
-			StepNum[player]++;//累计步数
+			//累计步数
+			StepNum[player]++;
+
+			//分析胜负
 			WinOrLose();
-			sprintf(denCmd, "move pass\nend\n");// "end\n"命令
-			return 2;
+
+			//生成命令串
+			strcat(denCmd, "move pass\nend\n");
+
+			return 2;//分出胜负
 		}
-		flagP = true;
-		sprintf(denCmd, "move pass\n");// "move pass\n"命令
+
+		flagP = true;//设置pass标记
+
+		//生成命令串
+		strcat(denCmd, "move pass\n");
+
+		//累计步数
+		StepNum[player]++;
+
+		//行棋换手
+		player = NEXTPLAYER(player);
+
+		return 1;
 	}
 	else if (count == -1)
 	{
-		flagP = false;
-		tStep = stepStack.top();
-		sprintf(step, "%c%c", tStep.point.x + 'A', tStep.point.y + 'A');
+		tStep = stepStack.top();//获取完整着法
+
+		//追加着法历史
+		sprintf(step, "%c%c", tStep.point.x + BX, tStep.point.y + BY);
 		ShowStepHis(step);
+
+		flagP = false;//取消Pass标记
 		flagJ = false;//取消劫标记
 		if (Take(tStep.point.x, tStep.point.y, tStep.side))//提子测试
 		{
-			sprintf(denCmd, "taked %d %s\n", takeNum, takeList);//记录提子
+			//追加提子命令
+			sprintf(denCmd, "taked %d %s\n", takeNum, takeList);
+
+			//提子
 			if (takeNum == 1)//提一子，需进一步判断劫
 			{
-				if (Take(takeList[0] - 'A', takeList[1] - 'A', 1 - tStep.side) == 1)//一对一的双方气尽，不用对反手提子和当前落子进行比较
+				//判断劫
+				if (Take(takeList[0] - BX, takeList[1] - BY, 1 - tStep.side) == 1)//一对一的双方气尽，不用对反手提子和当前落子进行比较
 				{
 					flagJ = true;//置劫标记
-					Jie.x = denCmd[6] - 'A';
-					Jie.y = denCmd[7] - 'A';
+					Jie.x = denCmd[6] - BX;
+					Jie.y = denCmd[7] - BY;
 				}
-				board[denCmd[8] - 'A'][denCmd[9] - 'A'] = EMPTY;
+				board[denCmd[8] - BX][denCmd[9] - BY] = EMPTY;
 			}
 			else
 			{
 				for (i = 0; i < takeNum; i++)
-					board[takeList[i * 2] - 'A'][takeList[1 + i * 2] - 'A'] = EMPTY;//提子
+					board[takeList[i * 2] - BX][takeList[1 + i * 2] - BY] = EMPTY;//提子
 			}
+
+			//刷新棋盘
 			InvalidateRect(hWnd, &rtBoard, FALSE);
 			UpdateWindow(hWnd);
 		}
+
+		//追加通知行棋命令
 		strcat(denCmd, "move go\n");// "move go\n"命令
-		count = 0;
+
+		//累计步数
+		StepNum[player]++;
+
+		//行棋换手
+		player = NEXTPLAYER(player);
+
+		count = 0;//重置输入
+
+		return 1;//着法成立
 	}
-	StepNum[player]++;//累计步数
-	player = NEXTPLAYER(player);
 	return 0;
 }
 
-VOID CPhantomGo::CancelMove()
+INT CPhantomGo::CancelMove()
 {
 	Step tStep;
-	if (count == 0)
-		return;
-	tStep = stepStack.top();
-	stepStack.pop();
+
+	if (count == 0)//无输入，无意义
+		return 0;
+
+	tStep = stepStack.top();//获取着法
+	stepStack.pop();//着法出栈
+
+	//恢复落子
 	board[tStep.point.x][tStep.point.y] = EMPTY;
+
+	//刷新棋盘
 	InvalidateRect(hWnd, &rtBoard, FALSE);
 	UpdateWindow(hWnd);
-	count = 0;
-	return;
+
+	count = 0;//重置输入
+
+	return 1;
 }
 
+/*
+ * FitRules - 规则测试
+ */
+bool CPhantomGo::FitRules()//是否符合规则
+{
+	Step tStep = stepStack.top();//获取着法
+	int deplayer = 1 - tStep.side;
+
+	if (tStep.point.x<0 || tStep.point.x>8 || tStep.point.y<0 || tStep.point.y>8)
+	{
+		return false;
+	}
+	if (board[tStep.point.x][tStep.point.y] != EMPTY)
+	{
+		return false;
+	}
+
+	//试下
+	board[tStep.point.x][tStep.point.y] = tStep.side;
+
+	if (GetQi(tStep.point.x, tStep.point.y, tStep.side) == 0)//落子气尽
+	{
+		if (!Take(tStep.point.x, tStep.point.y, tStep.side))//不能提吃，禁招点
+		{
+			//恢复落子
+			board[tStep.point.x][tStep.point.y] = EMPTY;
+			return false;
+		}
+		if (flagJ)//判断劫点
+		{
+			if ((Jie.x == tStep.point.x) && (Jie.y == tStep.point.y))//劫点不可落子，需要应劫
+			{
+				//恢复落子
+				board[tStep.point.x][tStep.point.y] = EMPTY;
+				return false;
+			}
+		}
+	}
+	
+	//恢复落子
+	board[tStep.point.x][tStep.point.y] = EMPTY;
+
+	return true;
+}
+
+/**
+ * WinOrLose - 终盘测试
+ */
+bool CPhantomGo::WinOrLose()
+{
+	//幻影围棋终盘利用围棋规则判别胜负，截止本版本尚不支持
+	PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)0);
+	return true;
+}
+
+/**
+ * GetQi - 获取棋子气数
+ * @x:	棋子x坐标
+ * @y:	棋子y坐标
+ * @side:	棋子颜色
+ */
 int CPhantomGo::GetQi(int x, int y, int side)
 {
 	for (int k = 0; k<81; k++)
@@ -429,11 +637,11 @@ int CPhantomGo::GetQiForPoint(int a, int b, int side)
 }
 
 /**
- * Take - 提子测试
- * @x:	待落子点横坐标
- * @y：	待落子点纵坐标
- * @side:	待落子颜色
- */
+* Take - 提子测试
+* @x:	待落子点横坐标
+* @y：	待落子点纵坐标
+* @side:	待落子颜色
+*/
 bool CPhantomGo::Take(int x, int y, int side)
 {
 	bool take = false;
@@ -464,52 +672,9 @@ bool CPhantomGo::Take(int x, int y, int side)
 	{
 		if (NoQi[i])
 		{
-			sprintf(takeList + takeNum * 2, "%c%c", 'A' + i / 9, 'A' + i % 9);
+			sprintf(takeList + takeNum * 2, "%c%c", BX + i / 9, BY + i % 9);
 			takeNum++;
 		}
 	}
 	return take;
-}
-
-bool CPhantomGo::WinOrLose()//判断胜负
-{
-	BYTE side = 0;
-	PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)side);
-	return true;	
-}
-
-/*
- * FitRules - 规则测试
- */
-bool CPhantomGo::FitRules()//是否符合规则
-{
-	Step sp = stepStack.top();
-	int deplayer = 1 - sp.side;
-	if(sp.point.x<0 ||sp.point.x>8 ||sp.point.y<0 ||sp.point.y>8)
-	{
-		return false;
-	}
-	if (board[sp.point.x][sp.point.y] != EMPTY)
-	{
-		return false;
-	}
-	board[sp.point.x][sp.point.y] = sp.side;
-	if (GetQi(sp.point.x, sp.point.y, sp.side) == 0)//落子无气
-	{
-		if (!Take(sp.point.x, sp.point.y, sp.side))//不能提吃，禁招点
-		{
-			board[sp.point.x][sp.point.y] = EMPTY;
-			return false;
-		}
-		if (flagJ)//判断劫点
-		{
-			if ((Jie.x == sp.point.x) && (Jie.y == sp.point.y))//劫点不可落子，需要应劫
-			{
-				board[sp.point.x][sp.point.y] = EMPTY;
-				return false;
-			}
-		}
-	}
-	board[sp.point.x][sp.point.y] = EMPTY;
-	return true;
 }

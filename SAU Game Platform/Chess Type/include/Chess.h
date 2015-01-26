@@ -29,7 +29,7 @@ DLLFUCTION INT OnLButtonDown(int x,int y);
 //确认招法
 DLLFUCTION INT OkMove(char *denCmd);
 //取消招法
-DLLFUCTION VOID CancelMove();
+DLLFUCTION INT CancelMove();
 //引擎行棋事件
 DLLFUCTION INT ProcessMove(char *moveCmd,char *curCmd,char *denCmd);
 //获取当前行棋方

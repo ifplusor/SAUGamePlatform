@@ -1,15 +1,12 @@
-#pragma comment(lib,"winmm.lib")
-
 #include "CDotsAndBoxes.h"
 
 
-VOID __cdecl ErrorBox(LPTSTR ErrorInfo)//错误提示框
+VOID CDotsAndBoxes::GetConfig()
 {
-	CHAR error1[50],error2[20];
-	strcpy(error1,ErrorInfo);
-	sprintf(error2,"\n\nerror: %d",GetLastError());	
-	strcat(error1,error2);	
-	MessageBox(NULL,error1,"error",MB_OK);
+	char filename[MAX_PATH];
+	sprintf(filename, "%s\\Config.ini", LibPath);
+	BE = GetPrivateProfileInt("COORDINATE", "E", 'A', filename);
+	CChess::GetConfig();
 }
 
 CDotsAndBoxes::CDotsAndBoxes(HINSTANCE hInst, HWND hWnd, char *LibPath)
@@ -17,12 +14,12 @@ CDotsAndBoxes::CDotsAndBoxes(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	this->hInst = hInst;
 	this->hWnd = hWnd;
 	strncpy(this->LibPath, LibPath, MAX_PATH - 1);
-
-	BkColor = RGB(0, 0, 0);
-	BoardColor=RGB(0,255,255);
-	hPen = NULL;
 	hFont = NULL;
 
+	//获取配置
+	GetConfig();
+
+	//创建兼容DC
 	HDC hDC = GetDC(hWnd);
 	hBlcDC = CreateCompatibleDC(hDC);
 	hWhtDC = CreateCompatibleDC(hDC);
@@ -31,8 +28,6 @@ CDotsAndBoxes::CDotsAndBoxes(HINSTANCE hInst, HWND hWnd, char *LibPath)
 
 CDotsAndBoxes::~CDotsAndBoxes()
 {
-	if (hPen != NULL)
-		DeleteObject(hPen);
 	if (hFont != NULL)
 		DeleteObject(hFont);
 	DeleteDC(hBlcDC);
@@ -40,139 +35,162 @@ CDotsAndBoxes::~CDotsAndBoxes()
 	DeleteDC(hPtDC);
 }
 
+/**
+ * SetBoard - 设置棋盘参数
+ * @rtBoard:	棋盘在窗口客户区的位置
+ */
 VOID CDotsAndBoxes::SetBoard(RECT rtBoard)
 {
-	if (hPen != NULL)
-		DeleteObject(hPen);
-	if (hFont != NULL)
-		DeleteObject(hFont);
+	//设置棋盘参数
 	this->rtBoard = rtBoard;
 	side = rtBoard.right - rtBoard.left + 1;
-	d = side / 7;
-	pixel = side / 300;
-	if (pixel == 0)
-		pixel = 1;
-	hPen = CreatePen(PS_SOLID, pixel, RGB(255, 0, 0));
+	d = (int)(side / 7);
+	size = (int)(d*0.8);
+	pWidth = (int)(side / 100);
+	pR = (int)(side / 70);
+	pL = 2 * pR;
+\
+	//设置刻度字体
+	if (hFont != NULL)
+		DeleteObject(hFont);
 	fWidth = d / 3;
 	fHeight = d * 2 / 3;
 	hFont = CreateSimpleFont(fWidth, fHeight);
-	pR = (int)(8 * pixel);
-	pWidth = pHeight = (2 * pR);
+
+	//绘制棋子元素
 	DrawChess();
 }
 
+/**
+ * DrawBoard - 绘制棋盘
+ * @hDC:	主窗口DC
+ */
 VOID CDotsAndBoxes::DrawBoard(HDC hDC)
 {
 	int i,j,k;
+	HFONT hOldFont;
 
-	// 画点
+	// 绘制点
 	for(i=0;i<6;i++)
 	{		
 		for(j=0;j<6;j++)
 		{
-			BitBlt(hDC, rtBoard.left + (side + side*j) / 7 - pR, rtBoard.top + (side + side*i) / 7 - pR, pWidth, pHeight, hPtDC, 0, 0, SRCAND);
+			BitBlt(hDC, rtBoard.left + (side + side*j) / 7 - pR, rtBoard.top + (side + side*i) / 7 - pR, pL, pL, hPtDC, 0, 0, SRCAND);
 		}
 	}
 
-	HFONT hOldFont;
+	//设置刻度字体、颜色
 	hOldFont = (HFONT)SelectObject(hDC, hFont);
-	::SetTextColor(hDC, RGB(0, 0, 0));
+	SetTextColor(hDC, RGB(0, 0, 0));
 
-	char letter[2],number[3];
-	memset(letter,0,sizeof(letter));
-	memset(number,0,sizeof(number));	
-	for(i=0;i<6;i++)
-	{			
-		letter[0]='A'+i;
-		itoa(i,number,10);
-		TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 7 - fWidth / 2), rtBoard.top, letter, 1);
-		TextOut(hDC, (int)(rtBoard.left + side*(i + 1) / 7 - fWidth / 2), rtBoard.bottom - fHeight, number, 1);
-	}
-	for(i=0;i<6;i++)
+	char letter[2] = { 0 }, number[3] = { 0 };
+
+	//绘制刻度
+	for (i = 1; i <= 6; i++)
 	{
-		letter[0]='A'+i;
-		itoa(i,number,10);
-
-		TextOut(hDC, rtBoard.left, (int)(rtBoard.top + side*(i + 1) / 7 - fHeight / 2), letter, 1);
-		TextOut(hDC, rtBoard.right - fWidth, (int)(rtBoard.top + side*(i + 1) / 7 - fHeight / 2), number, 1);
-
+		letter[0] = 'A' + i - 1;
+		itoa(i, number, 10);
+		TextOut(hDC, rtBoard.left + side*i / 7 - fWidth / 2, rtBoard.top + side / 14 - fHeight / 2, letter, 1);
+		TextOut(hDC, rtBoard.left + side*i / 7 - fWidth / 2, rtBoard.top + side * 13 / 14 - fHeight / 2, number, 1);
+		TextOut(hDC, rtBoard.left + side / 14 - fWidth / 2, rtBoard.top + side*i / 7 - fHeight / 2, letter, 1);
+		TextOut(hDC, rtBoard.left + side * 13 / 14 - fWidth / 2, rtBoard.top + side*i / 7 - fHeight / 2, number, 1);
 	}
 	
-	HPEN hBlcPen,hWhtPen;
-	int lWidth=pR*2/3;
-	hBlcPen=CreatePen(PS_SOLID,lWidth,RGB(0,0,0));
-	hWhtPen=CreatePen(PS_SOLID,lWidth,RGB(255,255,255));
+	// 绘制线
+	HPEN hBlcPen,hWhtPen,hPen;
+	hBlcPen = CreatePen(PS_SOLID, pWidth, RGB(0, 0, 0));
+	hWhtPen = CreatePen(PS_SOLID, pWidth, RGB(255, 255, 255));
+	hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 
-	// 画线
-	for(k=0;k<2;k++)
+	//横向
+	for (i = 0; i < 6; i++)
 	{
-		for(i=0;i<6;i++)
+		for (j = 0; j < 5; j++)
 		{
-			for(j=0;j<5;j++)
+			if (line[0][i][j] == BLACK)
 			{
-				if(line[k][i][j]!=EMPTY)
-				{
-					SelectObject(hDC, line[k][i][j]==BLACK? hBlcPen:hWhtPen);
-					if(k==0)//横向
-					{
-						MoveToEx(hDC, (int)(rtBoard.left + side*(j + 1) / 7), (int)(rtBoard.top + side*(i + 1) / 7), NULL);
-						LineTo(hDC, (int)(rtBoard.left + side*(j + 2) / 7), (int)(rtBoard.top + side*(i + 1) / 7));
-					}
-					if(k==1)//纵向
-					{
-						MoveToEx(hDC, (int)(rtBoard.left + side*(i + 1) / 7), (int)(rtBoard.top + side*(j + 1) / 7), NULL);
-						LineTo(hDC, (int)(rtBoard.left + side*(i + 1) / 7), (int)(rtBoard.top + side*(j + 2) / 7));
-					}						
-				}																		
+				SelectObject(hDC, hBlcPen);
+				MoveToEx(hDC, (int)(rtBoard.left + side*(j + 1) / 7), (int)(rtBoard.top + side*(i + 1) / 7), NULL);
+				LineTo(hDC, (int)(rtBoard.left + side*(j + 2) / 7), (int)(rtBoard.top + side*(i + 1) / 7));
+			}
+			else if (line[0][i][j] == WHITE)
+			{
+				SelectObject(hDC, hWhtPen);
+				MoveToEx(hDC, (int)(rtBoard.left + side*(j + 1) / 7), (int)(rtBoard.top + side*(i + 1) / 7), NULL);
+				LineTo(hDC, (int)(rtBoard.left + side*(j + 2) / 7), (int)(rtBoard.top + side*(i + 1) / 7));
 			}
 		}
-	}	
-
-	// 画格
-	int size = (int)(d*0.8);
-	for (i = 0; i<5; i++)
+	}
+	//纵向
+	for (i = 0; i < 6; i++)
 	{
-		for(j=0;j<5;j++)
+		for (j = 0; j < 5; j++)
 		{
-			if(box[i][j]==BLACK)
+			if (line[1][i][j] == BLACK)
 			{
-				BitBlt(hDC, (int)(rtBoard.left + side*(i + 1) / 7 + (d - size) / 2), (int)(rtBoard.top + side*(j + 1) / 7 + (d - size) / 2), size, size, hBlcDC, 0, 0, SRCCOPY);
+				SelectObject(hDC, hBlcPen);
+				MoveToEx(hDC, (int)(rtBoard.left + side*(i + 1) / 7), (int)(rtBoard.top + side*(j + 1) / 7), NULL);
+				LineTo(hDC, (int)(rtBoard.left + side*(i + 1) / 7), (int)(rtBoard.top + side*(j + 2) / 7));
 			}
-			if(box[i][j]==WHITE)
+			else if (line[1][i][j] == WHITE)
 			{
-				BitBlt(hDC, (int)(rtBoard.left + side*(i + 1) / 7 + (d - size) / 2), (int)(rtBoard.top + side*(j + 1) / 7 + (d - size) / 2), size, size, hWhtDC, 0, 0, SRCCOPY);
+				SelectObject(hDC, hWhtPen);
+				MoveToEx(hDC, (int)(rtBoard.left + side*(i + 1) / 7), (int)(rtBoard.top + side*(j + 1) / 7), NULL);
+				LineTo(hDC, (int)(rtBoard.left + side*(i + 1) / 7), (int)(rtBoard.top + side*(j + 2) / 7));
+			}
+
+		}
+	}
+
+	// 绘制格
+	for (i = 0; i < 5; i++)
+	{
+		for (j = 0; j < 5; j++)
+		{
+			if (box[i][j] == BLACK)
+			{
+				BitBlt(hDC, (int)(rtBoard.left + side*(i * 2 + 3) / 14 - size / 2), (int)(rtBoard.top + side*(j * 2 + 3) / 14 - size / 2), size, size, hBlcDC, 0, 0, SRCCOPY);
+			}
+			else if (box[i][j] == WHITE)
+			{
+				BitBlt(hDC, (int)(rtBoard.left + side*(i * 2 + 3) / 14 - size / 2), (int)(rtBoard.top + side*(j * 2 + 3) / 14 - size / 2), size, size, hWhtDC, 0, 0, SRCCOPY);
 			}
 		}
 	}
 
+	//绘制提示标记
 	if (!stepStack.empty())
 	{
-		Step curStep = stepStack.top();
+		Step tStep = stepStack.top();
 		SelectObject(hDC, hPen);
-		IsLine(curStep.line)
+		IsLine(tStep.line)
 		{
-			MoveToEx(hDC, (int)(rtBoard.left + (side + side*curStep.start.x) / 7), (int)(rtBoard.top + (side + side*curStep.start.y) / 7), NULL);
-			LineTo(hDC, (int)(rtBoard.left + (side + side*curStep.end.x) / 7), (int)(rtBoard.top + (side + side*curStep.end.y) / 7));
+			MoveToEx(hDC, (int)(rtBoard.left + side*(tStep.start.x + 1) / 7), (int)(rtBoard.top + side*(tStep.start.y + 1) / 7), NULL);
+			LineTo(hDC, (int)(rtBoard.left + side*(tStep.end.x + 1) / 7), (int)(rtBoard.top + side*(tStep.end.y + 1) / 7));
 		}
-		else IsChess(curStep.start)
+		else IsChess(tStep.start)
 		{
-			MoveToEx(hDC, (int)(rtBoard.left + (side + side*curStep.start.x) / 7 - pR), (int)(rtBoard.top + (side + side*curStep.start.y) / 7), NULL);
-			LineTo(hDC, (int)(rtBoard.left + (side + side*curStep.start.x) / 7 + pR), (int)(rtBoard.top + (side + side*curStep.start.y) / 7));
-			MoveToEx(hDC, (int)(rtBoard.left + (side + side*curStep.start.x) / 7), (int)(rtBoard.top + (side + side*curStep.start.y) / 7 - pR), NULL);
-			LineTo(hDC, (int)(rtBoard.left + (side + side*curStep.start.x) / 7), (int)(rtBoard.top + (side + side*curStep.start.y) / 7 + pR));
+			MoveToEx(hDC, (int)(rtBoard.left + (side + side*tStep.start.x) / 7 - pR), (int)(rtBoard.top + (side + side*tStep.start.y) / 7), NULL);
+			LineTo(hDC, (int)(rtBoard.left + (side + side*tStep.start.x) / 7 + pR), (int)(rtBoard.top + (side + side*tStep.start.y) / 7));
+			MoveToEx(hDC, (int)(rtBoard.left + (side + side*tStep.start.x) / 7), (int)(rtBoard.top + (side + side*tStep.start.y) / 7 - pR), NULL);
+			LineTo(hDC, (int)(rtBoard.left + (side + side*tStep.start.x) / 7), (int)(rtBoard.top + (side + side*tStep.start.y) / 7 + pR));
 		}
 	}
 
 	DeleteObject(hBlcPen);
 	DeleteObject(hWhtPen);
+	DeleteObject(hPen);
 }
 
+/**
+ * DrawChess - 绘制棋子元素
+ */
 bool CDotsAndBoxes::DrawChess()
 {
 	HBITMAP hBlcBmp, hWhtBmp, hPtBmp;
 	hBlcBmp = CreateCompatibleBitmap(hBlcDC, d, d);
 	hWhtBmp = CreateCompatibleBitmap(hWhtDC, d, d);
-	hPtBmp = CreateCompatibleBitmap(hPtDC, pWidth, pHeight);
+	hPtBmp = CreateCompatibleBitmap(hPtDC, pL, pL);
 
 	SelectObject(hBlcDC, hBlcBmp);
 	SelectObject(hWhtDC, hWhtBmp);
@@ -203,130 +221,57 @@ bool CDotsAndBoxes::DrawChess()
 	return true;
 }
 
-BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
-{				
-	char *res;
-	int pos=0,cs,cn;
-	Step tStep;
-	int len=strlen("move A ");
-	curCmd[0] = denCmd[0] = '\0';//默认空消息
-	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
-	{
-		return 0;
-	}
-	else
-	{		
-		pos = (res - moveCmd);
-		pos += len;
-		
-		InitStep(tStep);
-		tStep.side = player;
-		cn = moveCmd[pos - 2] - '@';//连线数目
-		cs = 0;
-		do{
-			if (cs >= cn)//连线过多
-			{
-				sprintf(curCmd, "error\n");
-				while (cs)//取消之前判别连线
-				{
-					tStep = stepStack.top();
-					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;
-					stepStack.pop();
-				}
-				return -1;
-			}
-			tStep.line.k = moveCmd[pos + cs * 3] - 'A';
-			tStep.line.i = moveCmd[pos + cs * 3 + 1] - 'A';
-			tStep.line.j = moveCmd[pos + cs * 3 + 2] - 'A';
-			LineToPoint(tStep);
-			stepStack.push(tStep);
-			if (!FitRules())//判断是否符合规则
-			{
-				sprintf(curCmd, "error\n");
-				stepStack.pop();
-				while (cs)//取消之前判别连线
-				{
-					tStep = stepStack.top();
-					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;
-					stepStack.pop();
-				}
-				return -1;
-			}
-			line[tStep.line.k][tStep.line.i][tStep.line.j] = player;
-			cs++;
-		} while (HaveBox(tStep.line));
-		if (cs != cn)//连线数不足
-		{
-			sprintf(curCmd, "error\n");
-			while (cs)//取消之前判别连线
-			{
-				tStep = stepStack.top();
-				line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;
-				stepStack.pop();
-			}
-			return -1;
-		}
-
-		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
-		UpdateWindow(hWnd);
-		PlaySnd(1);
-
-		moveCmd[pos + cs * 3] = '\0';
-		ShowStepHis(moveCmd + pos);
-		strncpy(denCmd, res, len + cs * 3);
-		sprintf(denCmd + strlen(denCmd), "\n");//生成写消息
-		sprintf(curCmd, "\0");
-	}
-	StepNum[player]++;//步数加1
-	if(WinOrLose())//判断胜负
-	{				
-		sprintf(denCmd + strlen(denCmd), "end\n");
-		sprintf(curCmd, "end\n");
-		return 2;
-	}	
-	player = NEXTPLAYER(player);
-	return 1;
-}
-
-bool CDotsAndBoxes::PlaySnd(int sel)
+/**
+ * PlaySnd - 播放音效
+ * @tag:	音效标签
+ */
+bool CDotsAndBoxes::PlaySnd(int tag)
 {
-	char filename[MAX_PATH]={0};
-	switch(sel)
+	char filename[MAX_PATH] = { 0 };
+
+	switch (tag)
 	{
-	case 0:
+	case 0://选点音效
 		strcpy(filename, LibPath);
 		strcat(filename, "\\wav\\选子.wav");
 		break;
-	case 1:
+	case 1://连线音效
 		strcpy(filename, LibPath);
 		strcat(filename, "\\wav\\连线.wav");
 		break;
-	case 2:
+	case 2://捕获格音效
 		strcpy(filename, LibPath);
 		strcat(filename, "\\wav\\捕获格.wav");
 		break;
 	default:
 		break;
-	}	
-	if(!PlaySound(filename,NULL,SND_NOWAIT |SND_FILENAME))
+	}
+
+	//播放音效
+	if (!PlaySound(filename, NULL, SND_NOWAIT | SND_FILENAME))
 	{
 		ErrorBox("PlaySound failed");
 		return false;
-	}	
+	}
 	return true;
 }
 
+/**
+ * InitGame - 游戏初始化
+ */
 VOID CDotsAndBoxes::InitGame()
 {
 	memset(StepNum, 0, sizeof(StepNum));
 	player = BLACK;
-	connectS = 0;
+	lineNum = 0;
 	count = 0;
-	CleanStack(stepStack);
-	InitBoard();
-	return;
+	CleanStack(stepStack);//清空着法栈
+	InitBoard();//初始化棋盘
 }
 
+/**
+ * InitBoard - 初始化棋盘
+ */
 VOID CDotsAndBoxes::InitBoard()
 {
 	int i, j, k;
@@ -347,20 +292,141 @@ VOID CDotsAndBoxes::InitBoard()
 			box[i][j] = EMPTY;
 		}
 	}
-	InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+
+	//刷新棋盘
+	InvalidateRect(hWnd, &rtBoard, FALSE);
 	UpdateWindow(hWnd);
-	return;
 }
 
+/**
+ * ProcessMove - 处理引擎消息
+ * @moveCmd:	着法信息
+ */
+BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
+{				
+	char *res;
+	int pos=0,cs;
+	Step tStep;
+	int len=strlen("move ");
+
+	curCmd[0] = denCmd[0] = '\0';//默认空消息
+
+	if ((res = strstr(moveCmd, "move")) == NULL)//寻找move关键字
+	{
+		return 0;//未找到“move”关键字
+	}
+	else
+	{		
+		pos = (res - moveCmd);
+		
+		//解析着法
+		sscanf(moveCmd + len, "%d", &lineNum);//连线数目
+		if (lineNum >= 10)
+			len += 3;
+		else
+			len += 2;
+		pos += len;
+
+		InitStep(tStep);
+		tStep.side = player;
+		cs = 0;
+		do{
+			if (cs >= lineNum)//连线过多
+			{
+				strcat(curCmd, "error\n");
+				while (cs)//取消之前判别连线
+				{
+					tStep = stepStack.top();//获取临时着法
+					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
+					stepStack.pop();//临时着法出栈
+				}
+				return -1;//着法非法
+			}
+			tStep.line.k = moveCmd[pos + cs * 3] - BE;
+			tStep.line.i = moveCmd[pos + cs * 3 + 1] - BX;
+			tStep.line.j = moveCmd[pos + cs * 3 + 2] - BY;
+			LineToPoint(tStep);//线坐标映射点坐标
+			stepStack.push(tStep);//临时着法压栈
+
+			//判断是否符合规则
+			if (!FitRules())
+			{
+				strcat(curCmd, "error\n");
+				stepStack.pop();//临时着法出栈
+				while (cs)//取消之前判别连线
+				{
+					tStep = stepStack.top();//获取临时着法
+					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
+					stepStack.pop();//临时着法出栈
+				}
+				return -1;//着法非法
+			}
+
+			//连线
+			line[tStep.line.k][tStep.line.i][tStep.line.j] = player;
+
+			cs++;
+		} while (HaveBox(tStep.line));//捕获格子
+
+		if (cs != lineNum)//连线数不足
+		{
+			strcat(curCmd, "error\n");
+			while (cs)//取消之前判别连线
+			{
+				tStep = stepStack.top();//获取临时着法
+				line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
+				stepStack.pop();//临时着法出栈
+			}
+			return -1;//着法非法
+		}
+
+		//刷新棋盘
+		InvalidateRect(hWnd, &rtBoard, FALSE);
+		UpdateWindow(hWnd);
+		//播放连线音效
+		PlaySnd(0);
+
+		//追加着法历史
+		ShowStepHis(moveCmd + pos);
+
+		//生成命令串
+		strncpy(denCmd, res, len + lineNum * 3);
+		strcat(denCmd, "\n");
+
+		//累计步数
+		StepNum[player]++;
+
+		//判断胜负
+		if (WinOrLose())
+		{
+			strcat(denCmd, "end\n");//追加终盘命令
+			strcat(curCmd, "end\n");
+			return 2;//分出胜负
+		}
+
+		//行棋换手
+		player = NEXTPLAYER(player);
+
+		return 1;//获取成功
+	}
+	return 0;
+}
+
+/**
+ * OnLButtonDown - 响应鼠标点击棋盘输入着法
+ * @x:	指针横坐标
+ * @y:	指针纵坐标
+ * return:	返回着法进行状态，-1表示输入错误，0表示输入进行中，1表示输入结束
+ */
 BOOL CDotsAndBoxes::OnLButtonDown(int x,int y)
 {
 	Point point;
-	if(!InsideRect(&rtBoard,x,y))
-		return 2;
-	if (count == -1)
+
+	if (count == -1)//处于屏蔽输入状态，count=-1时return0可能造成意外
 		return 0;
-	
-	point.x = ((x - rtBoard.left) * 7 - side / 2) / side;//把棋盘坐标转换成数组坐标
+
+	//把窗口坐标映射为棋盘坐标
+	point.x = ((x - rtBoard.left) * 7 - side / 2) / side;
 	point.y = ((y - rtBoard.top) * 7 - side / 2) / side;
 	if (point.x < 0 || point.x >= 6 || point.y < 0 || point.y >= 6)
 		return 2;
@@ -368,93 +434,168 @@ BOOL CDotsAndBoxes::OnLButtonDown(int x,int y)
 	return SToS(point);
 }
 
+/**
+ * SToS - 手动逻辑处理
+ */
 BOOL CDotsAndBoxes::SToS(Point point)
 {
 	Step tStep;
 
-	if (count == 0)
+	if (count == 0)//选点
 	{
+		//检查着法合法性
 		if (HaveLine(point) == false)//点不能引出线，无效
 			return -1;
-		InitStep(tStep);
-		tStep.start = point;
-		tStep.side = player;
-		stepStack.push(tStep);
+
+		//填充临时着法
+		InitStep(tStep);//初始化着法
+		tStep.side = player;//填充棋手
+		tStep.start = point;//填充选点
+		stepStack.push(tStep);//临时着法压栈
+
 		count = 1;
-		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+
+		//刷新棋盘
+		InvalidateRect(hWnd, &rtBoard, FALSE);
 		UpdateWindow(hWnd);
+		//播放选点音效
 		PlaySnd(0);
+
+		return 0;//着法进行
 	}
-	else if (count == 1)
+	else if (count == 1)//连线
 	{
-		tStep = stepStack.top();
-		tStep.end = point;
+		//填充临时着法
+		tStep = stepStack.top();//获取临时着法
+		tStep.end = point;//填充连线
+
+		//检查着法合法性
 		if (PonitToLine(tStep) == false)//由两点不能映射为连线，无效
-			return -1;
-		stepStack.pop();
+			return -1;//着法非法
+
+		//连线
 		line[tStep.line.k][tStep.line.i][tStep.line.j] = player;
-		stepStack.push(tStep);
-		count = -1;
-		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+
+		stepStack.pop();//临时着法出栈
+		stepStack.push(tStep);//完整着法压栈
+
+		count = -1;//输入完成
+
+		//刷新棋盘
+		InvalidateRect(hWnd, &rtBoard, FALSE);
 		UpdateWindow(hWnd);
+		//播放连线音效
 		PlaySnd(1);
-		return 1;
+
+		return 1;//着法成立
 	}
+
 	return 0;
 }
 
+/**
+ * OkMove - 确认着法
+ */
 INT CDotsAndBoxes::OkMove()
 {
 	Step tStep;
-	tStep = stepStack.top();
-	denCmd[0] = '\0';
-	sprintf(denCmd + (7 + connectS * 3), "%c%c%c", tStep.line.k + 'A', tStep.line.i + 'A', tStep.line.j + 'A');
-	if (HaveBox(tStep.line))//捕获格子不换手，并显示格子颜色
+
+	denCmd[0] = '\0';//默认空命令
+
+	if (count == -1)
 	{
-		connectS++;//连续连线数目加1
-		InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
-		UpdateWindow(hWnd);
-		PlaySnd(2);
+		tStep = stepStack.top();//获取完整着法
+
+		//生成命令串
+		sprintf(lineList + lineNum * 3, "%c%c%c", tStep.line.k + BE, tStep.line.i + BX, tStep.line.j + BY);
+		lineNum++;//连续连线数目加1
+
+		if (HaveBox(tStep.line))//捕获格子不换手，并显示格子颜色
+		{
+			//刷新棋盘
+			InvalidateRect(hWnd, &rtBoard, FALSE);
+			UpdateWindow(hWnd);
+			//播放捕获格子音效
+			PlaySnd(2);
+		}
+		else
+		{
+			//生成命令串
+			sprintf(denCmd, "move %d %s\n", lineNum, lineList);
+
+			//追加着法历史
+			ShowStepHis(denCmd + 5);
+
+			//行棋换手
+			player = NEXTPLAYER(player);
+
+			lineNum = 0;//换手，连续连线数归零
+		}
+
+		//累计步数
+		StepNum[player]++;
+
+		//判断胜负,捕获最后一个格子
+		if (WinOrLose())
+		{
+			//生成命令串
+			sprintf(denCmd, "move %d %s\nend\n", lineNum, lineList);
+			//追加着法历史
+			ShowStepHis(lineList);
+			return 2;//分出胜负
+		}
+
+		count = 0;//重置输入
+
+		return 1;//着法成立
 	}
-	else
-	{
-		ShowStepHis(denCmd + 7);//换手后显示着法历史，并产生裁判指示
-		sprintf(denCmd, "move %c", 'A'+connectS);
-		denCmd[6] = ' ';
-		sprintf(denCmd + strlen(denCmd), "\n");
-		StepNum[player]++;//换手时累计步数
-		player = NEXTPLAYER(player);
-		connectS = 0;//换手，连续连线数归零
-	}
-	if (WinOrLose())
-	{
-		ShowStepHis(denCmd + 7);
-		sprintf(denCmd, "move %c", 'A' + connectS);
-		denCmd[6] = ' ';
-		sprintf(denCmd + strlen(denCmd), "\nend\n");
-		return 2;
-	}
-	count = 0;
 	return 0;
 }
 
-VOID CDotsAndBoxes::CancelMove()
+/**
+ * CancelMove - 取消着法
+ */
+INT CDotsAndBoxes::CancelMove()
 {
 	Step tStep;
-	if (count == 0)
-		return;
-	tStep = stepStack.top();
-	stepStack.pop();
+
+	if (count == 0)//无输入，无意义
+		return 0;
+
+	tStep = stepStack.top();//获取着法
+	stepStack.pop();//着法出栈
+
+	//恢复连线
 	IsLine(tStep.line)
 	{
 		line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;
 	}
-	InvalidateRect(hWnd, &rtBoard, FALSE);//刷新棋盘
+
+	//刷新棋盘
+	InvalidateRect(hWnd, &rtBoard, FALSE);
 	UpdateWindow(hWnd);
-	count = 0;
-	return;
+
+	count = 0;//重置输入
+
+	return 1;
 }
 
+/**
+ * FitRules - 规则测试
+ */
+bool CDotsAndBoxes::FitRules()
+{
+	Step tStep = stepStack.top();
+	if (tStep.line.k < 0 || tStep.line.k > 1 || tStep.line.i < 0 || tStep.line.i > 5 || tStep.line.j < 0 || tStep.line.j > 4)
+		return false;
+	if (line[tStep.line.k][tStep.line.i][tStep.line.j] != EMPTY)
+		return false;
+	return true;
+}
+
+/**
+ * WinOrLose - 终盘测试
+ */
 bool CDotsAndBoxes::WinOrLose()
 {
 	int numBlc, numWht, numEmt;//黑方格子，白方格子，空格子
@@ -477,7 +618,7 @@ bool CDotsAndBoxes::WinOrLose()
 			}
 		}
 	}
-	if (numEmt == 0)
+	if (numEmt == 0)//所有格子被捕获，捕获格子多者获胜
 	{
 		SendMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)(numBlc > numWht ? BLACK : WHITE));
 		return true;
@@ -588,6 +729,9 @@ bool CDotsAndBoxes::PonitToLine(Step &step)
 	return true;
 }
 
+/**
+ * LineToPoint - 将线的位置坐标转化为线的起止点坐标
+ */
 bool CDotsAndBoxes::LineToPoint(Step &step)
 {
 	if (step.line.k == 0)
@@ -607,15 +751,5 @@ bool CDotsAndBoxes::LineToPoint(Step &step)
 	else
 		return false;
 
-	return true;
-}
-
-bool CDotsAndBoxes::FitRules()
-{
-	Step tStep = stepStack.top();
-	if (tStep.line.k < 0 || tStep.line.k > 1 || tStep.line.i < 0 || tStep.line.i > 5 || tStep.line.j < 0 || tStep.line.j > 4)
-		return false;
-	if (line[tStep.line.k][tStep.line.i][tStep.line.j] != EMPTY)
-		return false;
 	return true;
 }

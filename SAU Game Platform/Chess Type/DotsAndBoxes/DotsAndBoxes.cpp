@@ -70,9 +70,9 @@ DLLFUCTION INT OkMove(char *denCmd)
 	return k;
 }
 
-DLLFUCTION VOID CancelMove()
+DLLFUCTION INT CancelMove()
 {
-	DotsAndBoxes->CancelMove();
+	return DotsAndBoxes->CancelMove();
 }
 
 DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)

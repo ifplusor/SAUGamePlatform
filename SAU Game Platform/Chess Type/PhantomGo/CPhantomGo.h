@@ -35,32 +35,31 @@ public:
 	//确认着法
 	virtual INT OkMove();
 	//取消着法
-	virtual VOID CancelMove();
+	virtual INT CancelMove();
 
 private:
 
 	BYTE board[9][9];//棋盘
+	stack<Step> stepStack;//着法栈
 	int Biaoji[81],NoQi[81];
 	Point Jie;//劫点
 	bool flagJ;//劫标记
-	char takeList[256];
-	int takeNum;
 	bool flagP;//pass标记，用于终局确定。
+	char takeList[256];//提子列表
+	int takeNum;//提子数量
 
-	COLORREF BkColor;//背景色
-	COLORREF BoardColor;//棋盘颜色
 	HPEN hPen;//画笔句柄
 	HFONT hFont;//字体句柄
 	HDC hBlcDC, hWhtDC, hMarkDC;
 
 	int d;//不围棋棋盘刻线间距
-	double pixel;//不围棋棋盘刻线宽度
+	int pWidth;//不围棋棋盘刻线宽度
 	int fWidth, fHeight;//字体宽、高
-
-	stack<Step> stepStack;//着法栈
 
 	//绘制棋子
 	bool DrawChess();
+	//播放落子音效
+	bool PlaySnd(int tag);
 	//初始化棋盘状态
 	VOID InitBoard();
 	//双方对弈
@@ -69,12 +68,12 @@ private:
 	bool WinOrLose();
 	//判断棋步合法性
 	bool FitRules();
-	//播放落子音效
-	bool PlaySnd(int sel);
 
-	int GetQiForPoint(int x, int y, int side);
-	int GetQi(int x, int y, int side);
+	//提子测试
 	bool Take(int x, int y, int side);
+	//获取棋子的气数
+	int GetQi(int x, int y, int side);
+	int GetQiForPoint(int x, int y, int side);
 
 };
 
