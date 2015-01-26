@@ -84,7 +84,7 @@
     <ClInclude Include="..\include\CChess.h" />
     <ClInclude Include="..\include\Chess.h" />
     <ClInclude Include="CDotsAndBoxes.h" />
-    <ClInclude Include="resource1.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DotsAndBoxes.rc" />
