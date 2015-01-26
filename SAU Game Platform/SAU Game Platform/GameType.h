@@ -42,7 +42,7 @@ typedef INT (*_OnLButtonDown)(int x, int y);
 //确认招法
 typedef INT (*_OkMove)(char *denCmd);
 //取消招法
-typedef VOID (*_CancelMove)();
+typedef INT (*_CancelMove)();
 //引擎行棋事件
 typedef INT (*_ProcessMove)(char *moveCmd, char *curCmd, char *denCmd);
 //获取当前行棋方

@@ -573,63 +573,67 @@ void Game::OkMove()
 	char denCmd[256];
 	BYTE player = CT_GetCurPlayer();
 	int temp = GameMode;//记录处理着法前的GameMode，防止因获胜置-1使着法不能发给对方引擎
-	CT_OkMove(denCmd);
-	if (denCmd[0] != '\0')//具有向另一方发送信息的意向
+	if (CT_OkMove(denCmd) != 0)
 	{
-		if (NetWork == 0)//非网络工作模式
+		if (denCmd[0] != '\0')//具有向另一方发送信息的意向
 		{
-			switch (temp)
+			if (NetWork == 0)//非网络工作模式
 			{
-			case 0://执黑，发送给白方
-				WhiteE.WriteMsg(denCmd);
-				break;
-			case 1://执白，发送给黑方
-				BlackE.WriteMsg(denCmd);
-				break;
+				switch (temp)
+				{
+				case 0://执黑，发送给白方
+					WhiteE.WriteMsg(denCmd);
+					break;
+				case 1://执白，发送给黑方
+					BlackE.WriteMsg(denCmd);
+					break;
+				}
+			}
+			else//网络工作模式
+			{
+				NetShell(NULL, ConnectMode ? SERVERINFO.s : CLIENTINFO.s, denCmd, strlen(denCmd) + 1, 2);
 			}
 		}
-		else//网络工作模式
-		{
-			NetShell(NULL, ConnectMode ? SERVERINFO.s : CLIENTINFO.s, denCmd, strlen(denCmd) + 1, 2);
-		}
-	}
 
-	if (player == 0)//禁用黑方按钮
-	{
-		if ((chessType[chesstype].type & 4) && GameMode == 3)
+		if (player == 0)//禁用黑方按钮
 		{
-			OpenPW();
+			if ((chessType[chesstype].type & 4) && GameMode == 3)
+			{
+				OpenPW();
+			}
+			CloseOCB();
 		}
-		CloseOCB();
-	}
-	else//禁用白方按钮
-	{
-		if ((chessType[chesstype].type & 4) && GameMode == 3)
+		else//禁用白方按钮
 		{
-			OpenPB();
+			if ((chessType[chesstype].type & 4) && GameMode == 3)
+			{
+				OpenPB();
+			}
+			CloseOCW();
 		}
-		CloseOCW();
 	}
 }
 
 void Game::CancelMove()
 {
 	BYTE player = CT_GetCurPlayer();
-	CT_CancelMove();
-	if (player == 0)
+	if (CT_CancelMove() == 1)
 	{
-		CloseOCB();
-		if (chessType[chesstype].type & 4)
+		if (player == 0)
 		{
-			OpenPB();
+			CloseOCB();
+			if (chessType[chesstype].type & 4)
+			{
+				OpenPB();
+			}
 		}
-	}
-	else
-	{
-		CloseOCW();
-		if (chessType[chesstype].type & 4)
+		else
 		{
-			OpenPW();
+			CloseOCW();
+			if (chessType[chesstype].type & 4)
+			{
+				OpenPW();
+			}
 		}
 	}
 }
