@@ -86,6 +86,7 @@ private:
 	//调整控件位置
 	BOOL AdjustCtrlPos();
 
+	BOOL DrawBoard(HDC hMenDC);
 	BOOL FillBkAndBoard(HDC hMemDC);
 	BOOL DrawCtrlBoard(HDC hMemDC);
 
