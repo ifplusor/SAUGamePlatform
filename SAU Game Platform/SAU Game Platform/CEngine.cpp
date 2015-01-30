@@ -276,21 +276,37 @@ bool CEngine::UnloadEngine()
 			return true;
 		}
 	}
-	if(TerminateProcess(pde.hEProcess,0))//卸载成功
+	WriteMsg("quit\n");//发送退出命令
+	DWORD temp=WaitForSingleObject(pde.hEProcess, 1000);
+	if (temp == WAIT_OBJECT_0)
 	{
-		if(linkType==UNNAMEDPIPE)
+		if (linkType == UNNAMEDPIPE)
 		{//关闭引擎的同时关闭显示窗口，释放依赖匿名管道
-			TerminateProcess(pde.hCProcess,0);
+			TerminateProcess(pde.hCProcess, 0);
 			CloseHandle(pde.console_write);
 			CloseHandle(pde.platform_write);
 			CloseHandle(pde.platform_read);
 		}
-		MsgBox("UnLoadEngine succeed!","Msg",1500);
+		MsgBox("UnLoadEngine succeed!", "Msg", 1500);
 	}
-	else
+	else if (temp == WAIT_TIMEOUT)
 	{
-		ErrorBox("UnLoadEngine failed");
-		return false;
+		if (TerminateProcess(pde.hEProcess, 0))//卸载成功
+		{
+			if (linkType == UNNAMEDPIPE)
+			{//关闭引擎的同时关闭显示窗口，释放依赖匿名管道
+				TerminateProcess(pde.hCProcess, 0);
+				CloseHandle(pde.console_write);
+				CloseHandle(pde.platform_write);
+				CloseHandle(pde.platform_read);
+			}
+			MsgBox("UnLoadEngine succeed!", "Msg", 1500);
+		}
+		else
+		{
+			ErrorBox("UnLoadEngine failed");
+			return false;
+		}
 	}
 	status = -1;
 	return true;
@@ -318,7 +334,24 @@ DWORD CEngine::ReadMsg(char *msg,int size)
 	}
 	if(!ReadFile(hFile,msg,size,&dwRead,NULL))//读取管道消息
 	{
-		ErrorBox("ReadMsg failed");
+		int t = GetLastError();
+		if (t == 109)//管道已结束，引擎异常退出
+		{
+			if (UnloadEngine())//卸载引擎
+			{
+				MsgBox("引擎已退出，请结束对弈！", "Msg", 0);
+			}
+			else
+			{
+				MsgBox("pipe have closed!", "error", 0);
+			}
+		}
+		else
+		{
+			CHAR error1[50];
+			sprintf(error1, "ReadMsg failed!\n\nerror: %d", GetLastError());
+			MessageBox(NULL, error1, "error", MB_OK);
+		}
 		return 0;
 	}
 	if(linkType==UNNAMEDPIPE)
@@ -368,6 +401,11 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 	while(1)
 	{
 		dwSize = ReadMsg(readBuffer + indexBuf, BUFSIZE);
+		if (dwSize == 0)//读取信息出错
+		{
+			CMD[0] = '\0';//返回空命令串
+			return;
+		}
 		indexBuf+=dwSize;
 		if(dwSize==BUFSIZE)//当 dwSize=BUFSIZE 时，具有字符截断的可能
 		{

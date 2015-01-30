@@ -46,7 +46,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 	side->SetName(rMsg);
 	MainWnd->SetName(rMsg,(int)lpParam);
 	side->SetStatus(1);//引擎就绪
-	while(1)
+	while(side->GetStatus() == 1)
 	{
 		side->GetCommand("move",rMsg);//获取行棋事件
 		if(CT_GetCurPlayer()!=(int)lpParam)//当前行棋方与本方引擎执棋颜色不同
