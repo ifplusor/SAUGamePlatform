@@ -20,7 +20,7 @@
 void PSDrawBoard(HDC hDC)
 {
 	MainWnd->FillBkAndBoard(hDC);
-	CT_DrawBoard(hDC);
+	MainWnd->DrawBoard(hDC);
 }
 
 /**
