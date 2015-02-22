@@ -5,7 +5,6 @@
 
 
 HINSTANCE hInst;
-CSurakarta *Surakarta;
 
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
@@ -36,59 +35,7 @@ DLLFUCTION VOID CheckModule(char *Info, char *ChessName, int *ChessType)
 	*ChessType = 0;
 }
 
-DLLFUCTION VOID InitModule(HWND hWnd, char *LibPath)
+DLLFUCTION VOID* InitModule(HWND hWnd, char *LibPath)
 {
-	Surakarta = new CSurakarta(hInst, hWnd, LibPath);
-	Surakarta->InitGame();
-}
-
-DLLFUCTION VOID ExitModule()
-{
-	delete Surakarta;
-}
-
-DLLFUCTION VOID OnSize(RECT rtBoard)
-{
-	Surakarta->SetBoard(rtBoard);
-}
-
-DLLFUCTION VOID DrawBoard(HDC hDC)
-{
-	Surakarta->DrawBoard(hDC);
-}
-
-DLLFUCTION INT OnLButtonDown(int x, int y)
-{
-	return Surakarta->OnLButtonDown(x, y);
-}
-
-DLLFUCTION INT OkMove(char *denCmd)
-{
-	INT k;
-	k = Surakarta->OkMove();
-	strcpy(denCmd, Surakarta->denCmd);
-	return k;
-}
-
-DLLFUCTION INT CancelMove()
-{
-	return Surakarta->CancelMove();
-}
-
-DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
-{
-	INT k = Surakarta->ProcessMove(moveCmd);
-	strcpy(curCmd, Surakarta->curCmd);
-	strcpy(denCmd, Surakarta->denCmd);
-	return k;
-}
-
-DLLFUCTION VOID OnRun()
-{
-	Surakarta->InitGame();
-}
-
-DLLFUCTION INT GetCurPlayer()
-{
-	return Surakarta->player;
+	return (VOID*)new CSurakarta(hInst, hWnd, LibPath);
 }

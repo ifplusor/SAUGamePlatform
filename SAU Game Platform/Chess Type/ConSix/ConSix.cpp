@@ -5,7 +5,6 @@
 
 
 HINSTANCE hInst;
-CConSix *ConSix;
 
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
@@ -16,7 +15,7 @@ BOOL APIENTRY DllMain( HINSTANCE hModule,
     switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
-			hInst=hModule;
+			hInst = hModule;
 			break;
 		case DLL_THREAD_ATTACH:
 			hInst = hModule;
@@ -36,59 +35,7 @@ DLLFUCTION VOID CheckModule(char *Info,char *ChessName,int *ChessType)
 	*ChessType=0;
 }
 
-DLLFUCTION VOID InitModule(HWND hWnd,char *LibPath)
+DLLFUCTION VOID* InitModule(HWND hWnd,char *LibPath)
 {
-	ConSix=new CConSix(hInst,hWnd,LibPath);
-	ConSix->InitGame();
-}
-
-DLLFUCTION VOID ExitModule()
-{
-	delete ConSix;
-}
-
-DLLFUCTION VOID OnSize(RECT rtBoard)
-{
-	ConSix->SetBoard(rtBoard);
-}
-
-DLLFUCTION VOID DrawBoard(HDC hDC)
-{
-	ConSix->DrawBoard(hDC);
-}
-
-DLLFUCTION INT OnLButtonDown(int x, int y)
-{
-	return ConSix->OnLButtonDown(x,y);
-}
-
-DLLFUCTION INT OkMove(char *denCmd)
-{
-	INT k;
-	k=ConSix->OkMove();
-	strcpy(denCmd, ConSix->denCmd);
-	return k;
-}
-
-DLLFUCTION INT CancelMove()
-{
-	return ConSix->CancelMove();
-}
-
-DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
-{
-	INT k = ConSix->ProcessMove(moveCmd);
-	strcpy(curCmd, ConSix->curCmd);
-	strcpy(denCmd, ConSix->denCmd);
-	return k;
-}
-
-DLLFUCTION VOID OnRun()
-{
-	ConSix->InitGame();
-}
-
-DLLFUCTION INT GetCurPlayer()
-{
-	return ConSix->player;
+	return (VOID*)new CConSix(hInst, hWnd, LibPath);
 }

@@ -20,6 +20,8 @@ CConSix::CConSix(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	hBlcDC = CreateCompatibleDC(hDC);
 	hWhtDC = CreateCompatibleDC(hDC);
 	hMarkDC = CreateCompatibleDC(hDC);
+
+	InitGame();
 }
 
 CConSix::~CConSix()
@@ -247,7 +249,7 @@ VOID CConSix::InitBoard()
  * ProcessMove - 处理引擎消息
  * @moveCmd:	着法信息
  */
-BOOL CConSix::ProcessMove(char *moveCmd)
+BOOL CConSix::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {
 	Step tStep;
 	char *res;
@@ -427,7 +429,7 @@ BOOL CConSix::SToS(Point point)
 /**
  * OkMove - 确认着法
  */
-INT CConSix::OkMove()
+INT CConSix::OkMove(char *denCmd)
 {
 	Step tStep;
 

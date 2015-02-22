@@ -15,7 +15,6 @@ using namespace std;
 
 
 #define ALLOW 5
-#define BUFSIZE (1024*512)//管道大小512K
 
 #define GM_SHOWSTEP		0X1012
 #define GM_WINLOSE		0X1013
@@ -47,18 +46,9 @@ struct Point{
 class CChess
 {
 public:	
-	HINSTANCE hInst;
-	HWND hWnd;//窗口句柄
-
-	char LibPath[MAX_PATH];//棋种支持模块路径
-
-	char curCmd[256];//待写入本方引擎命令
-	char denCmd[256];//待写入对方引擎命令
-
-	BYTE player;//行棋方
 
 	CChess();
-	~CChess();
+	virtual ~CChess();
 
 	//设置棋盘大小
 	virtual VOID SetBoard(RECT rtBoard) = 0;
@@ -67,13 +57,15 @@ public:
 	//初始化棋局
 	virtual VOID InitGame() = 0;
 	//处理引擎行棋命令  返回值：  -1：行棋违规  0：未找到关键字  1：获取成功  2：胜负手
-	virtual INT ProcessMove(char *msg) = 0;
+	virtual INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd) = 0;
 	//响应鼠标单击消息
 	virtual BOOL OnLButtonDown(int x, int y)=0;
 	//确认着法
-	virtual INT OkMove() = 0;
+	virtual INT OkMove(char *denCmd) = 0;
 	//取消着法
 	virtual INT CancelMove() = 0;
+
+	INT GetCurPlayer(){ return player; }
 
 	//显示招法历史
 	VOID ShowStepHis(char *msg);
@@ -87,15 +79,27 @@ public:
 	static bool InsideRect(const RECT* rt,const int &x,const int &y);
 
 protected:
+	HINSTANCE hInst;
+	HWND hWnd;//窗口句柄
+
+	char LibPath[MAX_PATH];//棋种支持模块路径
 	RECT rtBoard;//棋盘位置
 	int side;//棋盘宽度
 	int StepNum[2];//黑白双方的步数
 	int count;//鼠标点击输入状态，-1为不接受鼠标点击输入
 	int BX, BY;//坐标基数
+	INT player;//行棋方
+
 	VOID GetConfig();
 };
 
-VOID __cdecl ErrorBox(LPTSTR ErrorInfo);//错误提示框
+//错误提示框
+#define ErrorBox(ErrorInfo) \
+	{ CHAR error1[50],error2[20]; \
+	  strcpy(error1,ErrorInfo); \
+	  sprintf(error2,"\n\nerror: %d",GetLastError()); \
+	  strcat(error1,error2); \
+	  MessageBox(NULL,error1,"error",MB_OK); }
 
 
 #endif

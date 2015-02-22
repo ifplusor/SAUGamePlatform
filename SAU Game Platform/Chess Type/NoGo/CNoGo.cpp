@@ -20,6 +20,8 @@ CNoGo::CNoGo(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	hBlcDC = CreateCompatibleDC(hDC);
 	hWhtDC = CreateCompatibleDC(hDC);
 	hMarkDC = CreateCompatibleDC(hDC);
+
+	InitGame();
 }
 
 CNoGo::~CNoGo()
@@ -229,7 +231,7 @@ VOID CNoGo::InitBoard()
  * ProcessMove - 处理引擎消息
  * @moveCmd:	着法信息
  */
-BOOL CNoGo::ProcessMove(char *moveCmd)
+BOOL CNoGo::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {
 	Step tStep;
 	char *res;
@@ -350,7 +352,7 @@ BOOL CNoGo::SToS(Point point)
 /**
  * OkMove - 确认着法
  */
-INT CNoGo::OkMove()
+INT CNoGo::OkMove(char *denCmd)
 {
 	Step tStep;
 

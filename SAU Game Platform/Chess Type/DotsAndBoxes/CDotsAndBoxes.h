@@ -37,11 +37,11 @@ public:
 	//初始化棋局
 	virtual VOID InitGame();
 	//处理引擎行棋命令  返回值：  -1：行棋违规  0：未找到关键字  1：获取成功  2：胜负手
-	virtual INT ProcessMove(char *moveCmd);
+	virtual INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd);
 	//响应鼠标单击消息
 	virtual BOOL OnLButtonDown(int x, int y);
 	//确认着法
-	virtual INT OkMove();
+	virtual INT OkMove(char *denCmd);
 	//取消着法
 	virtual INT CancelMove();
 

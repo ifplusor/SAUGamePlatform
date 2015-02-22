@@ -10,6 +10,7 @@
 #define GAMETYPE_H_GAMEPLATFORM
 
 #include "Game Platform.h"
+#include "..\\Chess Type\\include\\CChess.h"
 
 
 
@@ -29,38 +30,13 @@ struct _CHESSTYPE{
 //模块正确性校验
 typedef VOID (*_CheckModule)(char *Info, char *ChessName, int *ChessType);
 //初始化模块
-typedef VOID (*_InitModule)(HWND hWnd, char *LibPath);
-typedef VOID (*_ExitModule)();
-//响应棋盘大小改变
-typedef VOID (*_OnSize)(RECT rtBoard);
-//绘制棋盘
-typedef VOID (*_DrawBoard)(HDC hDC);
-//响应对弈开始
-typedef VOID (*_OnRun)();
-//响应鼠标左键单击消息
-typedef INT (*_OnLButtonDown)(int x, int y);
-//确认招法
-typedef INT (*_OkMove)(char *denCmd);
-//取消招法
-typedef INT (*_CancelMove)();
-//引擎行棋事件
-typedef INT (*_ProcessMove)(char *moveCmd, char *curCmd, char *denCmd);
-//获取当前行棋方
-typedef INT (*_GetCurPlayer)();
-
+typedef VOID* (*_InitModule)(HWND hWnd, char *LibPath);
 
 
 extern _CheckModule CT_CheckModule;
 extern _InitModule CT_InitModule;
-extern _ExitModule CT_ExitModule;
-extern _OnSize CT_OnSize;
-extern _DrawBoard CT_DrawBoard;
-extern _OnLButtonDown CT_OnLButtonDown;
-extern _OkMove CT_OkMove;
-extern _CancelMove CT_CancelMove;
-extern _ProcessMove CT_ProcessMove;
-extern _OnRun CT_OnRun;
-extern _GetCurPlayer CT_GetCurPlayer;
+
+extern CChess *GameType;
 
 extern struct _CHESSTYPE chessType[25];//棋种支持模块描述
 extern int chesstype;//引用棋种支持模块索引

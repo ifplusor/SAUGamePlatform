@@ -5,7 +5,6 @@
 
 
 HINSTANCE hInst;
-CPhantomGo *PhantomGo;
 
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
@@ -36,59 +35,7 @@ DLLFUCTION VOID CheckModule(char *Info, char *ChessName, int *ChessType)
 	*ChessType = 12;//ÔÊÐíPassÆåÖÖ
 }
 
-DLLFUCTION VOID InitModule(HWND hWnd, char *LibPath)
+DLLFUCTION VOID* InitModule(HWND hWnd, char *LibPath)
 {
-	PhantomGo = new CPhantomGo(hInst, hWnd, LibPath);
-	PhantomGo->InitGame();
-}
-
-DLLFUCTION VOID ExitModule()
-{
-	delete PhantomGo;
-}
-
-DLLFUCTION VOID OnSize(RECT rtBoard)
-{
-	PhantomGo->SetBoard(rtBoard);
-}
-
-DLLFUCTION VOID DrawBoard(HDC hDC)
-{
-	PhantomGo->DrawBoard(hDC);
-}
-
-DLLFUCTION INT OnLButtonDown(int x, int y)
-{
-	return PhantomGo->OnLButtonDown(x, y);
-}
-
-DLLFUCTION INT OkMove(char *denCmd)
-{
-	INT k;
-	k = PhantomGo->OkMove();
-	strcpy(denCmd, PhantomGo->denCmd);
-	return k;
-}
-
-DLLFUCTION INT CancelMove()
-{
-	return PhantomGo->CancelMove();
-}
-
-DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
-{
-	INT k = PhantomGo->ProcessMove(moveCmd);
-	strcpy(curCmd, PhantomGo->curCmd);
-	strcpy(denCmd, PhantomGo->denCmd);
-	return k;
-}
-
-DLLFUCTION VOID OnRun()
-{
-	PhantomGo->InitGame();
-}
-
-DLLFUCTION INT GetCurPlayer()
-{
-	return PhantomGo->player;
+	return (VOID*)new CPhantomGo(hInst, hWnd, LibPath);
 }

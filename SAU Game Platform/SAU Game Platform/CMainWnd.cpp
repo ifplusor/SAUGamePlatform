@@ -379,7 +379,7 @@ LRESULT CMainWnd::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 VOID CMainWnd::OnCreate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	CreateCtrl(hWnd);
-	CT_InitModule(hWnd, chessType[chesstype].LibPath);
+	GameType = (CChess*)CT_InitModule(MainWnd->hWnd, chessType[chesstype].LibPath);
 	return;
 }
 
@@ -445,7 +445,7 @@ VOID CMainWnd::OnSize(WPARAM wParam, LPARAM lParam)
 	{
 		return;
 	}
-	CT_OnSize(rtBoard);
+	GameType->SetBoard(rtBoard);
 	return;
 }
 
@@ -557,7 +557,7 @@ VOID CMainWnd::OnClose(WPARAM wParam, LPARAM lParam)
 		return;
 	}
 	RecordUserOper();
-	CT_ExitModule();//退出棋种支持模块
+	delete GameType;//退出棋种支持模块
 	DestroyWindow(hWnd);//销毁窗体
 	return;
 }
@@ -828,7 +828,7 @@ BOOL CMainWnd::DrawBoard(HDC hDC)
 	}
 
 	//绘制棋盘
-	CT_DrawBoard(hDC);
+	GameType->DrawBoard(hDC);
 
 	return TRUE;
 }

@@ -5,7 +5,7 @@
 INT CTime::UpdateTime(char *strBlcTime,char *strWhtTime)
 {
 	BYTE player;//当前轮到哪个选手就计哪个选手的时间
-	player=CT_GetCurPlayer();
+	player = GameType->GetCurPlayer();
 	char *time;
 	int len=strlen("Time: ");
 	if(player==BLACK)//计算黑方时间

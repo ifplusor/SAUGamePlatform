@@ -20,6 +20,8 @@ CPhantomGo::CPhantomGo(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	hBlcDC = CreateCompatibleDC(hDC);
 	hWhtDC = CreateCompatibleDC(hDC);
 	hMarkDC = CreateCompatibleDC(hDC);
+
+	InitGame();
 }
 
 CPhantomGo::~CPhantomGo()
@@ -234,7 +236,7 @@ VOID CPhantomGo::InitBoard()
  * ProcessMove - 处理引擎消息
  * @moveCmd:	着法信息
  */
-BOOL CPhantomGo::ProcessMove(char *moveCmd)
+BOOL CPhantomGo::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {	
 	Step tStep;
 	char *res;
@@ -429,7 +431,7 @@ BOOL CPhantomGo::SToS(Point point)
 /**
  * OkMove - 确认着法
  */
-INT CPhantomGo::OkMove()
+INT CPhantomGo::OkMove(char *denCmd)
 {
 	Step tStep;
 	char step[5];

@@ -24,6 +24,8 @@ CDotsAndBoxes::CDotsAndBoxes(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	hBlcDC = CreateCompatibleDC(hDC);
 	hWhtDC = CreateCompatibleDC(hDC);
 	hPtDC = CreateCompatibleDC(hDC);
+
+	InitGame();
 }
 
 CDotsAndBoxes::~CDotsAndBoxes()
@@ -302,7 +304,7 @@ VOID CDotsAndBoxes::InitBoard()
  * ProcessMove - 处理引擎消息
  * @moveCmd:	着法信息
  */
-BOOL CDotsAndBoxes::ProcessMove(char *moveCmd)
+BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {				
 	char *res;
 	int pos=0,cs;
@@ -496,7 +498,7 @@ BOOL CDotsAndBoxes::SToS(Point point)
 /**
  * OkMove - 确认着法
  */
-INT CDotsAndBoxes::OkMove()
+INT CDotsAndBoxes::OkMove(char *denCmd)
 {
 	Step tStep;
 

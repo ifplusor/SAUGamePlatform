@@ -49,11 +49,11 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 	while(side->GetStatus() == 1)
 	{
 		side->GetCommand("move",rMsg);//获取行棋事件
-		if(CT_GetCurPlayer()!=(int)lpParam)//当前行棋方与本方引擎执棋颜色不同
+		if(GameType->GetCurPlayer()!=(int)lpParam)//当前行棋方与本方引擎执棋颜色不同
 			continue;
 		temp = game.GameMode;
 		MainWnd->UpdateTime();
-		if (CT_ProcessMove(rMsg, wMMsg, wDMsg) == -1)//处理行棋事件，产生相应命令
+		if (GameType->ProcessMove(rMsg, wMMsg, wDMsg) == -1)//处理行棋事件，产生相应命令
 		{
 			char errorMsg[500];
 			if (!(chessType[chesstype].type & 8))
@@ -62,7 +62,7 @@ DWORD WINAPI EngineRun(LPVOID lpParam)
 				MessageBox(MainWnd->hWnd, errorMsg, "error", MB_OK);
 			}
 		}
-		if ((chessType[chesstype].type & 4) && (CT_GetCurPlayer() == game.GameMode))//允许pass，人行棋
+		if ((chessType[chesstype].type & 4) && (GameType->GetCurPlayer() == game.GameMode))//允许pass，人行棋
 		{
 			if (game.GameMode == 0)
 				game.OpenPB();
@@ -320,7 +320,7 @@ void Game::StartGame()
 		MsgBox("对弈正在进行","error",0);
 		return;
 	}
-	CT_OnRun();//初始化棋局
+	GameType->InitGame();//初始化棋局
 	CloseOCB();
 	CloseOCW();
 	MainWnd->GameStart();
@@ -450,7 +450,7 @@ void Game::StopGame()
 
 bool Game::MoveStep(int x,int y)
 {
-	int temp,player=CT_GetCurPlayer();
+	int temp, player = GameType->GetCurPlayer();
 
 	if(IsStop()==TRUE)
 	{
@@ -463,7 +463,7 @@ bool Game::MoveStep(int x,int y)
 	}
 	else if(GameMode==3)//人人对弈
 	{
-		temp=CT_OnLButtonDown(x,y);
+		temp=GameType->OnLButtonDown(x,y);
 		switch(temp)
 		{
 		case -1://错误着法
@@ -493,7 +493,7 @@ bool Game::MoveStep(int x,int y)
 	{
 		if(GameMode==player)//当前行棋方为人
 		{
-			temp=CT_OnLButtonDown(x,y);
+			temp=GameType->OnLButtonDown(x,y);
 			switch(temp)
 			{
 			case -1://错误着法
@@ -538,7 +538,7 @@ bool Game::MoveStep(int x,int y)
 bool Game::MoveStep(char *step)
 {
 	char curCmd[256], denCmd[256];
-	CT_ProcessMove(step, curCmd, denCmd);
+	GameType->ProcessMove(step, curCmd, denCmd);
 	//由NetShell调用，为网络另一方平台副本的逻辑输入。
 	if (curCmd[0] != '\0')//返回给网络另一端平台副本的命令。因为另一端平台副本的维护，所以不存在非法着法，故不含有“error”命令。
 	{
@@ -571,9 +571,9 @@ bool Game::MoveStep(char *step)
 void Game::OkMove()
 {
 	char denCmd[256];
-	BYTE player = CT_GetCurPlayer();
+	BYTE player = GameType->GetCurPlayer();
 	int temp = GameMode;//记录处理着法前的GameMode，防止因获胜置-1使着法不能发给对方引擎
-	if (CT_OkMove(denCmd) != 0)
+	if (GameType->OkMove(denCmd) != 0)
 	{
 		if (denCmd[0] != '\0')//具有向另一方发送信息的意向
 		{
@@ -616,8 +616,8 @@ void Game::OkMove()
 
 void Game::CancelMove()
 {
-	BYTE player = CT_GetCurPlayer();
-	if (CT_CancelMove() == 1)
+	BYTE player = GameType->GetCurPlayer();
+	if (GameType->CancelMove() == 1)
 	{
 		if (player == 0)
 		{

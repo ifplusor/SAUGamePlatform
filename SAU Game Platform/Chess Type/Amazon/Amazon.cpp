@@ -5,7 +5,6 @@
 
 
 HINSTANCE hInst;
-CAmazon *Amazon;
 
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
@@ -37,59 +36,7 @@ DLLFUCTION VOID CheckModule(char *Info, char *ChessName, int *ChessType)
 	*ChessType = 0;
 }
 
-DLLFUCTION VOID InitModule(HWND hWnd, char *LibPath)
+DLLFUCTION VOID* InitModule(HWND hWnd, char *LibPath)
 {
-	Amazon = new CAmazon(hInst, hWnd, LibPath);
-	Amazon->InitGame();
-}
-
-DLLFUCTION VOID ExitModule()
-{
-	delete Amazon;
-}
-
-DLLFUCTION VOID OnSize(RECT rtBoard)
-{
-	Amazon->SetBoard(rtBoard);
-}
-
-DLLFUCTION VOID DrawBoard(HDC hDC)
-{
-	Amazon->DrawBoard(hDC);
-}
-
-DLLFUCTION INT OnLButtonDown(int x, int y)
-{
-	return Amazon->OnLButtonDown(x, y);
-}
-
-DLLFUCTION INT OkMove(char *denCmd)
-{
-	INT k;
-	k = Amazon->OkMove();
-	strcpy(denCmd, Amazon->denCmd);
-	return k;
-}
-
-DLLFUCTION INT CancelMove()
-{
-	return Amazon->CancelMove();
-}
-
-DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
-{
-	INT k = Amazon->ProcessMove(moveCmd);
-	strcpy(curCmd, Amazon->curCmd);
-	strcpy(denCmd, Amazon->denCmd);
-	return k;
-}
-
-DLLFUCTION VOID OnRun()
-{
-	Amazon->InitGame();
-}
-
-DLLFUCTION INT GetCurPlayer()
-{
-	return Amazon->player;
+	return (VOID*)new CAmazon(hInst, hWnd, LibPath);
 }

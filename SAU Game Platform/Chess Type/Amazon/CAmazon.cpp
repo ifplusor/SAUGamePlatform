@@ -21,6 +21,8 @@ CAmazon::CAmazon(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	hWhtDC = CreateCompatibleDC(hDC);
 	hBarDC = CreateCompatibleDC(hDC);
 	hMarkDC = CreateCompatibleDC(hDC);
+
+	InitGame();
 }
 
 CAmazon::~CAmazon()
@@ -285,7 +287,7 @@ VOID CAmazon::InitBoard()
  * ProcessMove - 处理引擎消息
  * @moveCmd:	着法信息
  */
-BOOL CAmazon::ProcessMove(char *moveCmd)
+BOOL CAmazon::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {
 	Step tStep;
 	char *res;
@@ -482,7 +484,7 @@ BOOL CAmazon::SToS(Point point)
 /**
  * OkMove - 确认着法
  */
-INT CAmazon::OkMove()
+INT CAmazon::OkMove(char *denCmd)
 {
 	Step tStep;
 

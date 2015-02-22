@@ -40,6 +40,8 @@ CSurakarta::CSurakarta(HINSTANCE hInst, HWND hWnd, char *LibPath)
 	hBlcDC = CreateCompatibleDC(hDC);
 	hWhtDC = CreateCompatibleDC(hDC);
 	hMarkDC = CreateCompatibleDC(hDC);
+
+	InitGame();
 }
 
 CSurakarta::~CSurakarta()
@@ -333,7 +335,7 @@ VOID CSurakarta::InitBoard()
  * ProcessMove - 处理引擎消息
  * @moveCmd:	着法信息
  */
-INT CSurakarta::ProcessMove(char *moveCmd)
+INT CSurakarta::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 {
 	Step tStep;
 	char *res;
@@ -478,7 +480,7 @@ BOOL CSurakarta::SToS(Point point)
 /**
  * OkMove - 确认着法
  */
-INT CSurakarta::OkMove()
+INT CSurakarta::OkMove(char *denCmd)
 {
 	Step tStep;
 		

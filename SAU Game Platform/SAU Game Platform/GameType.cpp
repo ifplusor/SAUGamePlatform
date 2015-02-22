@@ -2,7 +2,8 @@
  * file: GameType.cpp
  * date: 2014/9/16
  * version: 1.0
- * description: 棋种管理：管理棋种包，维护棋种支持模块接口
+ * description: 棋种管理：管理棋种包，维护棋种支持模块接口。通过动态生成继承自CChess类的派生类来完成棋种模块的加载，
+ *                        应用虚函数的多态特性来实现多棋种模块接口。
  */
 
 
@@ -15,16 +16,8 @@
 //平台棋种支持模块接口函数指针
 _CheckModule CT_CheckModule = NULL;
 _InitModule CT_InitModule = NULL;
-_ExitModule CT_ExitModule = NULL;
-_OnSize CT_OnSize = NULL;
-_DrawBoard CT_DrawBoard = NULL;
-_OnLButtonDown CT_OnLButtonDown = NULL;
-_OkMove CT_OkMove = NULL;
-_CancelMove CT_CancelMove = NULL;
-_ProcessMove CT_ProcessMove = NULL;
-_OnRun CT_OnRun = NULL;
-_GetCurPlayer CT_GetCurPlayer = NULL;
 
+CChess *GameType;
 
 int chesstype=0;//棋种标志
 int chessNum=0;//可用棋种包数量
@@ -207,15 +200,6 @@ VOID InitialChessType(HMENU hMenu)
 
 	//动态获取DLL库中函数地址
 	CT_InitModule=(_InitModule)GetProcAddress(chessType[chesstype].chessTP,"InitModule");
-	CT_ExitModule = (_ExitModule)GetProcAddress(chessType[chesstype].chessTP, "ExitModule");
-	CT_OnSize = (_OnSize)GetProcAddress(chessType[chesstype].chessTP, "OnSize");
-	CT_DrawBoard=(_DrawBoard)GetProcAddress(chessType[chesstype].chessTP,"DrawBoard");
-	CT_OnLButtonDown=(_OnLButtonDown)GetProcAddress(chessType[chesstype].chessTP,"OnLButtonDown");
-	CT_OkMove = (_OkMove)GetProcAddress(chessType[chesstype].chessTP, "OkMove");
-	CT_CancelMove = (_CancelMove)GetProcAddress(chessType[chesstype].chessTP, "CancelMove");
-	CT_ProcessMove = (_ProcessMove)GetProcAddress(chessType[chesstype].chessTP, "ProcessMove");
-	CT_OnRun=(_OnRun)GetProcAddress(chessType[chesstype].chessTP,"OnRun");
-	CT_GetCurPlayer=(_GetCurPlayer)GetProcAddress(chessType[chesstype].chessTP,"GetCurPlayer");
 
 	//设置自动截图目录
 	strcpy(gameSet.PrintScrDir, ".\\chess manual\\");
@@ -245,7 +229,7 @@ VOID SetChessType(int i,HMENU hMenu)
 		return;
 	}
 
-	CT_ExitModule();
+	delete GameType;
 
 	chesstype=i;//置新语言标志
 	strcpy(gameSet.DefualtChess, chessType[chesstype].chessStr);
@@ -258,18 +242,9 @@ VOID SetChessType(int i,HMENU hMenu)
 	}
 	//动态获取DLL库中函数地址
 	CT_InitModule = (_InitModule)GetProcAddress(chessType[chesstype].chessTP, "InitModule");
-	CT_ExitModule = (_ExitModule)GetProcAddress(chessType[chesstype].chessTP, "ExitModule");
-	CT_OnSize = (_OnSize)GetProcAddress(chessType[chesstype].chessTP, "OnSize");
-	CT_DrawBoard = (_DrawBoard)GetProcAddress(chessType[chesstype].chessTP, "DrawBoard");
-	CT_OnLButtonDown = (_OnLButtonDown)GetProcAddress(chessType[chesstype].chessTP, "OnLButtonDown");
-	CT_OkMove = (_OkMove)GetProcAddress(chessType[chesstype].chessTP, "OkMove");
-	CT_CancelMove = (_CancelMove)GetProcAddress(chessType[chesstype].chessTP, "CancelMove");
-	CT_ProcessMove = (_ProcessMove)GetProcAddress(chessType[chesstype].chessTP, "ProcessMove");
-	CT_OnRun = (_OnRun)GetProcAddress(chessType[chesstype].chessTP, "OnRun");
-	CT_GetCurPlayer = (_GetCurPlayer)GetProcAddress(chessType[chesstype].chessTP, "GetCurPlayer");
 
-	CT_InitModule(MainWnd->hWnd,chessType[chesstype].LibPath);
-	CT_OnSize(MainWnd->GetBoardPos());
+	GameType = (CChess*)CT_InitModule(MainWnd->hWnd, chessType[chesstype].LibPath);
+	GameType->SetBoard(MainWnd->GetBoardPos());
 	InvalidateRect(MainWnd->hWnd,NULL,false);
 
 	//设置自动截图目录

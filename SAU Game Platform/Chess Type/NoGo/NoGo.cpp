@@ -5,7 +5,6 @@
 
 
 HINSTANCE hInst;
-CNoGo *NoGo;
 
 
 BOOL APIENTRY DllMain( HINSTANCE hModule, 
@@ -36,59 +35,7 @@ DLLFUCTION VOID CheckModule(char *Info, char *ChessName, int *ChessType)
 	*ChessType = 0;
 }
 
-DLLFUCTION VOID InitModule(HWND hWnd, char *LibPath)
+DLLFUCTION VOID* InitModule(HWND hWnd, char *LibPath)
 {
-	NoGo = new CNoGo(hInst, hWnd, LibPath);
-	NoGo->InitGame();
-}
-
-DLLFUCTION VOID ExitModule()
-{
-	delete NoGo;
-}
-
-DLLFUCTION VOID OnSize(RECT rtBoard)
-{
-	NoGo->SetBoard(rtBoard);
-}
-
-DLLFUCTION VOID DrawBoard(HDC hDC)
-{
-	NoGo->DrawBoard(hDC);
-}
-
-DLLFUCTION INT OnLButtonDown(int x, int y)
-{
-	return NoGo->OnLButtonDown(x, y);
-}
-
-DLLFUCTION INT OkMove(char *denCmd)
-{
-	INT k;
-	k = NoGo->OkMove();
-	strcpy(denCmd, NoGo->denCmd);
-	return k;
-}
-
-DLLFUCTION INT CancelMove()
-{
-	return NoGo->CancelMove();
-}
-
-DLLFUCTION INT ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
-{
-	INT k = NoGo->ProcessMove(moveCmd);
-	strcpy(curCmd, NoGo->curCmd);
-	strcpy(denCmd, NoGo->denCmd);
-	return k;
-}
-
-DLLFUCTION VOID OnRun()
-{
-	NoGo->InitGame();
-}
-
-DLLFUCTION INT GetCurPlayer()
-{
-	return NoGo->player;
+	return (VOID*)new CNoGo(hInst, hWnd, LibPath);
 }
