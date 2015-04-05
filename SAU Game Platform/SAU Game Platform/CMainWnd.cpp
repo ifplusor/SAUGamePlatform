@@ -379,7 +379,7 @@ LRESULT CMainWnd::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 VOID CMainWnd::OnCreate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	CreateCtrl(hWnd);
-	GameType = (CChess*)CT_InitModule(MainWnd->hWnd, chessType[chesstype].LibPath);
+	GameType = (CChess*)CT_InitModule(hWnd, chessType[chesstype].LibPath);
 	return;
 }
 
@@ -991,7 +991,7 @@ VOID CMainWnd::ShowWiner(int side)
 	{
 		MessageBox(hWnd, "黑方胜出！", "Msg", MB_OK);
 	}
-	else
+	else if (side == WHITE)
 	{
 		MessageBox(hWnd, "白方胜出！", "Msg", MB_OK);
 	}
