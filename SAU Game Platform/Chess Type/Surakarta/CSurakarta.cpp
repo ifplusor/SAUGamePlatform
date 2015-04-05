@@ -354,10 +354,10 @@ INT CSurakarta::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 		pos += len;
 
 		//解析着法
-		tStep.start.y = moveCmd[pos] - BX;
-		tStep.start.x = moveCmd[pos + 1] - BY;
-		tStep.end.y = moveCmd[pos + 2] - BX;
-		tStep.end.x = moveCmd[pos + 3] - BY;
+		tStep.start.x = moveCmd[pos] - BX;
+		tStep.start.y = moveCmd[pos + 1] - BY;
+		tStep.end.x = moveCmd[pos + 2] - BX;
+		tStep.end.y = moveCmd[pos + 3] - BY;
 		tStep.side = player;
 		stepStack.push(tStep);//临时着法压栈
 
