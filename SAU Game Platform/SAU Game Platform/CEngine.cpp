@@ -429,7 +429,7 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 			{
 				for(i=pos+len+1;i<indexBuf;i++)
 				{
-					if (readBuffer[i] == ' ' || readBuffer[i] == '\r' || readBuffer[i] == '\n' || readBuffer[i] == '\t' || readBuffer[i] == '\0')//命令字后有完整参数  从引擎读入的数据中'\n'前包含'\r'
+					if (readBuffer[i] == '\r' || readBuffer[i] == '\n' || readBuffer[i] == '\t' || readBuffer[i] == '\0')//命令字后有完整参数，windows平台下从引擎读入的数据中'\n'前包含'\r'。一条命令不以' '作为结束标志。
 					{
 						memcpy(CMD,readBuffer+pos,i-pos);
 						CMD[i-pos]='\0';
@@ -452,7 +452,7 @@ void CEngine::GetCommand(char *cmd,char *CMD)
 			{
 				for(i=pos+len+1;i<indexBuf;i++)
 				{
-					if (readBuffer[i] == ' ' || readBuffer[i] == '\r' || readBuffer[i] == '\n' || readBuffer[i] == '\t' || readBuffer[i] == '\0')//命令字后有完整参数
+					if (readBuffer[i] == '\r' || readBuffer[i] == '\n' || readBuffer[i] == '\t' || readBuffer[i] == '\0')//命令字后有完整参数，windows平台下从引擎读入的数据中'\n'前包含'\r'。一条命令不以' '作为结束标志。
 					{
 						memcpy(CMD,readBuffer+pos,i-pos);
 						CMD[i-pos]='\0';
