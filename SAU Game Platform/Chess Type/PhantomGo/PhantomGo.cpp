@@ -32,7 +32,7 @@ DLLFUCTION VOID CheckModule(char *Info, char *ChessName, int *ChessType)
 {
 	strcpy(Info, "SAU Game Platform chessType");
 	strcpy(ChessName, "幻影围棋");
-	*ChessType = 12;//允许Pass棋种
+	*ChessType = 4;//允许Pass棋种
 }
 
 DLLFUCTION VOID* InitModule(HWND hWnd, char *LibPath)

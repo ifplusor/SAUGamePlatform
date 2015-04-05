@@ -309,18 +309,24 @@ BOOL CPhantomGo::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 			stepStack.push(tStep);//完整着法压栈
 
 			//判断是否符合规则
-			if (!FitRules())
+			if (tStep.point.x < 0 || tStep.point.x>8 || tStep.point.y < 0 || tStep.point.y>8)
 			{
 				strcat(curCmd, "error\n");
 				stepStack.pop();//非法着法出栈
 				return -1;//行棋违规
+			}
+			if (!FitRules())
+			{
+				strcat(curCmd, "refuse\n");
+				stepStack.pop();//非法着法出栈
+				return 0;//行棋违规
 			}
 
 			//落子
 			board[tStep.point.x][tStep.point.y] = tStep.side;
 
 			//追加接受着法命令
-			strcat(curCmd, "access\n");
+			strcat(curCmd, "accept\n");
 
 			flagP = false;//消除Pass标记
 			flagJ = false;//取消劫标记
@@ -598,7 +604,7 @@ bool CPhantomGo::FitRules()//是否符合规则
 bool CPhantomGo::WinOrLose()
 {
 	//幻影围棋终盘利用围棋规则判别胜负，截止本版本尚不支持
-	PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)0);
+	PostMessage(hWnd, GM_WINLOSE, (WPARAM)(StepNum[BLACK] << 16) + StepNum[WHITE], (LPARAM)1);
 	return true;
 }
 
