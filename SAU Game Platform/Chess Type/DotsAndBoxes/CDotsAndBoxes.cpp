@@ -310,6 +310,8 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 	int pos=0,cs;
 	Step tStep;
 	int len=strlen("move ");
+	int lineNum;
+	bool winF = false;
 
 	curCmd[0] = denCmd[0] = '\0';//默认空消息
 
@@ -333,10 +335,15 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 		tStep.side = player;
 		cs = 0;
 		do{
-			if (cs >= lineNum)//连线过多
+			if (cs >= lineNum)//连线过多,例外：捕获最后一个格子
 			{
+				if (WinOrLose())
+				{
+					winF = true;
+					break;
+				}
 				strcat(curCmd, "error\n");
-				while (cs)//取消之前判别连线
+				while (cs--)//取消之前判别连线
 				{
 					tStep = stepStack.top();//获取临时着法
 					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
@@ -355,7 +362,7 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 			{
 				strcat(curCmd, "error\n");
 				stepStack.pop();//临时着法出栈
-				while (cs)//取消之前判别连线
+				while (cs--)//取消之前判别连线
 				{
 					tStep = stepStack.top();//获取临时着法
 					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
@@ -373,7 +380,7 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 		if (cs != lineNum)//连线数不足
 		{
 			strcat(curCmd, "error\n");
-			while (cs)//取消之前判别连线
+			while (cs--)//取消之前判别连线
 			{
 				tStep = stepStack.top();//获取临时着法
 				line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
@@ -393,13 +400,13 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 
 		//生成命令串
 		strncpy(denCmd, res, len + lineNum * 3);
-		strcat(denCmd, "\n");
+		sprintf(denCmd+ len + lineNum * 3, "\n");
 
 		//累计步数
 		StepNum[player]++;
 
 		//判断胜负
-		if (WinOrLose())
+		if (winF)
 		{
 			strcat(denCmd, "end\n");//追加终盘命令
 			strcat(curCmd, "end\n");
@@ -519,6 +526,19 @@ INT CDotsAndBoxes::OkMove(char *denCmd)
 			UpdateWindow(hWnd);
 			//播放捕获格子音效
 			PlaySnd(2);
+
+			//累计步数
+			StepNum[player]++;
+
+			//判断胜负,捕获最后一个格子
+			if (WinOrLose())
+			{
+				//生成命令串
+				sprintf(denCmd, "move %d %s\nend\n", lineNum, lineList);
+				//追加着法历史
+				ShowStepHis(lineList);
+				return 2;//分出胜负
+			}
 		}
 		else
 		{
@@ -526,25 +546,15 @@ INT CDotsAndBoxes::OkMove(char *denCmd)
 			sprintf(denCmd, "move %d %s\n", lineNum, lineList);
 
 			//追加着法历史
-			ShowStepHis(denCmd + 5);
+			ShowStepHis(lineList);
+
+			//累计步数
+			StepNum[player]++;
 
 			//行棋换手
 			player = NEXTPLAYER(player);
 
 			lineNum = 0;//换手，连续连线数归零
-		}
-
-		//累计步数
-		StepNum[player]++;
-
-		//判断胜负,捕获最后一个格子
-		if (WinOrLose())
-		{
-			//生成命令串
-			sprintf(denCmd, "move %d %s\nend\n", lineNum, lineList);
-			//追加着法历史
-			ShowStepHis(lineList);
-			return 2;//分出胜负
 		}
 
 		count = 0;//重置输入
@@ -661,6 +671,8 @@ bool CDotsAndBoxes::HaveLine(Point point)
  */
 bool CDotsAndBoxes::HaveBox(LINE line)
 {
+	bool flag = false;
+
 	// 1~5线判断左侧格子
 	if (line.i>0 && this->line[line.k][line.i - 1][line.j] != EMPTY &&this->line[line.k ^ 1][line.j][line.i - 1] != EMPTY &&this->line[line.k ^ 1][line.j + 1][line.i - 1] != EMPTY)
 	{
@@ -672,7 +684,7 @@ bool CDotsAndBoxes::HaveBox(LINE line)
 		{
 			box[line.i - 1][line.j] = player;
 		}
-		return true;
+		flag = true;
 	}
 	// 0~4线判断右侧格子
 	if (line.i<5 && this->line[line.k][line.i + 1][line.j] != EMPTY &&this->line[line.k ^ 1][line.j][line.i] != EMPTY &&this->line[line.k ^ 1][line.j + 1][line.i] != EMPTY)
@@ -685,9 +697,9 @@ bool CDotsAndBoxes::HaveBox(LINE line)
 		{
 			box[line.i][line.j] = player;
 		}
-		return true;
+		flag = true;
 	}
-	return false;
+	return flag;
 }
 
 /**
