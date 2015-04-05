@@ -347,6 +347,7 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 				{
 					tStep = stepStack.top();//获取临时着法
 					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
+					UnpackBox(tStep.line);//拆除格子
 					stepStack.pop();//临时着法出栈
 				}
 				return -1;//着法非法
@@ -366,6 +367,7 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 				{
 					tStep = stepStack.top();//获取临时着法
 					line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
+					UnpackBox(tStep.line);//拆除格子
 					stepStack.pop();//临时着法出栈
 				}
 				return -1;//着法非法
@@ -384,6 +386,7 @@ BOOL CDotsAndBoxes::ProcessMove(char *moveCmd, char *curCmd, char *denCmd)
 			{
 				tStep = stepStack.top();//获取临时着法
 				line[tStep.line.k][tStep.line.i][tStep.line.j] = EMPTY;//恢复连线
+				UnpackBox(tStep.line);//拆除格子
 				stepStack.pop();//临时着法出栈
 			}
 			return -1;//着法非法
@@ -700,6 +703,23 @@ bool CDotsAndBoxes::HaveBox(LINE line)
 		flag = true;
 	}
 	return flag;
+}
+
+/**
+ * UnpackBox - 拆除连线捕获的格子
+ */
+void CDotsAndBoxes::UnpackBox(LINE line)
+{
+	if (line.k == 0)
+	{
+		box[line.j][line.i - 1] = EMPTY;
+		box[line.j][line.i] = EMPTY;
+	}
+	else if (line.k == 1)
+	{
+		box[line.i - 1][line.j] = EMPTY;
+		box[line.i][line.j] = EMPTY;
+	}
 }
 
 /**

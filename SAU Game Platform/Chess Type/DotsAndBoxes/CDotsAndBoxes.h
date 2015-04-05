@@ -81,6 +81,7 @@ private:
 	bool HaveLine(Point point);
 	//捕获格子判断
 	bool HaveBox(LINE line);
+	void UnpackBox(LINE line);
 	//坐标映射
 	bool PonitToLine(Step &step);
 	bool LineToPoint(Step &step);
