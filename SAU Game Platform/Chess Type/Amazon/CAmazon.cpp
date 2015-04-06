@@ -582,8 +582,13 @@ bool CAmazon::FitRules()
 		return false;
 	if (!JudgeRule(tStep.first, tStep.second))//ÅĞ¶ÏÌø×Ó
 		return false;
+	board[tStep.first.x][tStep.first.y] = EMPTY;
 	if (!JudgeRule(tStep.second, tStep.third))//ÅĞ¶ÏÌø×Ó
+	{
+		board[tStep.first.x][tStep.first.y] = tStep.side;
 		return false;
+	}
+	board[tStep.first.x][tStep.first.y] = tStep.side;
 	return true;
 }
 
