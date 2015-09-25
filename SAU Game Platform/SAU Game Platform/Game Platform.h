@@ -15,8 +15,18 @@
 #pragma comment(lib,"WSOCK32.lib")
 #pragma comment(lib,"winmm.lib")
 #pragma comment(lib,"comctl32.lib")
-#pragma comment(lib,"Lib\\CommFunc.lib")
-#pragma comment(lib,"Lib\\FileDlg.lib")
+
+#ifdef _DEBUG
+
+#pragma comment(lib,"..\\CommFunc\\Debug\\CommFunc.lib")
+#pragma comment(lib,"..\\FileDlg\\Debug\\FileDlg.lib")
+
+#else
+
+#pragma comment(lib,"..\\CommFunc\\Release\\CommFunc.lib")
+#pragma comment(lib,"..\\FileDlg\\Release\\FileDlg.lib")
+
+#endif
 
 
 #include <Windows.h>
