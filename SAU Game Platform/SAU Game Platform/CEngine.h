@@ -12,7 +12,7 @@
 #include "Game Platform.h"
 
 #define BUFSIZE 256
-#define FULLBUFSIZE 512
+#define FULLBUFSIZE (BUFSIZE*2)
 #define UNNAMEDPIPE 0
 #define NAMEDPIPE 1
 

@@ -72,9 +72,9 @@ bool CEngine::LinkEngineWithUnnamed()
 	status = 0;//引擎连接未就绪
 
 	SECURITY_ATTRIBUTES sa;
-	sa.nLength=sizeof(sa);
+	sa.nLength=sizeof(SECURITY_ATTRIBUTES);
 	sa.lpSecurityDescriptor=NULL;//Default security attributes
-	sa.bInheritHandle=true;//handle can be inherited
+	sa.bInheritHandle= TRUE;//handle can be inherited
 
 	if(!CreatePipe(&pde.engine_read,&pde.platform_write,&sa,BUFSIZE) ||!CreatePipe(&pde.platform_read,&pde.engine_write,&sa,BUFSIZE))//创建两个平台与引擎之间互相通信的匿名管道
 	{
@@ -379,7 +379,7 @@ DWORD CEngine::WriteMsg(char *msg)
 		MsgBox("与连接程序之间的通信管道出错!","Error",0);
 		return 0;
 	}
-	if(!WriteFile(hFile,msg,strlen(msg)+1,&dwWrite,NULL))//往管道写入消息
+	if(!WriteFile(hFile,msg,strlen(msg),&dwWrite,NULL))//往管道写入消息
 	{
 		ErrorBox("WriteMsg failed");
 		return 0;
