@@ -56,7 +56,7 @@ SAU通用计算机博弈对战平台通信协议说明与引擎编写规范
                 无
             说明：
                 用于幻影围棋中，确认平台接受引擎提交的着法。
-            
+
         5)"refuse" 命令
             功能：
                 着法拒绝通知
@@ -66,7 +66,7 @@ SAU通用计算机博弈对战平台通信协议说明与引擎编写规范
                 无
             说明：
                 用于幻影围棋中，确认平台拒绝引擎提交的着法。
-            
+
         6)"take" 命令
             功能：
                 提子通知
@@ -88,7 +88,7 @@ SAU通用计算机博弈对战平台通信协议说明与引擎编写规范
                 position list：坐标列表。
             说明：
                 参考"take"命令。
-            
+
         8)"end" 命令
             功能：
                 通知对弈结束
@@ -153,7 +153,7 @@ SAU通用计算机博弈对战平台通信协议说明与引擎编写规范
     当对弈开始时，平台会向博弈软件发送"new"命令给引擎分配执棋颜色，同时通知引擎对弈开始，并宣布先手方（black方）开始行棋。
 
     对弈进行的过程中，平台向博弈软件发送"move"命令通知引擎开始行棋，并告知引擎对手的着法（幻影围棋除外）。
-    
+
     当对弈结束后，平台向博弈软件发送"end"命令通知对弈过程终止。
 
     当卸载博弈软件时，平台向博弈软件发送"quit"命令。
@@ -189,71 +189,71 @@ int connect6(int argc, char *argv[])
 
     //此处放置初始化代码
     //...
-    
+
     //程序主循环
     while (1)
     {
         fflush(stdout);
-        
+
         //获取平台消息
         scanf("%s", message);
-        
+
         //分析命令
         if(strcmp(message,"move")==0)//行棋
         {
             scanf("%s", message);//获取对手行棋着法
             fflush(stdin);
-            
+
             step.first.x=message[0]-'A';
             step.first.y=message[1]-'A';
             step.second.x=message[2]-'A';
             step.second.y=message[3]-'A';
-            
+
             //处理对手行棋
             Board[step.first.x][step.first.y]=computerSide^1;
             Board[step.second.x][step.second.y]=computerSide^1;
             //...
-            
+
             //生成着法，并保存在step结构中
             //...
-            
+
             //处理己方行棋
             Board[step.first.x][step.first.y]=computerSide;
             Board[step.second.x][step.second.y]=computerSide;
             //...
-            
+
             //输出着法
             printf("move %c%c%c%c\n",step.first.x+'A',step.first.y+'A',step.second.x+'A',step.second.y+'A');
         }
         else if(strcmp(message,"new")==0)//建立新棋局
         {
             int i,j;
-            
+
             scanf("%s",message);//获取己方执棋颜色
             fflush(stdin);
-            
+
             if(strcmp(message,"black")==0)//执黑
                 computerSide=BLACK;
             else//执白
                 computerSide=WHITE;
-            
+
             //初始化棋局
             for(i=0;i<19;++i)
                 for(j=0;j<19;++j)
                     Board[i][j]=EMPTY;
             //...
-            
+
             start=1;
-            
+
             if(computerSide==BLACK)
             {
                 //生成第一手着法，并保存在step结构中
                 //...
-                
+
                 //处理己方行棋
                 Board[step.first.x][step.first.y]=computerSide;
                 //...
-                
+
                 //输出着法
                 printf("move %c%c@@\n",step.first.x+'A',step.first.y+'A');
             }
@@ -261,27 +261,27 @@ int connect6(int argc, char *argv[])
         else if (strcmp(message, "error") == 0)//着法错误
         {
             fflush(stdin);
-            
+
             //...
         }
         else if (strcmp(message, "name?") == 0)//询问引擎名
         {
             fflush(stdin);
-            
+
             //输出引擎名
             printf("name xxxx\n");
         }
         else if (strcmp(message, "end") == 0)//对局结束
         {
             fflush(stdin);
-            
+
             start = 0;
             //...
         }
         else if (strcmp(message, "quit") == 0)//退出引擎
         {
             fflush(stdin);
-            
+
             //...
             printf("Quit!\n");
             break;
@@ -317,20 +317,20 @@ int PhantomGo()
 
     //此处放置初始化代码
     //...
-    
+
     //程序主循环
     while(1)
     {
         fflush(stdout);
-        
+
         //获取平台消息
         scanf("%s", message);
-        
+
         //分析命令
         if (strcmp(message, "accept") == 0)                     //己方提交着法被接受
         {
             fflush(stdin);
-            
+
             //处理己方行棋
             Board[step.point.x][step.point.y]=computerSide;
             //...
@@ -338,7 +338,7 @@ int PhantomGo()
         else if (strcmp(message, "refuse") == 0)                //己方提交着法被拒绝
         {
             fflush(stdin);
-                
+
             //生成着法，并保存在step结构中
             //...
 
@@ -354,10 +354,10 @@ int PhantomGo()
             if (strcmp(message, "go") == 0)
             {
                 fflush(stdin);
-                
-go:                //生成着法，并保存在step结构中
+
+go:             //生成着法，并保存在step结构中
                 //...
-                
+
                 //检查着法
                 if (...)//输出着法
                     printf("move %c%c\n",step.point.x+'A',step.point.y+'A');   
@@ -367,7 +367,7 @@ go:                //生成着法，并保存在step结构中
             else if (strcmp(message, "pass") == 0)//对方pass
             {
                 fflush(stdin);
-                
+
                 //...
                 goto go;
             }
@@ -375,12 +375,12 @@ go:                //生成着法，并保存在step结构中
         else if (strcmp(message, "take") == 0)//己方提子
         {
             int num;
-            
+
             fflush(stdin);
-            
+
             scanf("%d", &num);//读取提子数目
             scanf("%s", message);//读取提子列表
-            
+
             for (int k = 0; k < num; k++)
             {
                 x = message[2 * k] - 'A';
@@ -393,10 +393,10 @@ go:                //生成着法，并保存在step结构中
         else if (strcmp(message, "taked") == 0)//对方提子
         {
             int num;
-            
+
             scanf("%d", &num);//读取提子数目
             scanf("%s", message);//读取提子列表
-            
+
             for (int k = 0; k < num; k++)
             {
                 x = message[2 * k] - 'A';
@@ -409,32 +409,32 @@ go:                //生成着法，并保存在step结构中
         else if (strcmp(message,"new") == 0)//新建棋局
         {
             int i,j;
-            
+
             scanf("%s",message);//获取己方执棋颜色
             fflush(stdin);
-            
+
             if(strcmp(message,"black")==0)//执黑
                 computerSide=BLACK;
             else//执白
                 computerSide=WHITE;
-            
+
             //初始化棋局
             for(i=0;i<10;++i)
                 for(j=0;j<10;++j)
                     Board[i][j]=EMPTY;
             //...
-            
+
             start=1;
-            
+
             if(computerSide==BLACK)
             {
                 //生成第一手着法，并保存在step结构中
                 //...
-                
+
                 //处理己方行棋
                 Board[step.point.x][step.point.y]=computerSide;
                 //...
-                
+
                 //输出着法
                 printf("move %c%c\n",step.point.x+'A',step.point.y+'A');
             }
@@ -442,27 +442,27 @@ go:                //生成着法，并保存在step结构中
         else if (strcmp(message, "error") == 0)//着法超出棋盘范围
         {
             fflush(stdin);
-            
+
             //...
         }
         else if (strcmp(message, "name?") == 0)//询问引擎名
         {
             fflush(stdin);
-            
+
             //输出引擎名
             printf("name xxxx\n");
         }
         else if (strcmp(message, "end") == 0)//对局结束
         {
             fflush(stdin);
-            
+
             start = 0;
             //...
         }
         else if (strcmp(message, "quit") == 0)//退出引擎
         {
             fflush(stdin);
-            
+
             //...
             printf("Quit!\n");
             break;
@@ -498,7 +498,7 @@ int SuLa()
 
     //此处放置初始化代码
     //...
-    
+
     //程序主循环
     while (1)
     {
@@ -506,46 +506,46 @@ int SuLa()
 
         //获取平台消息
         scanf("%s", message);
-        
+
         //分析命令
         if (strcmp(message,"move") == 0)//行棋
         {
             scanf("%s", message);//获取对手行棋着法
             fflush(stdin);
-            
+
             step.start.x=message[0]-'A';
             step.start.y=message[1]-'A';
             step.end.x=message[2]-'A';
             step.end.y=message[3]-'A';
-            
+
             //处理对手行棋
             Board[step.end.x][step.end.y]=Board[step.start.x][step.start.y];
             Board[step.start.x][step.start.y]=EMPTY;
             //...
-            
+
             //生成着法，并保存在step结构中
             //...
-            
+
             //处理己方行棋
             Board[step.end.x][step.end.y]=Board[step.start.x][step.start.y];
             Board[step.start.x][step.start.y]=EMPTY;
             //...
-            
+
             //输出着法
             printf("move %c%c%c%c\n",step.start.x+'A',step.start.y+'A',step.end.x+'A',step.end.y+'A');
         }
         else if(strcmp(message,"new")==0)//建立新棋局
         {
             int i,j;
-            
+
             scanf("%s",message);//获取己方执棋颜色
             fflush(stdin);
-            
+
             if(strcmp(message,"black")==0)//执黑
                 computerSide=BLACK;
             else//执白
                 computerSide=WHITE;
-            
+
             //初始化棋局
             for(i=0;i<2;++i)
                 for(j=0;j<6;++j)
@@ -557,19 +557,19 @@ int SuLa()
                 for(j=0;j<6;++j)
                     Board[i][j]=WHITE;
             //...
-            
+
             start=1;
-            
+
             if(computerSide==BLACK)
             {
                 //生成第一手着法，并保存在step结构中
                 //...
-                
+
                 //处理己方行棋
                 Board[step.end.x][step.end.y]=Board[step.start.x][step.start.y];
                 Board[step.start.x][step.start.y]=EMPTY;
                 //...
-                
+
                 //输出着法
                 printf("move %c%c%c%c\n",step.start.x+'A',step.start.y+'A',step.end.x+'A',step.end.y+'A');
             }
@@ -577,27 +577,27 @@ int SuLa()
         else if (strcmp(message, "error") == 0)//着法错误
         {
             fflush(stdin);
-            
+
             //...
         }
         else if (strcmp(message, "name?") == 0)//询问引擎名
         {
             fflush(stdin);
-            
+
             //输出引擎名
             printf("name xxxx\n");
         }
         else if (strcmp(message, "end") == 0)//对局结束
         {
             fflush(stdin);
-            
+
             start = 0;
             //...
         }
         else if (strcmp(message, "quit") == 0)//退出引擎
         {
             fflush(stdin);
-            
+
             //...
             printf("Quit!\n");
             break;
@@ -634,57 +634,57 @@ int DotAndBox(int argc, char *argv[])
 
     //此处放置初始化代码
     //...
-    
+
     //程序主循环
     while (1)
     {
         fflush(stdout);
-        
+
         //获取平台消息
         scanf("%s", message);
-        
+
         //分析命令
         if(strcmp(message,"move")==0)//行棋
         {
             int num;//线的数量
-            
+
             scanf("%d", &num);
             scanf("%s", message);//获取对手行棋着法
             fflush(stdin);
-            
+
             for(i = 0; i < num; ++i)
             {
                 step.line.k = message[i*3] - 'A';
                 step.line.i = message[i*3 + 1] - 'A';
                 step.line.j = message[i*3 + 2] - 'A';
-                
+
                 //处理对手行棋
                 Board[step.line.k][step.line.i][step.line.j]=computerSide^1;
                 //...
             }
             //...
-            
+
             //生成着法，并保存在线的数量在num中，保存线的坐标列表在message中
             //...
-            
+
             //处理己方行棋
             //...
-            
+
             //输出着法
             printf("move %d %s\n",num, message);
         }
         else if(strcmp(message,"new")==0)//建立新棋局
         {
             int i,j;
-            
+
             scanf("%s",message);//获取己方执棋颜色
             fflush(stdin);
-            
+
             if(strcmp(message,"black")==0)//执黑
                 computerSide=BLACK;
             else//执白
                 computerSide=WHITE;
-            
+
             //初始化棋局
             for(k=0;k<2;++k)
                 for(i=0;i<6;++i)
@@ -694,17 +694,17 @@ int DotAndBox(int argc, char *argv[])
                 for(j=0;j<5;++j)
                     Box[i][j]=EMPTY;
             //...
-            
+
             start=1;
-            
+
             if(computerSide==BLACK)
             {
                 //生成着法，并保存在线的数量在num中，保存线的坐标列表在message中
                 //...
-                
+
                 //处理己方行棋
                 //...
-                
+
                 //输出着法
                 printf("move %d %s\n",num, message);
             }
@@ -712,27 +712,27 @@ int DotAndBox(int argc, char *argv[])
         else if (strcmp(message, "error") == 0)//着法错误
         {
             fflush(stdin);
-            
+
             //...
         }
         else if (strcmp(message, "name?") == 0)//询问引擎名
         {
             fflush(stdin);
-            
+
             //输出引擎名
             printf("name xxxx\n");
         }
         else if (strcmp(message, "end") == 0)//对局结束
         {
             fflush(stdin);
-            
+
             start = 0;
             //...
         }
         else if (strcmp(message, "quit") == 0)//退出引擎
         {
             fflush(stdin);
-            
+
             //...
             printf("Quit!\n");
             break;
@@ -769,58 +769,58 @@ int Amazon(int argc, char *argv[])
 
     //此处放置初始化代码
     //...
-    
+
     //程序主循环
     while (1)
     {
         fflush(stdout);
-        
+
         //获取平台消息
         scanf("%s", message);
-        
+
         //分析命令
         if(strcmp(message,"move")==0)//行棋
         {
             scanf("%s", message);//获取对手行棋着法
             fflush(stdin);
-            
+
             step.start.x=message[0]-'A';
             step.start.y=message[1]-'A';
             step.end.x=message[2]-'A';
             step.end.y=message[3]-'A';
             step.bar.x=message[4]-'A';
             step.bar.y=message[5]-'A';
-            
+
             //处理对手行棋
             Board[step.start.x][step.start.y]=EMPTY;
             Board[step.end.x][step.end.y]=computerSide^1;
             Board[step.bar.x][step.bar.y]=BAR;
             //...
-            
+
             //生成着法，并保存在step结构中
             //...
-            
+
             //处理己方行棋
             Board[step.start.x][step.start.y]=EMPTY;
             Board[step.end.x][step.end.y]=computerSide;
             Board[step.bar.x][step.bar.y]=BAR;
             //...
-            
+
             //输出着法
             printf("move %c%c%c%c%c%c\n",step.start.x+'A',step.start.y+'A',step.end.x+'A',step.end.y+'A',step.bar.x+'A',step.bar.y+'A');
         }
         else if(strcmp(message,"new")==0)//建立新棋局
         {
             int i,j;
-            
+
             scanf("%s",message);//获取己方执棋颜色
             fflush(stdin);
-            
+
             if(strcmp(message,"black")==0)//执黑
                 computerSide=BLACK;
             else//执白
                 computerSide=WHITE;
-            
+
             //初始化棋局
             for(i=0;i<10;++i)
                 for(j=0;j<10;++j)
@@ -828,20 +828,20 @@ int Amazon(int argc, char *argv[])
             Board[0][3]=Board[3][0]=Board[6][0]=Board[9][3]=WHITE;
             Board[0][6]=Board[3][9]=Board[6][9]=Board[9][6]=BLACK;
             //...
-            
+
             start=1;
-            
+
             if(computerSide==BLACK)
             {
                 //生成第一手着法，并保存在step结构中
                 //...
-                
+
                 //处理己方行棋
                 Board[step.start.x][step.start.y]=EMPTY;
                 Board[step.end.x][step.end.y]=computerSide;
                 Board[step.bar.x][step.bar.y]=BAR;
                 //...
-                
+
                 //输出着法
                 printf("move %c%c%c%c%c%c\n",step.start.x+'A',step.start.y+'A',step.end.x+'A',step.end.y+'A',step.bar.x+'A',step.bar.y+'A');
             }
@@ -849,27 +849,27 @@ int Amazon(int argc, char *argv[])
         else if (strcmp(message, "error") == 0)//着法错误
         {
             fflush(stdin);
-            
+
             //...
         }
         else if (strcmp(message, "name?") == 0)//询问引擎名
         {
             fflush(stdin);
-            
+
             //输出引擎名
             printf("name xxxx\n");
         }
         else if (strcmp(message, "end") == 0)//对局结束
         {
             fflush(stdin);
-            
+
             start = 0;
             //...
         }
         else if (strcmp(message, "quit") == 0)//退出引擎
         {
             fflush(stdin);
-            
+
             //...
             printf("Quit!\n");
             break;
@@ -905,67 +905,67 @@ int connect6(int argc, char *argv[])
 
     //此处放置初始化代码
     //...
-    
+
     //程序主循环
     while (1)
     {
         fflush(stdout);
-        
+
         //获取平台消息
         scanf("%s", message);
-        
+
         //分析命令
         if(strcmp(message,"move")==0)//行棋
         {
             scanf("%s", message);//获取对手行棋着法
             fflush(stdin);
-            
+
             step.point.x=message[0]-'A';
             step.point.y=message[1]-'A';
-            
+
             //处理对手行棋
             Board[step.point.x][step.point.y]=computerSide^1;
             //...
-            
+
             //生成着法，并保存在step结构中
             //...
-            
+
             //处理己方行棋
             Board[step.point.x][step.point.y]=computerSide;
             //...
-            
+
             //输出着法
             printf("move %c%c\n",step.point.x+'A',step.point.y+'A');
         }
         else if(strcmp(message,"new")==0)//建立新棋局
         {
             int i,j;
-            
+
             scanf("%s",message);//获取己方执棋颜色
             fflush(stdin);
-            
+
             if(strcmp(message,"black")==0)//执黑
                 computerSide=BLACK;
             else//执白
                 computerSide=WHITE;
-            
+
             //初始化棋局
             for(i=0;i<9;++i)
                 for(j=0;j<9;++j)
                     Board[i][j]=EMPTY;
             //...
-            
+
             start=1;
-            
+
             if(computerSide==BLACK)
             {
                 //生成第一手着法，并保存在step结构中
                 //...
-                
+
                 //处理己方行棋
                 Board[step.point.x][step.point.y]=computerSide;
                 //...
-                
+
                 //输出着法
                 printf("move %c%c\n",step.point.x+'A',step.point.y+'A');
             }
@@ -973,27 +973,27 @@ int connect6(int argc, char *argv[])
         else if (strcmp(message, "error") == 0)//着法错误
         {
             fflush(stdin);
-            
+
             //...
         }
         else if (strcmp(message, "name?") == 0)//询问引擎名
         {
             fflush(stdin);
-            
+
             //输出引擎名
             printf("name xxxx\n");
         }
         else if (strcmp(message, "end") == 0)//对局结束
         {
             fflush(stdin);
-            
+
             start = 0;
             //...
         }
         else if (strcmp(message, "quit") == 0)//退出引擎
         {
             fflush(stdin);
-            
+
             //...
             printf("Quit!\n");
             break;
