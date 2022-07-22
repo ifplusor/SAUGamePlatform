@@ -896,7 +896,7 @@ typedef struct _Step{ //步结构
 
 int Board[9][9];//棋盘结构
 
-int connect6(int argc, char *argv[])
+int NoGo(int argc, char *argv[])
 {
     Step step;//临时步结构
     char message[256];//通信消息缓冲
